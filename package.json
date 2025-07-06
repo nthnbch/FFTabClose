@@ -1,10 +1,45 @@
 {
-  "name": "FFTabClose",
+  "name": "fftabclose",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Extension Firefox qui ferme automatiquement les onglets non utilisés après un délai configurable. Compatible Zen Browser.",
+  "main": "background.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "./build.sh",
+    "dev": "web-ext run --source-dir=. --browser-console",
+    "lint": "web-ext lint --source-dir=.",
+    "package": "./build.sh && echo 'Package créé dans dist/'",
+    "test": "echo \"Tests à implémenter\" && exit 0"
   },
-  "private": true
+  "keywords": [
+    "firefox",
+    "extension",
+    "tabs",
+    "productivity",
+    "zen-browser",
+    "auto-close",
+    "memory-management"
+  ],
+  "author": "FFTabClose Team",
+  "license": "MIT",
+  "homepage": "https://github.com/votre-username/FFTabClose",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/votre-username/FFTabClose.git"
+  },
+  "bugs": {
+    "url": "https://github.com/votre-username/FFTabClose/issues"
+  },
+  "devDependencies": {
+    "web-ext": "^7.0.0"
+  },
+  "engines": {
+    "firefox": ">=57.0"
+  },
+  "webExtension": {
+    "gecko": {
+      "id": "fftabclose@extension.local",
+      "strict_min_version": "57.0"
+    }
+  },
+  "private": false
 }
