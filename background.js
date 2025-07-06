@@ -1,6 +1,6 @@
 /**
  * FFTabClose - Auto Tab Closer for Firefox
- * Manifest V3 Service Worker
+ * Background Script for Manifest V2
  * Automatically closes non-pinned tabs after configurable timeout
  */
 
@@ -197,13 +197,13 @@ async function shouldCloseTab(tab, now) {
  */
 async function showNotificationBadge(count) {
   try {
-    await browser.action.setBadgeText({ text: count.toString() });
-    await browser.action.setBadgeBackgroundColor({ color: '#4CAF50' });
+    await browser.browserAction.setBadgeText({ text: count.toString() });
+    await browser.browserAction.setBadgeBackgroundColor({ color: '#4CAF50' });
     
     // Clear badge after 3 seconds
     setTimeout(async () => {
       try {
-        await browser.action.setBadgeText({ text: '' });
+        await browser.browserAction.setBadgeText({ text: '' });
       } catch (error) {
         console.warn('FFTabClose: Failed to clear badge:', error);
       }
