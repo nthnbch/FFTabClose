@@ -140,10 +140,12 @@ optimize_files() {
         rm -f "$BUILD_DIR/popup.css.bak" 2>/dev/null || true
     fi
     
-    # Suppression des commentaires de développement dans le JS
-    sed -i.bak 's|console\.log.*||g' "$BUILD_DIR/background.js" 2>/dev/null || true
-    sed -i.bak 's|console\.log.*||g' "$BUILD_DIR/popup.js" 2>/dev/null || true
-    rm -f "$BUILD_DIR/"*.bak 2>/dev/null || true
+    # Suppression des commentaires de développement dans le JS (plus sûr)
+    if command -v sed >/dev/null 2>&1; then
+        sed -i.bak '/console\.log/d' "$BUILD_DIR/background.js" 2>/dev/null || true
+        sed -i.bak '/console\.log/d' "$BUILD_DIR/popup.js" 2>/dev/null || true
+        rm -f "$BUILD_DIR/"*.bak 2>/dev/null || true
+    fi
     
     log_success "Fichiers optimisés"
 }
