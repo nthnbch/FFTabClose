@@ -185,22 +185,22 @@ async function checkAndCloseTabs() {
     return;
   }
   try {
-    // Get ALL tabs in ALL windows (not just current)
+    const [focusedWindow] = await browser.windows.getAll({populate: false, windowTypes: ['normal']});
+    const focusedWindowId = focusedWindow ? focusedWindow.id : null;
     const tabs = await browser.tabs.query({});
     const now = Date.now();
     const tabsToClose = [];
     const tabsToDiscard = [];
     
-    console.log(`FFTabClose: Checking ${tabs.length} tabs (timeout: ${currentConfig.autoCloseTime}ms)`);
-    
     for (const tab of tabs) {
-      const action = getTabAction(tab, now);
-      console.log(`FFTabClose: Tab ${tab.id} (${tab.title ? tab.title.substring(0, 30) : ''}...) - Action: ${action}`);
-      
+      // Only skip the active tab in the focused window
+      if (tab.active && tab.windowId === focusedWindowId) {
+        continue;
+      }
+      const action = getTabActionReal(tab, now);
       if (action === 'close') {
         tabsToClose.push(tab.id);
       } else if (action === 'discard') {
-        // Only discard if not already discarded
         if (!tab.discarded) {
           tabsToDiscard.push(tab.id);
         }
@@ -256,13 +256,19 @@ async function checkAndCloseTabs() {
  * Determine what action to take for a tab (close, discard, or none)
  */
 function getTabAction(tab, now) {
-  // Never touch active tab
-  if (tab.active) {
-    console.log(`Tab ${tab.id} is active, skipping`);
-    return 'none';
-  }
-  
-  // Check if tab is expired
+  // Only skip if the tab is active IN THE CURRENT WINDOW
+  // But if the tab is active in another window (space), we do NOT skip it
+  // We'll get the truly focused tab below
+  // We'll collect all active tabs in all windows and only skip those
+  // (But for Zen/Spaces, we want to close even if 'active' but not in the focused window)
+  // So, get the focused window and only skip the active tab in that window
+  // We'll need to pass the focused windowId to this function
+  // For now, always process all tabs, even if active, except the one in the focused window
+  return 'defer'; // Placeholder, see below
+}
+
+// Move the real logic here
+function getTabActionReal(tab, now) {
   const timestamp = tabTimestamps.get(tab.id.toString());
   if (!timestamp) {
     // Register tab if not found
