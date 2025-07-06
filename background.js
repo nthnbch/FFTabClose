@@ -184,8 +184,8 @@ async function checkAndCloseTabs() {
     console.log('FFTabClose: Extension disabled, skipping check');
     return;
   }
-  
   try {
+    // Get ALL tabs in ALL windows (not just current)
     const tabs = await browser.tabs.query({});
     const now = Date.now();
     const tabsToClose = [];
@@ -195,12 +195,15 @@ async function checkAndCloseTabs() {
     
     for (const tab of tabs) {
       const action = getTabAction(tab, now);
-      console.log(`FFTabClose: Tab ${tab.id} (${tab.title.substring(0, 30)}...) - Action: ${action}`);
+      console.log(`FFTabClose: Tab ${tab.id} (${tab.title ? tab.title.substring(0, 30) : ''}...) - Action: ${action}`);
       
       if (action === 'close') {
         tabsToClose.push(tab.id);
       } else if (action === 'discard') {
-        tabsToDiscard.push(tab.id);
+        // Only discard if not already discarded
+        if (!tab.discarded) {
+          tabsToDiscard.push(tab.id);
+        }
       }
     }
     
