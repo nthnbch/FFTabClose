@@ -87,9 +87,17 @@
     "message": "Total pestañas",
     "description": "Etiqueta para el recuento total de pestañas"
   },
+  "normalTabs": {
+    "message": "Pestañas normales",
+    "description": "Etiqueta para el número de pestañas normales (no fijadas)"
+  },
   "eligibleTabs": {
     "message": "Pueden cerrarse",
     "description": "Etiqueta para pestañas que pueden cerrarse"
+  },
+  "totalPinnedTabs": {
+    "message": "Pestañas fijadas",
+    "description": "Etiqueta para el número total de pestañas fijadas"
   },
   "pinnedTabsToDiscard": {
     "message": "Pestañas fijadas a descargar",

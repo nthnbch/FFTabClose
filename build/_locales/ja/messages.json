@@ -83,6 +83,10 @@
     "message": "閉じることができる",
     "description": "閉じることができるタブ"
   },
+  "totalPinnedTabs": {
+    "message": "固定タブ",
+    "description": "固定タブの総数"
+  },
   "pinnedTabsToDiscard": {
     "message": "破棄する固定タブ",
     "description": "破棄できる固定タブ"

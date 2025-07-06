@@ -79,17 +79,9 @@
     "message": "Totale schede",
     "description": "Numero totale di schede"
   },
-  "normalTabs": {
-    "message": "Schede normali",
-    "description": "Numero di schede normali (non fissate)"
-  },
   "eligibleTabs": {
     "message": "Possono essere chiuse",
     "description": "Schede che possono essere chiuse"
-  },
-  "totalPinnedTabs": {
-    "message": "Schede fissate",
-    "description": "Numero totale di schede fissate"
   },
   "pinnedTabsToDiscard": {
     "message": "Schede fissate da scaricare",

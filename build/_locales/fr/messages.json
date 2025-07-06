@@ -87,9 +87,17 @@
     "message": "Total onglets",
     "description": "Label pour le nombre total d'onglets"
   },
+  "normalTabs": {
+    "message": "Onglets normaux",
+    "description": "Label pour le nombre d'onglets normaux (non-épinglés)"
+  },
   "eligibleTabs": {
     "message": "Peuvent être fermés",
     "description": "Label pour les onglets qui peuvent être fermés"
+  },
+  "totalPinnedTabs": {
+    "message": "Onglets épinglés",
+    "description": "Label pour le nombre total d'onglets épinglés"
   },
   "pinnedTabsToDiscard": {
     "message": "Onglets épinglés à décharger",

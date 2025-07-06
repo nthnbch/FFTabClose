@@ -79,9 +79,17 @@
     "message": "Total de abas",
     "description": "Número total de abas"
   },
+  "normalTabs": {
+    "message": "Abas normais",
+    "description": "Número de abas normais (não fixadas)"
+  },
   "eligibleTabs": {
     "message": "Podem ser fechadas",
     "description": "Abas que podem ser fechadas"
+  },
+  "totalPinnedTabs": {
+    "message": "Abas fixadas",
+    "description": "Número total de abas fixadas"
   },
   "pinnedTabsToDiscard": {
     "message": "Abas fixadas para descarregar",

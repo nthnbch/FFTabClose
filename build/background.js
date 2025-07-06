@@ -157,22 +157,29 @@ async function checkAndCloseTabs() {
     return;
   }
   try {
-    // Optimized: Get focused window more efficiently
-    const [tabs, windows] = await Promise.all([
-      browser.tabs.query({}),
-      browser.windows.getAll({populate: false, windowTypes: ['normal']})
-    ]);
+    // Get ALL tabs from ALL windows and workspaces
+    const allWindows = await browser.windows.getAll({populate: true, windowTypes: ['normal']});
+    const tabs = [];
     
-    const focusedWindowId = windows.find(w => w.focused)?.id || null;
+    // Flatten all tabs from all windows
+    for (const window of allWindows) {
+      tabs.push(...window.tabs);
+    }
+    
+    // For automatic processing, protect all currently active tabs
+    // (one per window/workspace in Zen Browser)
+    const activeTabs = tabs.filter(tab => tab.active).map(tab => tab.id);
+    
     const now = Date.now();
     const tabsToClose = [];
     const tabsToDiscard = [];
     
-    // Batch process tabs
+    // Batch process tabs - protect all active tabs during automatic processing
     for (const tab of tabs) {
-      if (tab.active && tab.windowId === focusedWindowId) {
-        continue;
+      if (activeTabs.includes(tab.id)) {
+        continue; // Protect all active tabs in automatic mode
       }
+      
       const action = getTabActionReal(tab, now);
       if (action === 'close') {
         tabsToClose.push(tab.id);
@@ -289,35 +296,45 @@ async function showNotificationBadge(count) {
  */
 async function getStats() {
   try {
-    const tabs = await browser.tabs.query({});
+    // Get ALL tabs from ALL windows and workspaces
+    const allWindows = await browser.windows.getAll({populate: true, windowTypes: ['normal']});
+    const tabs = [];
+    
+    // Flatten all tabs from all windows
+    for (const window of allWindows) {
+      tabs.push(...window.tabs);
+    }
+    
     const now = Date.now();
     
     let eligibleTabs = 0;
     let pinnedTabsToDiscard = 0;
-    let oldestTabAge = 0;
+    let totalPinnedTabs = 0;
+    let normalTabs = 0;
     
+    // Count ALL tabs across all spaces/windows
     for (const tab of tabs) {
-      if (!tab.active) {
-        const action = getTabActionReal(tab, now);
-        if (action === 'close') {
-          eligibleTabs++;
-        } else if (action === 'discard') {
-          pinnedTabsToDiscard++;
-        }
-        
-        const timestamp = tabTimestamps.get(tab.id.toString());
-        if (timestamp) {
-          const age = now - timestamp;
-          oldestTabAge = Math.max(oldestTabAge, age);
-        }
+      // Count pinned tabs separately
+      if (tab.pinned) {
+        totalPinnedTabs++;
+      } else {
+        normalTabs++;
+      }
+      
+      const action = getTabActionReal(tab, now);
+      if (action === 'close') {
+        eligibleTabs++;
+      } else if (action === 'discard') {
+        pinnedTabsToDiscard++;
       }
     }
     
     return {
       totalTabs: tabs.length,
+      normalTabs, // New: normal (non-pinned) tabs count
       eligibleTabs,
       pinnedTabsToDiscard,
-      oldestTabAge: Math.floor(oldestTabAge / (60 * 1000)), // in minutes
+      totalPinnedTabs, // New: total pinned tabs count
       enabled: currentConfig.enabled,
       autoCloseTime: Math.floor(currentConfig.autoCloseTime / (60 * 60 * 1000)) // in hours
     };
@@ -423,21 +440,34 @@ async function manualCloseOldTabs() {
     return;
   }
   try {
-    // Get ALL tabs across all windows
-    const [tabs, windows] = await Promise.all([
-      browser.tabs.query({}),
-      browser.windows.getAll({populate: false, windowTypes: ['normal']})
-    ]);
+    // Get ALL tabs from ALL windows and workspaces
+    const allWindows = await browser.windows.getAll({populate: true, windowTypes: ['normal']});
+    const tabs = [];
     
-    const focusedWindowId = windows.find(w => w.focused)?.id || null;
+    // Flatten all tabs from all windows
+    for (const window of allWindows) {
+      tabs.push(...window.tabs);
+    }
+    
     const now = Date.now();
     const tabsToClose = [];
     const tabsToDiscard = [];
     
-    // Process ALL tabs, but still protect the currently active tab in the focused window
+    // Get the current tab ID to protect only this specific tab
+    let currentTabId = null;
+    try {
+      const currentTabs = await browser.tabs.query({active: true, currentWindow: true});
+      if (currentTabs.length > 0) {
+        currentTabId = currentTabs[0].id;
+      }
+    } catch (error) {
+      console.warn('FFTabClose: Could not get current tab, will process all tabs');
+    }
+    
+    // Process ALL tabs from ALL spaces/windows, only protect the specific current tab
     for (const tab of tabs) {
-      // Only protect the current active tab in the focused window
-      if (tab.active && tab.windowId === focusedWindowId) {
+      // Only protect the exact tab where the user clicked (the popup tab)
+      if (tab.id === currentTabId) {
         continue;
       }
       

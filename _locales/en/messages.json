@@ -87,9 +87,17 @@
     "message": "Total tabs",
     "description": "Label for total tabs count"
   },
+  "normalTabs": {
+    "message": "Normal tabs",
+    "description": "Label for normal (non-pinned) tabs count"
+  },
   "eligibleTabs": {
     "message": "Can be closed",
     "description": "Label for tabs that can be closed"
+  },
+  "totalPinnedTabs": {
+    "message": "Pinned tabs",
+    "description": "Label for total pinned tabs count"
   },
   "pinnedTabsToDiscard": {
     "message": "Pinned tabs to discard",

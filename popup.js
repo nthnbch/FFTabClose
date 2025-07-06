@@ -18,10 +18,11 @@ class PopupController {
       debugInfo: document.getElementById('debugInfo'),
       saveIndicator: document.getElementById('saveIndicator'),
       totalTabs: document.getElementById('totalTabs'),
+      normalTabs: document.getElementById('normalTabs'),
       eligibleTabs: document.getElementById('eligibleTabs'),
+      totalPinnedTabs: document.getElementById('totalPinnedTabs'),
       pinnedTabsToDiscard: document.getElementById('pinnedTabsToDiscard'),
-      pinnedTabsToDiscardStat: document.getElementById('pinnedTabsToDiscardStat'),
-      oldestTab: document.getElementById('oldestTab')
+      pinnedTabsToDiscardStat: document.getElementById('pinnedTabsToDiscardStat')
     };
     
     this.init();
@@ -154,8 +155,14 @@ class PopupController {
     if (this.elements.totalTabs) {
       this.elements.totalTabs.textContent = this.stats.totalTabs || '0';
     }
+    if (this.elements.normalTabs) {
+      this.elements.normalTabs.textContent = this.stats.normalTabs || '0';
+    }
     if (this.elements.eligibleTabs) {
       this.elements.eligibleTabs.textContent = this.stats.eligibleTabs || '0';
+    }
+    if (this.elements.totalPinnedTabs) {
+      this.elements.totalPinnedTabs.textContent = this.stats.totalPinnedTabs || '0';
     }
     if (this.elements.pinnedTabsToDiscard) {
       this.elements.pinnedTabsToDiscard.textContent = this.stats.pinnedTabsToDiscard || '0';
@@ -165,9 +172,6 @@ class PopupController {
         const shouldShow = (this.stats.pinnedTabsToDiscard || 0) > 0;
         this.elements.pinnedTabsToDiscardStat.style.display = shouldShow ? 'block' : 'none';
       }
-    }
-    if (this.elements.oldestTab) {
-      this.elements.oldestTab.textContent = this.stats.oldestTabAge || '0m';
     }
   }
   
