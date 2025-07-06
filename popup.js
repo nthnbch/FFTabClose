@@ -35,7 +35,7 @@ class PopupController {
       await this.loadTranslations();
       await this.loadConfig();
       await this.loadStats();
-      this.updateUI();
+      await this.updateUI();
       this.setupEventListeners();
       this.startStatsRefresh();
     } catch (error) {
@@ -114,7 +114,7 @@ class PopupController {
   /**
    * Update the UI with current configuration and stats
    */
-  updateUI() {
+  async updateUI() {
     if (!this.config) return;
     
     // Enable/disable toggle
@@ -139,7 +139,7 @@ class PopupController {
     }
     
     // Handle UI dependency: if excludePinned is checked, hide discardPinned option
-    this.updateDiscardPinnedVisibility();
+    await this.updateDiscardPinnedVisibility();
     
     // Statistics
     this.updateStats();
@@ -174,10 +174,17 @@ class PopupController {
   /**
    * Update visibility of discard pinned option based on exclude pinned setting
    */
-  updateDiscardPinnedVisibility() {
+  async updateDiscardPinnedVisibility() {
     if (this.elements.discardPinned && this.elements.excludePinned) {
       const excludePinnedChecked = this.elements.excludePinned.checked;
+      // Show discard option only when exclude pinned is NOT checked
       this.elements.discardPinned.parentElement.style.display = excludePinnedChecked ? 'none' : 'flex';
+      
+      // If exclude pinned is checked, disable discard functionality
+      if (excludePinnedChecked) {
+        this.elements.discardPinned.checked = false;
+        await this.updateConfigValue('discardPinned', false);
+      }
     }
   }
   
@@ -202,9 +209,9 @@ class PopupController {
     
     // Checkboxes
     if (this.elements.excludePinned) {
-      this.elements.excludePinned.addEventListener('change', () => {
-        this.updateConfigValue('excludePinned', this.elements.excludePinned.checked);
-        this.updateDiscardPinnedVisibility();
+      this.elements.excludePinned.addEventListener('change', async () => {
+        await this.updateConfigValue('excludePinned', this.elements.excludePinned.checked);
+        await this.updateDiscardPinnedVisibility();
       });
     }
     

@@ -8,7 +8,7 @@
 const DEFAULT_CONFIG = {
   autoCloseTime: 12 * 60 * 60 * 1000, // 12 hours default
   enabled: true,
-  excludePinned: true,
+  excludePinned: false, // Allow processing pinned tabs
   excludeAudible: true,
   discardPinned: true // Discard pinned tabs instead of closing them
 };
@@ -26,11 +26,14 @@ let currentConfig = { ...DEFAULT_CONFIG };
  * Initialize extension on startup/install
  */
 async function initialize() {
+  console.log('FFTabClose: Starting initialization...');
   await loadConfiguration();
+  console.log('FFTabClose: Config loaded:', currentConfig);
   await loadTabTimestamps();
+  console.log('FFTabClose: Timestamps loaded, count:', tabTimestamps.size);
   await initializeExistingTabs();
   setupAlarm();
-  console.log('FFTabClose: Extension initialized');
+  console.log('FFTabClose: Extension initialized successfully');
 }
 
 /**

@@ -36,7 +36,7 @@
 *Coming soon - under review*
 
 ### Manual Installation (Development)
-1. Download the latest [release](https://github.com/your-username/FFTabClose/releases)
+1. Download the latest [release](https://github.com/nthnbch/FFTabClose/releases)
 2. Open Firefox/Zen Browser
 3. Navigate to `about:debugging`
 4. Click "This Firefox"
@@ -45,7 +45,7 @@
 
 ### Build from Source
 ```bash
-git clone https://github.com/your-username/FFTabClose.git
+git clone https://github.com/nthnbch/FFTabClose.git
 cd FFTabClose
 chmod +x build.sh
 ./build.sh
@@ -150,7 +150,7 @@ Want to add your language? See [Contributing](#contributing).
 ### Setup
 ```bash
 # Clone repository
-git clone https://github.com/your-username/FFTabClose.git
+git clone https://github.com/nthnbch/FFTabClose.git
 cd FFTabClose
 
 # Install development dependencies (optional)
@@ -196,7 +196,7 @@ FFTabClose/
 We welcome contributions! Here's how you can help:
 
 ### 🐛 Bug Reports
-1. Check existing [issues](https://github.com/your-username/FFTabClose/issues)
+1. Check existing [issues](https://github.com/nthnbch/FFTabClose/issues)
 2. Create a new issue with:
    - Clear description
    - Steps to reproduce
@@ -204,7 +204,7 @@ We welcome contributions! Here's how you can help:
    - Browser version and OS
 
 ### 🌟 Feature Requests
-1. Check existing [feature requests](https://github.com/your-username/FFTabClose/issues?q=is%3Aissue+label%3Aenhancement)
+1. Check existing [feature requests](https://github.com/nthnbch/FFTabClose/issues?q=is%3Aissue+label%3Aenhancement)
 2. Create a new issue with:
    - Clear use case
    - Detailed description
@@ -244,16 +244,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/FFTabClose/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/FFTabClose/discussions)
-- **Email**: support@example.com
+- **Issues**: [GitHub Issues](https://github.com/nthnbch/FFTabClose/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/nthnbch/FFTabClose/discussions)
 
 ---
 
 <div align="center">
 
-Made with ❤️ by the FFTabClose team
+Made with ❤️ by [bubu](https://nathan.swiss)
 
-[⭐ Star us on GitHub](https://github.com/your-username/FFTabClose) • [🐛 Report a Bug](https://github.com/your-username/FFTabClose/issues) • [💡 Request Feature](https://github.com/your-username/FFTabClose/issues)
+[⭐ Star us on GitHub](https://github.com/nthnbch/FFTabClose) • [🐛 Report a Bug](https://github.com/nthnbch/FFTabClose/issues) • [💡 Request Feature](https://github.com/nthnbch/FFTabClose/issues)
 
 </div>
