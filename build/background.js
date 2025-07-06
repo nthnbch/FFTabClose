@@ -92,9 +92,8 @@ async function initializeExistingTabs() {
     const now = Date.now();
     
     for (const tab of tabs) {
-      if (!tab.pinned) {
-        registerTab(tab.id, now);
-      }
+      // Register ALL tabs, including pinned ones
+      registerTab(tab.id, now);
     }
     
     await saveTabTimestamps();
@@ -135,7 +134,9 @@ function setupAlarm() {
  * Check and close/discard expired tabs
  */
 async function checkAndCloseTabs() {
-  if (!currentConfig.enabled) return;
+  if (!currentConfig.enabled) {
+    return;
+  }
   
   try {
     const tabs = await browser.tabs.query({});
@@ -143,8 +144,10 @@ async function checkAndCloseTabs() {
     const tabsToClose = [];
     const tabsToDiscard = [];
     
+    
     for (const tab of tabs) {
       const action = getTabAction(tab, now);
+      
       if (action === 'close') {
         tabsToClose.push(tab.id);
       } else if (action === 'discard') {
@@ -184,6 +187,7 @@ async function checkAndCloseTabs() {
       
       // Show notification badge
       await showNotificationBadge(totalProcessed);
+    } else {
     }
     
   } catch (error) {
@@ -196,7 +200,9 @@ async function checkAndCloseTabs() {
  */
 function getTabAction(tab, now) {
   // Never touch active tab
-  if (tab.active) return 'none';
+  if (tab.active) {
+    return 'none';
+  }
   
   // Check if tab is expired
   const timestamp = tabTimestamps.get(tab.id.toString());
@@ -207,6 +213,10 @@ function getTabAction(tab, now) {
   }
   
   const age = now - timestamp;
+  const ageMinutes = Math.floor(age / (60 * 1000));
+  const timeoutMinutes = Math.floor(currentConfig.autoCloseTime / (60 * 1000));
+  
+  
   if (age <= currentConfig.autoCloseTime) {
     return 'none';
   }
@@ -324,6 +334,28 @@ async function handleMessage(message, sender, sendResponse) {
         sendResponse({ success: true });
         break;
         
+      case 'debugInfo':
+        // Debug function to check current state
+        const debugTabs = await browser.tabs.query({});
+        const debugNow = Date.now();
+        const debugInfo = {
+          config: currentConfig,
+          tabCount: debugTabs.length,
+          timestamps: Object.fromEntries(tabTimestamps),
+          tabDetails: debugTabs.map(tab => ({
+            id: tab.id,
+            title: tab.title.substring(0, 30),
+            pinned: tab.pinned,
+            active: tab.active,
+            audible: tab.audible,
+            timestamp: tabTimestamps.get(tab.id.toString()),
+            age: tabTimestamps.get(tab.id.toString()) ? debugNow - tabTimestamps.get(tab.id.toString()) : 0,
+            action: getTabAction(tab, debugNow)
+          }))
+        };
+        sendResponse({ success: true, debugInfo });
+        break;
+        
       case 'resetStats':
         tabTimestamps.clear();
         await saveTabTimestamps();
@@ -348,27 +380,24 @@ browser.runtime.onInstalled.addListener(initialize);
 
 // Tab events
 browser.tabs.onCreated.addListener((tab) => {
-  if (!tab.pinned) {
-    registerTab(tab.id);
-    saveTabTimestamps();
-  }
+  // Register ALL new tabs, including pinned ones
+  registerTab(tab.id);
+  saveTabTimestamps();
 });
 
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.url || changeInfo.status === 'complete') {
-    if (!tab.pinned) {
-      registerTab(tabId);
-      saveTabTimestamps();
-    }
+    // Register ALL updated tabs, including pinned ones
+    registerTab(tabId);
+    saveTabTimestamps();
   }
 });
 
 browser.tabs.onActivated.addListener((activeInfo) => {
   browser.tabs.get(activeInfo.tabId).then(tab => {
-    if (!tab.pinned) {
-      registerTab(activeInfo.tabId);
-      saveTabTimestamps();
-    }
+    // Register ALL activated tabs, including pinned ones
+    registerTab(activeInfo.tabId);
+    saveTabTimestamps();
   }).catch(error => {
     console.warn('FFTabClose: Failed to get active tab:', error);
   });
