@@ -296,43 +296,6 @@ class PopupController {
 }
 
 // Initialiser le contrôleur quand le DOM est prêt
-document.addEventListener('DOMContentLoaded', async () => {
-  const timeSelect = document.getElementById('timeSelect');
-  const status = document.getElementById('status');
-  
-  // Charger les paramètres actuels
-  try {
-    const response = await chrome.runtime.sendMessage({ action: 'getSettings' });
-    if (response && response.settings) {
-      timeSelect.value = response.settings.autoCloseTime.toString();
-    }
-  } catch (error) {
-    console.error('Erreur lors du chargement des paramètres:', error);
-  }
-  
-  // Écouter les changements
-  timeSelect.addEventListener('change', async () => {
-    const newTime = parseInt(timeSelect.value);
-    
-    try {
-      const response = await chrome.runtime.sendMessage({
-        action: 'updateSettings',
-        autoCloseTime: newTime
-      });
-      
-      if (response && response.success) {
-        status.textContent = 'Paramètres sauvegardés !';
-        status.className = 'status success';
-        
-        setTimeout(() => {
-          status.textContent = 'Extension active';
-          status.className = 'status';
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
-      status.textContent = 'Erreur lors de la sauvegarde';
-      status.className = 'status error';
-    }
-  });
+document.addEventListener('DOMContentLoaded', () => {
+  new PopupController();
 });

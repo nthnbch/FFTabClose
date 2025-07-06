@@ -1,47 +1,40 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "FFTabClose - Auto Tab Closer",
   "version": "1.0.0",
   "description": "Automatically close non-pinned tabs after a configurable time period. Perfect for productivity and memory management.",
   
   "permissions": [
     "tabs",
-    "storage",
-    "background",
-    "activeTab"
+    "storage"
   ],
   
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "service_worker": "background.js"
   },
   
-  "browser_action": {
+  "action": {
     "default_popup": "popup.html",
     "default_title": "FFTabClose Settings",
     "default_icon": {
-      "16": "icons/icon-16.svg",
-      "32": "icons/icon-32.svg",
-      "48": "icons/icon-48.svg",
-      "128": "icons/icon-128.svg"
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
     }
   },
   
   "icons": {
-    "16": "icons/icon-16.svg",
-    "32": "icons/icon-32.svg",
-    "48": "icons/icon-48.svg",
-    "128": "icons/icon-128.svg"
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   },
   
-  "web_accessible_resources": [
-    "popup.html"
-  ],
-  
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
       "id": "fftabclose@extension.local",
-      "strict_min_version": "57.0"
+      "strict_min_version": "109.0"
     }
   }
 }
