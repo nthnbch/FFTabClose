@@ -6,7 +6,7 @@
 
 // Default configuration
 const DEFAULT_CONFIG = {
-  autoCloseTime: 12 * 60 * 60 * 1000, // 12 hours (production setting)
+  autoCloseTime: 2 * 60 * 1000, // 2 minutes for testing
   enabled: true,
   excludePinned: false, // Allow processing pinned tabs
   excludeAudible: true,
@@ -97,7 +97,6 @@ async function initializeExistingTabs() {
     }
     
     await saveTabTimestamps();
-    console.log(`FFTabClose: Initialized timestamps for ${tabs.length} existing tabs`);
   } catch (error) {
     console.error('FFTabClose: Failed to initialize existing tabs:', error);
   }
@@ -128,7 +127,7 @@ async function setupAlarm() {
   
   try {
     await browser.alarms.clear(alarmName);
-    await browser.alarms.create(alarmName, { periodInMinutes: 5 });
+    await browser.alarms.create(alarmName, { periodInMinutes: 1 });
     setupBackupInterval();
   } catch (error) {
     console.error('FFTabClose: Failed to setup alarm:', error);
@@ -144,10 +143,10 @@ function setupBackupInterval() {
     clearInterval(window.ffTabCloseInterval);
   }
   
-  // Set up a 5-minute interval as backup
+  // Set up a 1-minute interval as backup
   window.ffTabCloseInterval = setInterval(() => {
     checkAndCloseTabs();
-  }, 300000); // 5 minutes
+  }, 60000); // 1 minute
 }
 
 /**
@@ -233,19 +232,6 @@ async function checkAndCloseTabs() {
 /**
  * Determine what action to take for a tab (close, discard, or none)
  */
-function getTabAction(tab, now) {
-  // Only skip if the tab is active IN THE CURRENT WINDOW
-  // But if the tab is active in another window (space), we do NOT skip it
-  // We'll get the truly focused tab below
-  // We'll collect all active tabs in all windows and only skip those
-  // (But for Zen/Spaces, we want to close even if 'active' but not in the focused window)
-  // So, get the focused window and only skip the active tab in that window
-  // We'll need to pass the focused windowId to this function
-  // For now, always process all tabs, even if active, except the one in the focused window
-  return 'defer'; // Placeholder, see below
-}
-
-// Move the real logic here
 function getTabActionReal(tab, now) {
   const timestamp = tabTimestamps.get(tab.id.toString());
   if (!timestamp) {
@@ -312,7 +298,7 @@ async function getStats() {
     
     for (const tab of tabs) {
       if (!tab.active) {
-        const action = getTabAction(tab, now);
+        const action = getTabActionReal(tab, now);
         if (action === 'close') {
           eligibleTabs++;
         } else if (action === 'discard') {
@@ -376,7 +362,6 @@ async function handleMessage(message, sender, sendResponse) {
         for (const tab of testTabs) {
           if (!tab.active) {
             registerTab(tab.id, veryOldTime);
-            console.log(`FFTabClose: Test mode - marked tab ${tab.id} as very old`);
           }
         }
         
@@ -401,7 +386,7 @@ async function handleMessage(message, sender, sendResponse) {
             audible: tab.audible,
             timestamp: tabTimestamps.get(tab.id.toString()),
             age: tabTimestamps.get(tab.id.toString()) ? debugNow - tabTimestamps.get(tab.id.toString()) : 0,
-            action: getTabAction(tab, debugNow)
+            action: getTabActionReal(tab, debugNow)
           }))
         };
         console.log('FFTabClose Debug Info:', debugInfo);
