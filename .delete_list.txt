@@ -1,0 +1,8 @@
+background_old.js
+background_new.js
+background.js.backup
+popup_old.js
+popup_new.js
+popup.css.backup
+README_OLD.md
+README_NEW.md
