@@ -13,10 +13,13 @@ class PopupController {
       timeSelect: document.getElementById('timeSelect'),
       excludePinned: document.getElementById('excludePinned'),
       excludeAudible: document.getElementById('excludeAudible'),
+      discardPinned: document.getElementById('discardPinned'),
       closeOldNow: document.getElementById('closeOldNow'),
       saveIndicator: document.getElementById('saveIndicator'),
       totalTabs: document.getElementById('totalTabs'),
       eligibleTabs: document.getElementById('eligibleTabs'),
+      pinnedTabsToDiscard: document.getElementById('pinnedTabsToDiscard'),
+      pinnedTabsToDiscardStat: document.getElementById('pinnedTabsToDiscardStat'),
       oldestTab: document.getElementById('oldestTab')
     };
     
@@ -130,6 +133,12 @@ class PopupController {
     if (this.elements.excludeAudible) {
       this.elements.excludeAudible.checked = this.config.excludeAudible;
     }
+    if (this.elements.discardPinned) {
+      this.elements.discardPinned.checked = this.config.discardPinned;
+    }
+    
+    // Handle UI dependency: if excludePinned is checked, hide discardPinned option
+    this.updateDiscardPinnedVisibility();
     
     // Statistics
     this.updateStats();
@@ -147,8 +156,27 @@ class PopupController {
     if (this.elements.eligibleTabs) {
       this.elements.eligibleTabs.textContent = this.stats.eligibleTabs || '0';
     }
+    if (this.elements.pinnedTabsToDiscard) {
+      this.elements.pinnedTabsToDiscard.textContent = this.stats.pinnedTabsToDiscard || '0';
+      
+      // Show/hide the pinned tabs to discard stat based on whether there are any
+      if (this.elements.pinnedTabsToDiscardStat) {
+        const shouldShow = (this.stats.pinnedTabsToDiscard || 0) > 0;
+        this.elements.pinnedTabsToDiscardStat.style.display = shouldShow ? 'block' : 'none';
+      }
+    }
     if (this.elements.oldestTab) {
       this.elements.oldestTab.textContent = this.stats.oldestTabAge || '0m';
+    }
+  }
+  
+  /**
+   * Update visibility of discard pinned option based on exclude pinned setting
+   */
+  updateDiscardPinnedVisibility() {
+    if (this.elements.discardPinned && this.elements.excludePinned) {
+      const excludePinnedChecked = this.elements.excludePinned.checked;
+      this.elements.discardPinned.parentElement.style.display = excludePinnedChecked ? 'none' : 'flex';
     }
   }
   
@@ -175,12 +203,19 @@ class PopupController {
     if (this.elements.excludePinned) {
       this.elements.excludePinned.addEventListener('change', () => {
         this.updateConfigValue('excludePinned', this.elements.excludePinned.checked);
+        this.updateDiscardPinnedVisibility();
       });
     }
     
     if (this.elements.excludeAudible) {
       this.elements.excludeAudible.addEventListener('change', () => {
         this.updateConfigValue('excludeAudible', this.elements.excludeAudible.checked);
+      });
+    }
+    
+    if (this.elements.discardPinned) {
+      this.elements.discardPinned.addEventListener('change', () => {
+        this.updateConfigValue('discardPinned', this.elements.discardPinned.checked);
       });
     }
     

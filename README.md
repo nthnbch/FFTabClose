@@ -16,6 +16,7 @@
 
 - **🕒 Automatic Tab Closure**: Configurable timer (15 minutes to 48 hours)
 - **📌 Smart Exclusions**: Never closes pinned tabs or tabs with audio
+- **💤 Tab Discarding**: Option to discard (unload) pinned tabs instead of closing them
 - **🎯 One-Click Action**: Manually close old tabs anytime
 - **📊 Real-time Stats**: Monitor total tabs, eligible tabs, and oldest tab age
 - **🌍 Multi-language**: English, French, Spanish, German support
@@ -61,8 +62,16 @@ chmod +x build.sh
 - **24-48 hours** - Long-term projects
 
 ### Exclusions
-- **Pinned Tabs**: Always excluded (recommended)
-- **Audio Tabs**: Tabs playing sound (recommended)
+- **Pinned Tabs**: Can be excluded or discarded (unloaded) to save memory
+- **Audio Tabs**: Tabs playing sound (recommended to exclude)
+- **Discard vs. Close**: Discarded tabs stay open but are unloaded from memory
+
+### Tab Discarding
+When "Discard pinned tabs" is enabled:
+- ✅ Pinned tabs stay visible in the tab bar
+- ✅ Tab content is unloaded from memory (saves RAM)
+- ✅ Tab reloads automatically when clicked
+- ✅ Perfect for keeping important tabs without memory impact
 
 ### Manual Actions
 - **Close Old Tabs Now**: Immediate cleanup based on current settings

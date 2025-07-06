@@ -56,7 +56,7 @@
     "description": "Mensaje de estado cuando la extensión está activa"
   },
   "pinnedTabsInfo": {
-    "message": "ℹ️ Las pestañas fijadas nunca se cerrarán automáticamente. El temporizador se reinicia cuando interactúas con una pestaña.",
+    "message": "ℹ️ Las pestañas fijadas pueden ser descargadas (liberadas de memoria) o excluidas. Las pestañas descargadas ahorran memoria pero permanecen abiertas. El temporizador se reinicia cuando interactúas con una pestaña.",
     "description": "Información sobre el comportamiento de las pestañas fijadas"
   },
   "activeTabsWillNotBeClosed": {
@@ -79,6 +79,10 @@
     "message": "Excluir pestañas con sonido",
     "description": "Etiqueta de casilla para excluir pestañas audibles"
   },
+  "discardPinnedTabs": {
+    "message": "Descargar pestañas fijadas (en lugar de cerrarlas)",
+    "description": "Etiqueta de casilla para descargar pestañas fijadas en lugar de cerrarlas"
+  },
   "totalTabs": {
     "message": "Total pestañas",
     "description": "Etiqueta para el recuento total de pestañas"
@@ -86,6 +90,10 @@
   "eligibleTabs": {
     "message": "Pueden cerrarse",
     "description": "Etiqueta para pestañas que pueden cerrarse"
+  },
+  "pinnedTabsToDiscard": {
+    "message": "Pestañas fijadas a descargar",
+    "description": "Etiqueta para pestañas fijadas que serán descargadas"
   },
   "oldestTabAge": {
     "message": "Pestaña más antigua",

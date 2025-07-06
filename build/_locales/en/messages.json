@@ -56,7 +56,7 @@
     "description": "Status message when extension is active"
   },
   "pinnedTabsInfo": {
-    "message": "ℹ️ Pinned tabs will never be closed automatically. The timer resets when you interact with a tab.",
+    "message": "ℹ️ Pinned tabs can be discarded (unloaded) or excluded. Discarded tabs save memory but stay open. The timer resets when you interact with a tab.",
     "description": "Information about pinned tabs behavior"
   },
   "activeTabsWillNotBeClosed": {
@@ -79,6 +79,10 @@
     "message": "Exclude tabs with sound",
     "description": "Checkbox label for excluding audible tabs"
   },
+  "discardPinnedTabs": {
+    "message": "Discard pinned tabs (instead of closing)",
+    "description": "Checkbox label for discarding pinned tabs instead of closing them"
+  },
   "totalTabs": {
     "message": "Total tabs",
     "description": "Label for total tabs count"
@@ -86,6 +90,10 @@
   "eligibleTabs": {
     "message": "Can be closed",
     "description": "Label for tabs that can be closed"
+  },
+  "pinnedTabsToDiscard": {
+    "message": "Pinned tabs to discard",
+    "description": "Label for pinned tabs that will be discarded"
   },
   "oldestTabAge": {
     "message": "Oldest tab",

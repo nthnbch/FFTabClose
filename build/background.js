@@ -9,7 +9,8 @@ const DEFAULT_CONFIG = {
   autoCloseTime: 12 * 60 * 60 * 1000, // 12 hours default
   enabled: true,
   excludePinned: true,
-  excludeAudible: true
+  excludeAudible: true,
+  discardPinned: true // Discard pinned tabs instead of closing them
 };
 
 // Storage keys
@@ -131,7 +132,7 @@ function setupAlarm() {
 }
 
 /**
- * Check and close expired tabs
+ * Check and close/discard expired tabs
  */
 async function checkAndCloseTabs() {
   if (!currentConfig.enabled) return;
@@ -140,24 +141,49 @@ async function checkAndCloseTabs() {
     const tabs = await browser.tabs.query({});
     const now = Date.now();
     const tabsToClose = [];
+    const tabsToDiscard = [];
     
     for (const tab of tabs) {
-      if (await shouldCloseTab(tab, now)) {
+      const action = await getTabAction(tab, now);
+      if (action === 'close') {
         tabsToClose.push(tab.id);
+      } else if (action === 'discard') {
+        tabsToDiscard.push(tab.id);
       }
     }
     
-    // Close expired tabs
+    let totalProcessed = 0;
+    
+    // Close regular expired tabs
     if (tabsToClose.length > 0) {
       await browser.tabs.remove(tabsToClose);
       
       // Remove from timestamps
       tabsToClose.forEach(tabId => unregisterTab(tabId));
+      
+      totalProcessed += tabsToClose.length;
+    }
+    
+    // Discard pinned expired tabs
+    if (tabsToDiscard.length > 0) {
+      for (const tabId of tabsToDiscard) {
+        try {
+          await browser.tabs.discard(tabId);
+          // Reset timestamp for discarded tabs so they get a fresh start
+          registerTab(tabId, now);
+        } catch (error) {
+          console.warn(`FFTabClose: Failed to discard tab ${tabId}:`, error);
+        }
+      }
+      
+      totalProcessed += tabsToDiscard.length;
+    }
+    
+    if (totalProcessed > 0) {
       await saveTabTimestamps();
       
-      
       // Show notification badge
-      await showNotificationBadge(tabsToClose.length);
+      await showNotificationBadge(totalProcessed);
     }
     
   } catch (error) {
@@ -166,28 +192,45 @@ async function checkAndCloseTabs() {
 }
 
 /**
- * Determine if a tab should be closed
+ * Determine what action to take for a tab (close, discard, or none)
  */
-async function shouldCloseTab(tab, now) {
-  // Never close active tab
-  if (tab.active) return false;
+async function getTabAction(tab, now) {
+  // Never touch active tab
+  if (tab.active) return 'none';
   
-  // Never close pinned tabs if configured
-  if (currentConfig.excludePinned && tab.pinned) return false;
-  
-  // Never close audible tabs if configured
-  if (currentConfig.excludeAudible && tab.audible) return false;
-  
-  // Check tab age
+  // Check if tab is expired
   const timestamp = tabTimestamps.get(tab.id.toString());
   if (!timestamp) {
     // Register tab if not found
     registerTab(tab.id, now);
-    return false;
+    return 'none';
   }
   
   const age = now - timestamp;
-  return age > currentConfig.autoCloseTime;
+  if (age <= currentConfig.autoCloseTime) {
+    return 'none';
+  }
+  
+  // Tab is expired, determine action based on type
+  
+  // Handle pinned tabs
+  if (tab.pinned) {
+    if (currentConfig.excludePinned) {
+      return 'none'; // Don't touch pinned tabs if excluded
+    } else if (currentConfig.discardPinned) {
+      return 'discard'; // Discard pinned tabs instead of closing
+    } else {
+      return 'close'; // Close pinned tabs (if user really wants to)
+    }
+  }
+  
+  // Handle audible tabs
+  if (currentConfig.excludeAudible && tab.audible) {
+    return 'none';
+  }
+  
+  // Regular non-pinned tabs get closed
+  return 'close';
 }
 
 /**
@@ -220,11 +263,17 @@ async function getStats() {
     const now = Date.now();
     
     let eligibleTabs = 0;
+    let pinnedTabsToDiscard = 0;
     let oldestTabAge = 0;
     
     for (const tab of tabs) {
-      if (!tab.active && (!currentConfig.excludePinned || !tab.pinned)) {
-        eligibleTabs++;
+      if (!tab.active) {
+        const action = await getTabAction(tab, now);
+        if (action === 'close') {
+          eligibleTabs++;
+        } else if (action === 'discard') {
+          pinnedTabsToDiscard++;
+        }
         
         const timestamp = tabTimestamps.get(tab.id.toString());
         if (timestamp) {
@@ -237,6 +286,7 @@ async function getStats() {
     return {
       totalTabs: tabs.length,
       eligibleTabs,
+      pinnedTabsToDiscard,
       oldestTabAge: Math.floor(oldestTabAge / (60 * 1000)), // in minutes
       enabled: currentConfig.enabled,
       autoCloseTime: Math.floor(currentConfig.autoCloseTime / (60 * 60 * 1000)) // in hours

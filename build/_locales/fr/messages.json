@@ -56,7 +56,7 @@
     "description": "Message de statut quand l'extension est active"
   },
   "pinnedTabsInfo": {
-    "message": "ℹ️ Les onglets épinglés ne seront jamais fermés automatiquement. Le timer se remet à zéro quand vous interagissez avec un onglet.",
+    "message": "ℹ️ Les onglets épinglés peuvent être déchargés (déchargés) ou exclus. Les onglets déchargés économisent la mémoire mais restent ouverts. Le minuteur se remet à zéro lorsque vous interagissez avec un onglet.",
     "description": "Information sur le comportement des onglets épinglés"
   },
   "activeTabsWillNotBeClosed": {
@@ -65,7 +65,7 @@
   },
   "enableExtension": {
     "message": "Activer l'extension",
-    "description": "Basculer pour activer/désactiver l'extension"
+    "description": "Bascule pour activer/désactiver l'extension"
   },
   "exceptions": {
     "message": "Exceptions",
@@ -79,6 +79,10 @@
     "message": "Exclure les onglets avec du son",
     "description": "Label de case à cocher pour exclure les onglets audibles"
   },
+  "discardPinnedTabs": {
+    "message": "Décharger les onglets épinglés (au lieu de les fermer)",
+    "description": "Label de case à cocher pour décharger les onglets épinglés au lieu de les fermer"
+  },
   "totalTabs": {
     "message": "Total onglets",
     "description": "Label pour le nombre total d'onglets"
@@ -86,6 +90,10 @@
   "eligibleTabs": {
     "message": "Peuvent être fermés",
     "description": "Label pour les onglets qui peuvent être fermés"
+  },
+  "pinnedTabsToDiscard": {
+    "message": "Onglets épinglés à décharger",
+    "description": "Label pour les onglets épinglés qui seront déchargés"
   },
   "oldestTabAge": {
     "message": "Onglet le plus ancien",
@@ -108,7 +116,7 @@
     "description": "Message affiché quand les paramètres sont sauvegardés"
   },
   "settingsError": {
-    "message": "❌ Erreur lors de la sauvegarde",
-    "description": "Message d'erreur quand la sauvegarde échoue"
+    "message": "❌ Échec de la sauvegarde des paramètres",
+    "description": "Message d'erreur quand la sauvegarde des paramètres échoue"
   }
 }

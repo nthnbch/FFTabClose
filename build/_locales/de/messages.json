@@ -1,10 +1,10 @@
 {
   "extensionName": {
-    "message": "FFTabClose - Auto Tab Schließer",
+    "message": "FFTabClose - Auto Tab-Schließer",
     "description": "Name der Erweiterung"
   },
   "extensionDescription": {
-    "message": "Schließt automatisch nicht angeheftete Tabs nach einer konfigurierbaren Zeitspanne. Perfekt für Produktivität und Speicherverwaltung.",
+    "message": "Schließt automatisch nicht gepinnte Tabs nach einer konfigurierbaren Zeitspanne. Perfekt für Produktivität und Speicherverwaltung.",
     "description": "Beschreibung der Erweiterung"
   },
   "popupTitle": {
@@ -56,8 +56,8 @@
     "description": "Statusmeldung wenn Erweiterung aktiv ist"
   },
   "pinnedTabsInfo": {
-    "message": "ℹ️ Angeheftete Tabs werden niemals automatisch geschlossen. Der Timer wird zurückgesetzt, wenn Sie mit einem Tab interagieren.",
-    "description": "Information über das Verhalten angehefteter Tabs"
+    "message": "ℹ️ Gepinnte Tabs können entladen (aus Speicher entfernt) oder ausgeschlossen werden. Entladene Tabs sparen Speicher, bleiben aber geöffnet. Der Timer wird zurückgesetzt, wenn Sie mit einem Tab interagieren.",
+    "description": "Information über das Verhalten gepinnter Tabs"
   },
   "activeTabsWillNotBeClosed": {
     "message": "Aktive Tabs werden nicht automatisch geschlossen",
@@ -72,32 +72,40 @@
     "description": "Label für Ausnahme-Einstellungen"
   },
   "excludePinnedTabs": {
-    "message": "Angeheftete Tabs ausschließen",
-    "description": "Checkbox-Label zum Ausschließen angehefteter Tabs"
+    "message": "Gepinnte Tabs ausschließen",
+    "description": "Checkbox-Label zum Ausschließen gepinnter Tabs"
   },
   "excludeAudibleTabs": {
     "message": "Tabs mit Ton ausschließen",
-    "description": "Checkbox-Label zum Ausschließen hörbarer Tabs"
+    "description": "Checkbox-Label zum Ausschließen von hörbaren Tabs"
+  },
+  "discardPinnedTabs": {
+    "message": "Gepinnte Tabs entladen (anstatt schließen)",
+    "description": "Checkbox-Label zum Entladen gepinnter Tabs anstatt sie zu schließen"
   },
   "totalTabs": {
-    "message": "Tabs gesamt",
-    "description": "Label für die Gesamtzahl der Tabs"
+    "message": "Tabs insgesamt",
+    "description": "Label für Gesamtanzahl der Tabs"
   },
   "eligibleTabs": {
     "message": "Können geschlossen werden",
-    "description": "Label für Tabs, die geschlossen werden können"
+    "description": "Label für Tabs die geschlossen werden können"
+  },
+  "pinnedTabsToDiscard": {
+    "message": "Gepinnte Tabs zum Entladen",
+    "description": "Label für gepinnte Tabs die entladen werden"
   },
   "oldestTabAge": {
     "message": "Ältester Tab",
-    "description": "Label für das Alter des ältesten Tabs"
+    "description": "Label für Alter des ältesten Tabs"
   },
   "closeOldTabsNow": {
     "message": "Alte Tabs jetzt schließen",
-    "description": "Button-Text zum sofortigen Schließen alter Tabs"
+    "description": "Button-Text um alte Tabs sofort zu schließen"
   },
   "closingTabs": {
     "message": "Schließe Tabs...",
-    "description": "Text während des Schließens von Tabs"
+    "description": "Text angezeigt während Tabs geschlossen werden"
   },
   "tabsClosedSuccess": {
     "message": "Tabs erfolgreich geschlossen!",
@@ -105,6 +113,10 @@
   },
   "settingsSaved": {
     "message": "Einstellungen gespeichert",
-    "description": "Nachricht bei gespeicherten Einstellungen"
+    "description": "Meldung angezeigt wenn Einstellungen gespeichert werden"
+  },
+  "settingsError": {
+    "message": "❌ Fehler beim Speichern der Einstellungen",
+    "description": "Fehlermeldung wenn Speichern der Einstellungen fehlschlägt"
   }
 }
