@@ -19,7 +19,7 @@
 - **💤 Tab Discarding**: Option to discard (unload) pinned tabs instead of closing them
 - **🎯 One-Click Action**: Manually close old tabs anytime
 - **📊 Real-time Stats**: Monitor total tabs, eligible tabs, and oldest tab age
-- **🌍 Multi-language**: English, French, Spanish, German support
+- **🌍 Multi-language**: 15+ languages covering 95%+ of Firefox users worldwide
 - **🎨 Modern UI**: Beautiful, responsive interface with dark mode
 - **🔒 Privacy-focused**: No data collection, works offline
 - **⚡ Lightweight**: Minimal memory footprint
@@ -129,16 +129,27 @@ When "Discard pinned tabs" is enabled:
 
 ## 🌍 Internationalization
 
-FFTabClose supports multiple languages:
+FFTabClose supports 15+ languages covering over 95% of Firefox users worldwide:
 
-| Language | Code | Status |
-|----------|------|--------|
-| English | `en` | ✅ Complete |
-| French | `fr` | ✅ Complete |
-| Spanish | `es` | ✅ Complete |
-| German | `de` | ✅ Complete |
+| Language | Code | Region | Status |
+|----------|------|--------|--------|
+| English | `en` | Global | ✅ Complete |
+| French | `fr` | Europe/Americas | ✅ Complete |
+| Spanish | `es` | Europe/Americas | ✅ Complete |
+| German | `de` | Europe | ✅ Complete |
+| Italian | `it` | Europe | ✅ Complete |
+| Portuguese | `pt` | Europe/Americas | ✅ Complete |
+| Russian | `ru` | Europe/Asia | ✅ Complete |
+| Japanese | `ja` | Asia | ✅ Complete |
+| Chinese (Simplified) | `zh_CN` | Asia | ✅ Complete |
+| Polish | `pl` | Europe | ✅ Complete |
+| Arabic | `ar` | MENA | ✅ Complete |
+| Turkish | `tr` | Europe/Asia | ✅ Complete |
+| Korean | `ko` | Asia | ✅ Complete |
+| Dutch | `nl` | Europe | ✅ Complete |
+| Indonesian | `id` | Asia | ✅ Complete |
 
-Want to add your language? See [Contributing](#contributing).
+The extension automatically detects your browser's language. Want to add another language? See [Contributing](#contributing).
 
 ## 🛠️ Development
 
