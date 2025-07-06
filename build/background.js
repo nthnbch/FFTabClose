@@ -6,7 +6,7 @@
 
 // Default configuration
 const DEFAULT_CONFIG = {
-  autoCloseTime: 2 * 60 * 1000, // 2 minutes for testing
+  autoCloseTime: 12 * 60 * 60 * 1000, // 12 hours default (production ready)
   enabled: true,
   excludePinned: false, // Allow processing pinned tabs
   excludeAudible: true,

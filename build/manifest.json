@@ -5,6 +5,13 @@
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   
+  "developer": {
+    "name": "bubu",
+    "url": "https://nathan.swiss"
+  },
+  
+  "homepage_url": "https://github.com/nthnbch/FFTabClose",
+  
   "permissions": [
     "tabs",
     "storage",
@@ -36,7 +43,7 @@
   
   "browser_specific_settings": {
     "gecko": {
-      "id": "fftabclose@extension.local",
+      "id": "fftabclose@nathan.swiss",
       "strict_min_version": "109.0"
     }
   }
