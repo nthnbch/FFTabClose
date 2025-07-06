@@ -21,13 +21,13 @@
   ],
   "author": "FFTabClose Team",
   "license": "MIT",
-  "homepage": "https://github.com/votre-username/FFTabClose",
+  "homepage": "https://github.com/nthnbch/FFTabClose",
   "repository": {
     "type": "git",
-    "url": "https://github.com/votre-username/FFTabClose.git"
+    "url": "https://github.com/nthnbch/FFTabClose.git"
   },
   "bugs": {
-    "url": "https://github.com/votre-username/FFTabClose/issues"
+    "url": "https://github.com/nthnbch/FFTabClose/issues"
   },
   "devDependencies": {
     "web-ext": "^7.0.0"
@@ -37,7 +37,7 @@
   },
   "webExtension": {
     "gecko": {
-      "id": "fftabclose@extension.local",
+      "id": "fftabclose@nathan.swiss",
       "strict_min_version": "57.0"
     }
   },
