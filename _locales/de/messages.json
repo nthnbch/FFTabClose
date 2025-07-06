@@ -59,12 +59,52 @@
     "message": "ℹ️ Angeheftete Tabs werden niemals automatisch geschlossen. Der Timer wird zurückgesetzt, wenn Sie mit einem Tab interagieren.",
     "description": "Information über das Verhalten angehefteter Tabs"
   },
-  "settingsSaved": {
-    "message": "✓ Einstellungen gespeichert",
-    "description": "Nachricht wenn Einstellungen gespeichert werden"
+  "activeTabsWillNotBeClosed": {
+    "message": "Aktive Tabs werden nicht automatisch geschlossen",
+    "description": "Info über aktive Tabs"
   },
-  "settingsError": {
-    "message": "❌ Fehler beim Speichern",
-    "description": "Fehlermeldung wenn Speichern fehlschlägt"
+  "enableExtension": {
+    "message": "Erweiterung aktivieren",
+    "description": "Schalter zum Aktivieren/Deaktivieren der Erweiterung"
+  },
+  "exceptions": {
+    "message": "Ausnahmen",
+    "description": "Label für Ausnahme-Einstellungen"
+  },
+  "excludePinnedTabs": {
+    "message": "Angeheftete Tabs ausschließen",
+    "description": "Checkbox-Label zum Ausschließen angehefteter Tabs"
+  },
+  "excludeAudibleTabs": {
+    "message": "Tabs mit Ton ausschließen",
+    "description": "Checkbox-Label zum Ausschließen hörbarer Tabs"
+  },
+  "totalTabs": {
+    "message": "Tabs gesamt",
+    "description": "Label für die Gesamtzahl der Tabs"
+  },
+  "eligibleTabs": {
+    "message": "Können geschlossen werden",
+    "description": "Label für Tabs, die geschlossen werden können"
+  },
+  "oldestTabAge": {
+    "message": "Ältester Tab",
+    "description": "Label für das Alter des ältesten Tabs"
+  },
+  "closeOldTabsNow": {
+    "message": "Alte Tabs jetzt schließen",
+    "description": "Button-Text zum sofortigen Schließen alter Tabs"
+  },
+  "closingTabs": {
+    "message": "Schließe Tabs...",
+    "description": "Text während des Schließens von Tabs"
+  },
+  "tabsClosedSuccess": {
+    "message": "Tabs erfolgreich geschlossen!",
+    "description": "Erfolgsmeldung nach dem Schließen von Tabs"
+  },
+  "settingsSaved": {
+    "message": "Einstellungen gespeichert",
+    "description": "Nachricht bei gespeicherten Einstellungen"
   }
 }

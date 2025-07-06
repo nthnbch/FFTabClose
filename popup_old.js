@@ -1,5 +1,7 @@
-// FFTabClose - Popup Script
-// Gère l'interface utilisateur du popup
+/**
+ * FFTabClose - Popup Controller
+ * Handles the extension's popup interface
+ */
 
 class PopupController {
   constructor() {
@@ -24,36 +26,36 @@ class PopupController {
     this.init();
   }
   
+  /**
+   * Initialize the popup controller
+   */
   async init() {
     try {
-      // Charger la configuration actuelle
       await this.loadConfig();
-      
-      // Charger les statistiques
       await this.loadStats();
-      
-      // Mettre à jour l'interface
       this.updateUI();
-      
-      // Configurer les event listeners
       this.setupEventListeners();
-      
-      // Actualiser les stats toutes les 5 secondes
       this.startStatsRefresh();
-      
     } catch (error) {
-      console.error('Failed to initialize popup:', error);
-      this.showError('Erreur lors du chargement des paramètres');
+      console.error('FFTabClose: Failed to initialize popup:', error);
+      this.showError('Failed to load extension settings');
     }
   }
   
+  /**
+   * Load configuration from background script
+   */
   async loadConfig() {
     try {
       const response = await this.sendMessage({ action: 'getConfig' });
-      this.config = response;
+      if (response.success) {
+        this.config = response.config;
+      } else {
+        throw new Error(response.error || 'Unknown error');
+      }
     } catch (error) {
-      console.error('Failed to load config:', error);
-      // Configuration par défaut en cas d'erreur
+      console.error('FFTabClose: Failed to load config:', error);
+      // Use default config as fallback
       this.config = {
         autoCloseTime: 12 * 60 * 60 * 1000,
         enabled: true,
@@ -63,12 +65,19 @@ class PopupController {
     }
   }
   
+  /**
+   * Load statistics from background script
+   */
   async loadStats() {
     try {
       const response = await this.sendMessage({ action: 'getStats' });
-      this.stats = response;
+      if (response.success) {
+        this.stats = response.stats;
+      } else {
+        throw new Error(response.error || 'Unknown error');
+      }
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      console.error('FFTabClose: Failed to load stats:', error);
       this.stats = {
         totalTabs: 0,
         eligibleTabs: 0,
@@ -79,108 +88,160 @@ class PopupController {
     }
   }
   
+  /**
+   * Update the UI with current configuration and stats
+   */
   updateUI() {
     if (!this.config) return;
     
-    // Statut activé/désactivé
-    this.elements.enabledToggle.checked = this.config.enabled;
+    // Enable/disable toggle
+    if (this.elements.enabledToggle) {
+      this.elements.enabledToggle.checked = this.config.enabled;
+    }
     
-    // Délai de fermeture
+    // Time slider and value
     const hours = Math.round(this.config.autoCloseTime / (60 * 60 * 1000));
-    this.elements.timeSlider.value = hours;
+    if (this.elements.timeSlider) {
+      this.elements.timeSlider.value = hours;
+    }
     this.updateTimeValue(hours);
     
-    // Options
-    this.elements.excludePinned.checked = this.config.excludePinned;
-    this.elements.excludeAudible.checked = this.config.excludeAudible;
+    // Checkboxes
+    if (this.elements.excludePinned) {
+      this.elements.excludePinned.checked = this.config.excludePinned;
+    }
+    if (this.elements.excludeAudible) {
+      this.elements.excludeAudible.checked = this.config.excludeAudible;
+    }
     
-    // Boutons preset
+    // Preset buttons
     this.updatePresetButtons(hours);
     
-    // Statistiques
+    // Statistics
     this.updateStats();
   }
   
+  /**
+   * Update the time display text
+   */
   updateTimeValue(hours) {
+    if (!this.elements.timeValue) return;
+    
     let text;
     if (hours === 1) {
-      text = '1 heure';
+      text = '1 hour';
     } else if (hours < 24) {
-      text = `${hours} heures`;
+      text = `${hours} hours`;
     } else {
       const days = Math.round(hours / 24);
-      text = days === 1 ? '1 jour' : `${days} jours`;
+      text = days === 1 ? '1 day' : `${days} days`;
     }
     
     this.elements.timeValue.textContent = text;
   }
   
+  /**
+   * Update preset button states
+   */
   updatePresetButtons(currentHours) {
+    if (!this.elements.presetBtns) return;
+    
     this.elements.presetBtns.forEach(btn => {
       const btnHours = parseInt(btn.dataset.hours);
       btn.classList.toggle('active', btnHours === currentHours);
     });
   }
   
+  /**
+   * Update statistics display
+   */
   updateStats() {
     if (!this.stats) return;
     
-    this.elements.totalTabs.textContent = this.stats.totalTabs;
-    this.elements.eligibleTabs.textContent = this.stats.eligibleTabs;
-    this.elements.oldestTab.textContent = this.stats.oldestTabAge;
+    if (this.elements.totalTabs) {
+      this.elements.totalTabs.textContent = this.stats.totalTabs;
+    }
+    if (this.elements.eligibleTabs) {
+      this.elements.eligibleTabs.textContent = this.stats.eligibleTabs;
+    }
+    if (this.elements.oldestTab) {
+      this.elements.oldestTab.textContent = this.stats.oldestTabAge;
+    }
   }
   
+  /**
+   * Setup event listeners for UI elements
+   */
   setupEventListeners() {
-    // Toggle principal
-    this.elements.enabledToggle.addEventListener('change', () => {
-      this.updateConfigValue('enabled', this.elements.enabledToggle.checked);
-    });
+    // Enable/disable toggle
+    if (this.elements.enabledToggle) {
+      this.elements.enabledToggle.addEventListener('change', () => {
+        this.updateConfigValue('enabled', this.elements.enabledToggle.checked);
+      });
+    }
     
-    // Slider de temps
-    this.elements.timeSlider.addEventListener('input', (e) => {
-      const hours = parseInt(e.target.value);
-      this.updateTimeValue(hours);
-      this.updatePresetButtons(hours);
-    });
-    
-    this.elements.timeSlider.addEventListener('change', (e) => {
-      const hours = parseInt(e.target.value);
-      const milliseconds = hours * 60 * 60 * 1000;
-      this.updateConfigValue('autoCloseTime', milliseconds);
-    });
-    
-    // Boutons preset
-    this.elements.presetBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const hours = parseInt(btn.dataset.hours);
-        this.elements.timeSlider.value = hours;
+    // Time slider
+    if (this.elements.timeSlider) {
+      this.elements.timeSlider.addEventListener('input', (e) => {
+        const hours = parseInt(e.target.value);
         this.updateTimeValue(hours);
         this.updatePresetButtons(hours);
-        
+      });
+      
+      this.elements.timeSlider.addEventListener('change', (e) => {
+        const hours = parseInt(e.target.value);
         const milliseconds = hours * 60 * 60 * 1000;
         this.updateConfigValue('autoCloseTime', milliseconds);
       });
-    });
+    }
     
-    // Options
-    this.elements.excludePinned.addEventListener('change', () => {
-      this.updateConfigValue('excludePinned', this.elements.excludePinned.checked);
-    });
+    // Preset buttons
+    if (this.elements.presetBtns) {
+      this.elements.presetBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const hours = parseInt(btn.dataset.hours);
+          if (this.elements.timeSlider) {
+            this.elements.timeSlider.value = hours;
+          }
+          this.updateTimeValue(hours);
+          this.updatePresetButtons(hours);
+          
+          const milliseconds = hours * 60 * 60 * 1000;
+          this.updateConfigValue('autoCloseTime', milliseconds);
+        });
+      });
+    }
     
-    this.elements.excludeAudible.addEventListener('change', () => {
-      this.updateConfigValue('excludeAudible', this.elements.excludeAudible.checked);
-    });
+    // Checkboxes
+    if (this.elements.excludePinned) {
+      this.elements.excludePinned.addEventListener('change', () => {
+        this.updateConfigValue('excludePinned', this.elements.excludePinned.checked);
+      });
+    }
     
-    // Actions
-    this.elements.closeOldNow.addEventListener('click', () => {
-      this.closeOldTabsNow();
-    });
+    if (this.elements.excludeAudible) {
+      this.elements.excludeAudible.addEventListener('change', () => {
+        this.updateConfigValue('excludeAudible', this.elements.excludeAudible.checked);
+      });
+    }
     
-    this.elements.resetStats.addEventListener('click', () => {
-      this.resetStats();
-    });
+    // Action buttons
+    if (this.elements.closeOldNow) {
+      this.elements.closeOldNow.addEventListener('click', () => {
+        this.closeOldTabsNow();
+      });
+    }
+    
+    if (this.elements.resetStats) {
+      this.elements.resetStats.addEventListener('click', () => {
+        this.resetStats();
+      });
+    }
   }
   
+  /**
+   * Update a configuration value
+   */
   async updateConfigValue(key, value) {
     try {
       this.config[key] = value;
@@ -192,76 +253,104 @@ class PopupController {
       
       if (response.success) {
         this.showSaveIndicator();
+      } else {
+        throw new Error(response.error || 'Unknown error');
       }
       
     } catch (error) {
-      console.error('Failed to update config:', error);
-      this.showError('Erreur lors de la sauvegarde');
+      console.error('FFTabClose: Failed to update config:', error);
+      this.showError('Failed to save settings');
     }
   }
   
+  /**
+   * Force close old tabs now
+   */
   async closeOldTabsNow() {
+    if (!this.elements.closeOldNow) return;
+    
     try {
       this.elements.closeOldNow.disabled = true;
-      this.elements.closeOldNow.textContent = '🧹 Fermeture en cours...';
+      this.elements.closeOldNow.textContent = '🧹 Closing tabs...';
       
-      // Forcer une vérification immédiate
-      await this.sendMessage({ action: 'checkNow' });
+      const response = await this.sendMessage({ action: 'checkNow' });
       
-      // Recharger les stats
-      await this.loadStats();
-      this.updateStats();
-      
-      this.showSaveIndicator('Onglets fermés !');
+      if (response.success) {
+        await this.loadStats();
+        this.updateStats();
+        this.showSaveIndicator('Tabs closed successfully!');
+      } else {
+        throw new Error(response.error || 'Unknown error');
+      }
       
     } catch (error) {
-      console.error('Failed to close tabs:', error);
-      this.showError('Erreur lors de la fermeture');
+      console.error('FFTabClose: Failed to close tabs:', error);
+      this.showError('Failed to close tabs');
     } finally {
       setTimeout(() => {
-        this.elements.closeOldNow.disabled = false;
-        this.elements.closeOldNow.textContent = '🧹 Fermer les anciens maintenant';
+        if (this.elements.closeOldNow) {
+          this.elements.closeOldNow.disabled = false;
+          this.elements.closeOldNow.textContent = '🧹 Close old tabs now';
+        }
       }, 2000);
     }
   }
   
+  /**
+   * Reset statistics
+   */
   async resetStats() {
+    if (!this.elements.resetStats) return;
+    
     try {
       this.elements.resetStats.disabled = true;
-      this.elements.resetStats.textContent = '🔄 Réinitialisation...';
+      this.elements.resetStats.textContent = '🔄 Resetting...';
       
-      await this.sendMessage({ action: 'resetStats' });
+      const response = await this.sendMessage({ action: 'resetStats' });
       
-      // Recharger les stats
-      await this.loadStats();
-      this.updateStats();
-      
-      this.showSaveIndicator('Compteurs réinitialisés !');
+      if (response.success) {
+        await this.loadStats();
+        this.updateStats();
+        this.showSaveIndicator('Statistics reset!');
+      } else {
+        throw new Error(response.error || 'Unknown error');
+      }
       
     } catch (error) {
-      console.error('Failed to reset stats:', error);
-      this.showError('Erreur lors de la réinitialisation');
+      console.error('FFTabClose: Failed to reset stats:', error);
+      this.showError('Failed to reset statistics');
     } finally {
       setTimeout(() => {
-        this.elements.resetStats.disabled = false;
-        this.elements.resetStats.textContent = '🔄 Réinitialiser les compteurs';
+        if (this.elements.resetStats) {
+          this.elements.resetStats.disabled = false;
+          this.elements.resetStats.textContent = '🔄 Reset statistics';
+        }
       }, 2000);
     }
   }
   
+  /**
+   * Start periodic stats refresh
+   */
   startStatsRefresh() {
     setInterval(async () => {
       try {
         await this.loadStats();
         this.updateStats();
       } catch (error) {
-        console.warn('Failed to refresh stats:', error);
+        console.warn('FFTabClose: Failed to refresh stats:', error);
       }
     }, 5000);
   }
   
-  showSaveIndicator(message = '✓ Paramètres sauvegardés') {
-    this.elements.saveIndicator.textContent = message;
+  /**
+   * Show save indicator
+   */
+  showSaveIndicator(message = null) {
+    if (!this.elements.saveIndicator) return;
+    
+    const defaultMessage = browser.i18n.getMessage('settingsSaved') || '✓ Settings saved';
+    this.elements.saveIndicator.textContent = message || defaultMessage;
     this.elements.saveIndicator.classList.add('show');
     
     setTimeout(() => {
@@ -269,8 +358,14 @@ class PopupController {
     }, 2000);
   }
   
+  /**
+   * Show error message
+   */
   showError(message) {
-    this.elements.saveIndicator.textContent = `❌ ${message}`;
+    if (!this.elements.saveIndicator) return;
+    
+    const errorMessage = browser.i18n.getMessage('settingsError') || 'Failed to save settings';
+    this.elements.saveIndicator.textContent = `❌ ${message || errorMessage}`;
     this.elements.saveIndicator.style.color = '#dc3545';
     this.elements.saveIndicator.classList.add('show');
     
@@ -280,6 +375,9 @@ class PopupController {
     }, 3000);
   }
   
+  /**
+   * Send message to background script
+   */
   sendMessage(message) {
     return new Promise((resolve, reject) => {
       browser.runtime.sendMessage(message, (response) => {
@@ -295,44 +393,25 @@ class PopupController {
   }
 }
 
-// Initialiser le contrôleur quand le DOM est prêt
-document.addEventListener('DOMContentLoaded', async () => {
-  const timeSelect = document.getElementById('timeSelect');
-  const status = document.getElementById('status');
+// Initialize popup when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  // Load internationalization
+  loadI18n();
   
-  // Charger les paramètres actuels
-  try {
-    const response = await chrome.runtime.sendMessage({ action: 'getSettings' });
-    if (response && response.settings) {
-      timeSelect.value = response.settings.autoCloseTime.toString();
-    }
-  } catch (error) {
-    console.error('Erreur lors du chargement des paramètres:', error);
-  }
-  
-  // Écouter les changements
-  timeSelect.addEventListener('change', async () => {
-    const newTime = parseInt(timeSelect.value);
-    
-    try {
-      const response = await chrome.runtime.sendMessage({
-        action: 'updateSettings',
-        autoCloseTime: newTime
-      });
-      
-      if (response && response.success) {
-        status.textContent = 'Paramètres sauvegardés !';
-        status.className = 'status success';
-        
-        setTimeout(() => {
-          status.textContent = 'Extension active';
-          status.className = 'status';
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
-      status.textContent = 'Erreur lors de la sauvegarde';
-      status.className = 'status error';
+  // Initialize controller
+  new PopupController();
+});
+
+/**
+ * Load internationalization messages
+ */
+function loadI18n() {
+  const elements = document.querySelectorAll('[data-i18n]');
+  elements.forEach(element => {
+    const messageKey = element.getAttribute('data-i18n');
+    const message = browser.i18n.getMessage(messageKey);
+    if (message) {
+      element.textContent = message;
     }
   });
-});
+}

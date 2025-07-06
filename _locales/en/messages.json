@@ -59,8 +59,52 @@
     "message": "ℹ️ Pinned tabs will never be closed automatically. The timer resets when you interact with a tab.",
     "description": "Information about pinned tabs behavior"
   },
+  "activeTabsWillNotBeClosed": {
+    "message": "Active tabs will not be closed automatically",
+    "description": "Info about active tabs"
+  },
+  "enableExtension": {
+    "message": "Enable Extension",
+    "description": "Toggle to enable/disable extension"
+  },
+  "exceptions": {
+    "message": "Exceptions",
+    "description": "Label for exception settings"
+  },
+  "excludePinnedTabs": {
+    "message": "Exclude pinned tabs",
+    "description": "Checkbox label for excluding pinned tabs"
+  },
+  "excludeAudibleTabs": {
+    "message": "Exclude tabs with sound",
+    "description": "Checkbox label for excluding audible tabs"
+  },
+  "totalTabs": {
+    "message": "Total tabs",
+    "description": "Label for total tabs count"
+  },
+  "eligibleTabs": {
+    "message": "Can be closed",
+    "description": "Label for tabs that can be closed"
+  },
+  "oldestTabAge": {
+    "message": "Oldest tab",
+    "description": "Label for oldest tab age"
+  },
+  "closeOldTabsNow": {
+    "message": "Close old tabs now",
+    "description": "Button text to close old tabs immediately"
+  },
+  "closingTabs": {
+    "message": "Closing tabs...",
+    "description": "Text shown while closing tabs"
+  },
+  "tabsClosedSuccess": {
+    "message": "Tabs closed successfully!",
+    "description": "Success message after closing tabs"
+  },
   "settingsSaved": {
-    "message": "✓ Settings saved",
+    "message": "Settings saved",
     "description": "Message shown when settings are saved"
   },
   "settingsError": {

@@ -59,8 +59,52 @@
     "message": "ℹ️ Les onglets épinglés ne seront jamais fermés automatiquement. Le timer se remet à zéro quand vous interagissez avec un onglet.",
     "description": "Information sur le comportement des onglets épinglés"
   },
+  "activeTabsWillNotBeClosed": {
+    "message": "Les onglets actifs ne seront pas fermés automatiquement",
+    "description": "Info sur les onglets actifs"
+  },
+  "enableExtension": {
+    "message": "Activer l'extension",
+    "description": "Basculer pour activer/désactiver l'extension"
+  },
+  "exceptions": {
+    "message": "Exceptions",
+    "description": "Label pour les paramètres d'exception"
+  },
+  "excludePinnedTabs": {
+    "message": "Exclure les onglets épinglés",
+    "description": "Label de case à cocher pour exclure les onglets épinglés"
+  },
+  "excludeAudibleTabs": {
+    "message": "Exclure les onglets avec du son",
+    "description": "Label de case à cocher pour exclure les onglets audibles"
+  },
+  "totalTabs": {
+    "message": "Total onglets",
+    "description": "Label pour le nombre total d'onglets"
+  },
+  "eligibleTabs": {
+    "message": "Peuvent être fermés",
+    "description": "Label pour les onglets qui peuvent être fermés"
+  },
+  "oldestTabAge": {
+    "message": "Onglet le plus ancien",
+    "description": "Label pour l'âge de l'onglet le plus ancien"
+  },
+  "closeOldTabsNow": {
+    "message": "Fermer les anciens onglets maintenant",
+    "description": "Texte du bouton pour fermer immédiatement les anciens onglets"
+  },
+  "closingTabs": {
+    "message": "Fermeture des onglets...",
+    "description": "Texte affiché pendant la fermeture des onglets"
+  },
+  "tabsClosedSuccess": {
+    "message": "Onglets fermés avec succès !",
+    "description": "Message de succès après fermeture des onglets"
+  },
   "settingsSaved": {
-    "message": "✓ Paramètres sauvegardés",
+    "message": "Paramètres sauvegardés",
     "description": "Message affiché quand les paramètres sont sauvegardés"
   },
   "settingsError": {

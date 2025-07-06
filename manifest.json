@@ -18,7 +18,7 @@
   
   "browser_action": {
     "default_popup": "popup.html",
-    "default_title": "FFTabClose Settings",
+    "default_title": "__MSG_popupTitle__",
     "default_icon": {
       "16": "icons/icon-16.svg",
       "32": "icons/icon-32.svg",

@@ -59,9 +59,53 @@
     "message": "ℹ️ Las pestañas fijadas nunca se cerrarán automáticamente. El temporizador se reinicia cuando interactúas con una pestaña.",
     "description": "Información sobre el comportamiento de las pestañas fijadas"
   },
+  "activeTabsWillNotBeClosed": {
+    "message": "Las pestañas activas no se cerrarán automáticamente",
+    "description": "Info sobre pestañas activas"
+  },
+  "enableExtension": {
+    "message": "Activar extensión",
+    "description": "Interruptor para activar/desactivar extensión"
+  },
+  "exceptions": {
+    "message": "Excepciones",
+    "description": "Etiqueta para configuración de excepciones"
+  },
+  "excludePinnedTabs": {
+    "message": "Excluir pestañas fijadas",
+    "description": "Etiqueta de casilla para excluir pestañas fijadas"
+  },
+  "excludeAudibleTabs": {
+    "message": "Excluir pestañas con sonido",
+    "description": "Etiqueta de casilla para excluir pestañas audibles"
+  },
+  "totalTabs": {
+    "message": "Total pestañas",
+    "description": "Etiqueta para el recuento total de pestañas"
+  },
+  "eligibleTabs": {
+    "message": "Pueden cerrarse",
+    "description": "Etiqueta para pestañas que pueden cerrarse"
+  },
+  "oldestTabAge": {
+    "message": "Pestaña más antigua",
+    "description": "Etiqueta para la edad de la pestaña más antigua"
+  },
+  "closeOldTabsNow": {
+    "message": "Cerrar pestañas antiguas ahora",
+    "description": "Texto del botón para cerrar inmediatamente pestañas antiguas"
+  },
+  "closingTabs": {
+    "message": "Cerrando pestañas...",
+    "description": "Texto mostrado mientras se cierran pestañas"
+  },
+  "tabsClosedSuccess": {
+    "message": "¡Pestañas cerradas con éxito!",
+    "description": "Mensaje de éxito después de cerrar pestañas"
+  },
   "settingsSaved": {
-    "message": "✓ Configuración guardada",
-    "description": "Mensaje mostrado cuando se guardan los ajustes"
+    "message": "Configuración guardada",
+    "description": "Mensaje mostrado cuando se guarda la configuración"
   },
   "settingsError": {
     "message": "❌ Error al guardar configuración",
