@@ -412,6 +412,7 @@ async function handleMessage(message, sender, sendResponse) {
             action: getTabActionReal(tab, debugNow)
           }))
         };
+        console.log('FFTabClose Debug Info:', debugInfo);
         sendResponse({ success: true, debugInfo });
         break;
         
@@ -523,6 +524,8 @@ async function manualCloseOldTabs() {
       ]);
     }
     
+    console.log(`FFTabClose: Manual close processed ${totalProcessed} tabs (${tabsToClose.length} closed, ${tabsToDiscard.length} discarded)`);
+    console.log(`FFTabClose: Protected current tab ID: ${currentTabId}, Total tabs processed: ${tabs.length}`);
     
   } catch (error) {
     console.error('FFTabClose: Error in manual close:', error);

@@ -363,7 +363,13 @@ class PopupController {
     try {
       const response = await this.sendMessage({ action: 'debugInfo' });
       if (response && response.success) {
+        console.log('=== FFTabClose Debug Info ===');
+        console.log('Config:', response.debugInfo.config);
+        console.log('Tab Count:', response.debugInfo.tabCount);
+        console.log('Timestamps:', response.debugInfo.timestamps);
+        console.log('Tab Details:');
         response.debugInfo.tabDetails.forEach(tab => {
+          console.log(`  Tab ${tab.id}: ${tab.title} - Age: ${Math.floor(tab.age/60000)}min - Action: ${tab.action}`);
         });
         alert('Debug info logged to console. Open DevTools (F12) to see details.');
       }
