@@ -24,12 +24,6 @@
 - **🔒 Privacy-focused**: No data collection, works offline
 - **⚡ Lightweight**: Minimal memory footprint
 
-## 📸 Screenshots
-
-| Light Mode | Dark Mode |
-|------------|-----------|
-| ![Light Mode](docs/screenshot-light.png) | ![Dark Mode](docs/screenshot-dark.png) |
-
 ## 🚀 Installation
 
 ### Firefox Add-ons Store (Recommended)
