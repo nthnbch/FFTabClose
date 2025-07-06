@@ -90,30 +90,30 @@
 <body>
     <div class="header">
         <div class="logo">🕒</div>
-        <h1>FFTabClose</h1>
+        <h1 data-i18n="popupTitle">FFTabClose</h1>
     </div>
     
     <div class="setting-group">
-        <label for="timeSelect">Fermer les onglets après :</label>
+        <label for="timeSelect" data-i18n="closeTabsAfter">Close tabs after:</label>
         <select id="timeSelect">
-            <option value="900000">15 minutes</option>
-            <option value="1800000">30 minutes</option>
-            <option value="3600000">1 heure</option>
-            <option value="7200000">2 heures</option>
-            <option value="14400000">4 heures</option>
-            <option value="28800000">8 heures</option>
-            <option value="43200000" selected>12 heures</option>
-            <option value="86400000">24 heures</option>
-            <option value="172800000">48 heures</option>
+            <option value="900000" data-i18n="minutes15">15 minutes</option>
+            <option value="1800000" data-i18n="minutes30">30 minutes</option>
+            <option value="3600000" data-i18n="hour1">1 hour</option>
+            <option value="7200000" data-i18n="hours2">2 hours</option>
+            <option value="14400000" data-i18n="hours4">4 hours</option>
+            <option value="28800000" data-i18n="hours8">8 hours</option>
+            <option value="43200000" selected data-i18n="hours12">12 hours</option>
+            <option value="86400000" data-i18n="hours24">24 hours</option>
+            <option value="172800000" data-i18n="hours48">48 hours</option>
         </select>
     </div>
     
-    <div id="status" class="status">
+    <div id="status" class="status" data-i18n="extensionActive">
         Extension active
     </div>
     
-    <div class="info">
-        ℹ️ Les onglets épinglés ne seront jamais fermés automatiquement. Le timer se remet à zéro quand vous interagissez avec un onglet.
+    <div class="info" data-i18n="pinnedTabsInfo">
+        ℹ️ Pinned tabs will never be closed automatically. The timer resets when you interact with a tab.
     </div>
 
     <script src="popup.js"></script>

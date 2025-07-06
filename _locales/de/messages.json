@@ -1,0 +1,70 @@
+{
+  "extensionName": {
+    "message": "FFTabClose - Auto Tab Schließer",
+    "description": "Name der Erweiterung"
+  },
+  "extensionDescription": {
+    "message": "Schließt automatisch nicht angeheftete Tabs nach einer konfigurierbaren Zeitspanne. Perfekt für Produktivität und Speicherverwaltung.",
+    "description": "Beschreibung der Erweiterung"
+  },
+  "popupTitle": {
+    "message": "FFTabClose",
+    "description": "Titel im Popup angezeigt"
+  },
+  "closeTabsAfter": {
+    "message": "Tabs schließen nach:",
+    "description": "Label für Zeitauswahl"
+  },
+  "minutes15": {
+    "message": "15 Minuten",
+    "description": "15 Minuten Option"
+  },
+  "minutes30": {
+    "message": "30 Minuten",
+    "description": "30 Minuten Option"
+  },
+  "hour1": {
+    "message": "1 Stunde",
+    "description": "1 Stunde Option"
+  },
+  "hours2": {
+    "message": "2 Stunden",
+    "description": "2 Stunden Option"
+  },
+  "hours4": {
+    "message": "4 Stunden",
+    "description": "4 Stunden Option"
+  },
+  "hours8": {
+    "message": "8 Stunden",
+    "description": "8 Stunden Option"
+  },
+  "hours12": {
+    "message": "12 Stunden",
+    "description": "12 Stunden Option"
+  },
+  "hours24": {
+    "message": "24 Stunden",
+    "description": "24 Stunden Option"
+  },
+  "hours48": {
+    "message": "48 Stunden",
+    "description": "48 Stunden Option"
+  },
+  "extensionActive": {
+    "message": "Erweiterung aktiv",
+    "description": "Statusmeldung wenn Erweiterung aktiv ist"
+  },
+  "pinnedTabsInfo": {
+    "message": "ℹ️ Angeheftete Tabs werden niemals automatisch geschlossen. Der Timer wird zurückgesetzt, wenn Sie mit einem Tab interagieren.",
+    "description": "Information über das Verhalten angehefteter Tabs"
+  },
+  "settingsSaved": {
+    "message": "✓ Einstellungen gespeichert",
+    "description": "Nachricht wenn Einstellungen gespeichert werden"
+  },
+  "settingsError": {
+    "message": "❌ Fehler beim Speichern",
+    "description": "Fehlermeldung wenn Speichern fehlschlägt"
+  }
+}

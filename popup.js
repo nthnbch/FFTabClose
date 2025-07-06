@@ -346,10 +346,11 @@ class PopupController {
   /**
    * Show save indicator
    */
-  showSaveIndicator(message = '✓ Settings saved') {
+  showSaveIndicator(message = null) {
     if (!this.elements.saveIndicator) return;
     
-    this.elements.saveIndicator.textContent = message;
+    const defaultMessage = browser.i18n.getMessage('settingsSaved') || '✓ Settings saved';
+    this.elements.saveIndicator.textContent = message || defaultMessage;
     this.elements.saveIndicator.classList.add('show');
     
     setTimeout(() => {
@@ -363,7 +364,8 @@ class PopupController {
   showError(message) {
     if (!this.elements.saveIndicator) return;
     
-    this.elements.saveIndicator.textContent = `❌ ${message}`;
+    const errorMessage = browser.i18n.getMessage('settingsError') || 'Failed to save settings';
+    this.elements.saveIndicator.textContent = `❌ ${message || errorMessage}`;
     this.elements.saveIndicator.style.color = '#dc3545';
     this.elements.saveIndicator.classList.add('show');
     
@@ -393,5 +395,23 @@ class PopupController {
 
 // Initialize popup when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+  // Load internationalization
+  loadI18n();
+  
+  // Initialize controller
   new PopupController();
 });
+
+/**
+ * Load internationalization messages
+ */
+function loadI18n() {
+  const elements = document.querySelectorAll('[data-i18n]');
+  elements.forEach(element => {
+    const messageKey = element.getAttribute('data-i18n');
+    const message = browser.i18n.getMessage(messageKey);
+    if (message) {
+      element.textContent = message;
+    }
+  });
+}

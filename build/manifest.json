@@ -1,8 +1,9 @@
 {
   "manifest_version": 2,
-  "name": "FFTabClose - Auto Tab Closer",
+  "name": "__MSG_extensionName__",
   "version": "1.0.0",
-  "description": "Automatically close non-pinned tabs after a configurable time period. Perfect for productivity and memory management.",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "en",
   
   "permissions": [
     "tabs",

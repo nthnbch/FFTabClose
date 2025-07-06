@@ -115,6 +115,12 @@ copy_files() {
     mkdir -p "$BUILD_DIR/icons"
     cp icons/*.svg "$BUILD_DIR/icons/"
     
+    # Fichiers de localisation
+    if [[ -d "_locales" ]]; then
+        cp -r _locales "$BUILD_DIR/"
+        log_success "Fichiers de localisation copiés"
+    fi
+    
     # Documentation (optionnelle)
     if [[ -f "README.md" ]]; then
         cp README.md "$BUILD_DIR/"

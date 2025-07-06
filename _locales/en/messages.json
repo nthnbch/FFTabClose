@@ -1,0 +1,70 @@
+{
+  "extensionName": {
+    "message": "FFTabClose - Auto Tab Closer",
+    "description": "Name of the extension"
+  },
+  "extensionDescription": {
+    "message": "Automatically close non-pinned tabs after a configurable time period. Perfect for productivity and memory management.",
+    "description": "Description of the extension"
+  },
+  "popupTitle": {
+    "message": "FFTabClose",
+    "description": "Title shown in popup"
+  },
+  "closeTabsAfter": {
+    "message": "Close tabs after:",
+    "description": "Label for time selection"
+  },
+  "minutes15": {
+    "message": "15 minutes",
+    "description": "15 minutes option"
+  },
+  "minutes30": {
+    "message": "30 minutes",
+    "description": "30 minutes option"
+  },
+  "hour1": {
+    "message": "1 hour",
+    "description": "1 hour option"
+  },
+  "hours2": {
+    "message": "2 hours",
+    "description": "2 hours option"
+  },
+  "hours4": {
+    "message": "4 hours",
+    "description": "4 hours option"
+  },
+  "hours8": {
+    "message": "8 hours",
+    "description": "8 hours option"
+  },
+  "hours12": {
+    "message": "12 hours",
+    "description": "12 hours option"
+  },
+  "hours24": {
+    "message": "24 hours",
+    "description": "24 hours option"
+  },
+  "hours48": {
+    "message": "48 hours",
+    "description": "48 hours option"
+  },
+  "extensionActive": {
+    "message": "Extension active",
+    "description": "Status message when extension is active"
+  },
+  "pinnedTabsInfo": {
+    "message": "ℹ️ Pinned tabs will never be closed automatically. The timer resets when you interact with a tab.",
+    "description": "Information about pinned tabs behavior"
+  },
+  "settingsSaved": {
+    "message": "✓ Settings saved",
+    "description": "Message shown when settings are saved"
+  },
+  "settingsError": {
+    "message": "❌ Failed to save settings",
+    "description": "Error message when settings fail to save"
+  }
+}
