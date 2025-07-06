@@ -6,7 +6,7 @@
 
 // Default configuration
 const DEFAULT_CONFIG = {
-  autoCloseTime: 2 * 60 * 1000, // 2 minutes for testing (normally 12 hours)
+  autoCloseTime: 12 * 60 * 60 * 1000, // 12 hours (production setting)
   enabled: true,
   excludePinned: false, // Allow processing pinned tabs
   excludeAudible: true,
@@ -26,14 +26,10 @@ let currentConfig = { ...DEFAULT_CONFIG };
  * Initialize extension on startup/install
  */
 async function initialize() {
-  console.log('FFTabClose: Starting initialization...');
   await loadConfiguration();
-  console.log('FFTabClose: Config loaded:', currentConfig);
   await loadTabTimestamps();
-  console.log('FFTabClose: Timestamps loaded, count:', tabTimestamps.size);
   await initializeExistingTabs();
   setupAlarm();
-  console.log('FFTabClose: Extension initialized successfully');
 }
 
 /**
@@ -127,33 +123,15 @@ function unregisterTab(tabId) {
  */
 async function setupAlarm() {
   if (!currentConfig.enabled) {
-    console.log('FFTabClose: Alarm setup skipped - extension disabled');
     return;
   }
   
   try {
-    // Clear existing alarm
     await browser.alarms.clear(alarmName);
-    console.log('FFTabClose: Existing alarm cleared');
-    
-    // Check alarm capabilities
-    const alarms = await browser.alarms.getAll();
-    console.log('FFTabClose: Existing alarms:', alarms);
-    
-    // Create new alarm (check every 1 minute for testing, normally 5 minutes)
-    await browser.alarms.create(alarmName, { periodInMinutes: 1 });
-    console.log('FFTabClose: New alarm created with 1 minute interval');
-    
-    // Verify alarm was created
-    const newAlarms = await browser.alarms.getAll();
-    console.log('FFTabClose: Alarms after creation:', newAlarms);
-    
-    // Also set up a backup interval as fallback
+    await browser.alarms.create(alarmName, { periodInMinutes: 5 });
     setupBackupInterval();
-    
   } catch (error) {
     console.error('FFTabClose: Failed to setup alarm:', error);
-    console.log('FFTabClose: Using fallback interval method');
     setupBackupInterval();
   }
 }
@@ -162,18 +140,14 @@ async function setupAlarm() {
  * Setup backup interval as fallback if alarms don't work
  */
 function setupBackupInterval() {
-  // Clear any existing interval
   if (window.ffTabCloseInterval) {
     clearInterval(window.ffTabCloseInterval);
   }
   
-  // Set up a 1-minute interval as backup
+  // Set up a 5-minute interval as backup
   window.ffTabCloseInterval = setInterval(() => {
-    console.log('FFTabClose: Backup interval triggered');
     checkAndCloseTabs();
-  }, 60000); // 1 minute
-  
-  console.log('FFTabClose: Backup interval set up');
+  }, 300000); // 5 minutes
 }
 
 /**
@@ -181,24 +155,22 @@ function setupBackupInterval() {
  */
 async function checkAndCloseTabs() {
   if (!currentConfig.enabled) {
-    console.log('FFTabClose: Extension disabled, skipping check');
     return;
   }
   try {
-    const windows = await browser.windows.getAll({populate: false, windowTypes: ['normal']});
-    let focusedWindowId = null;
-    for (const win of windows) {
-      if (win.focused) {
-        focusedWindowId = win.id;
-        break;
-      }
-    }
-    const tabs = await browser.tabs.query({});
+    // Optimized: Get focused window more efficiently
+    const [tabs, windows] = await Promise.all([
+      browser.tabs.query({}),
+      browser.windows.getAll({populate: false, windowTypes: ['normal']})
+    ]);
+    
+    const focusedWindowId = windows.find(w => w.focused)?.id || null;
     const now = Date.now();
     const tabsToClose = [];
     const tabsToDiscard = [];
+    
+    // Batch process tabs
     for (const tab of tabs) {
-      // Only skip the active tab in the focused window
       if (tab.active && tab.windowId === focusedWindowId) {
         continue;
       }
@@ -206,30 +178,52 @@ async function checkAndCloseTabs() {
       if (action === 'close') {
         tabsToClose.push(tab.id);
       } else if (action === 'discard') {
-        // Always try to discard pinned/essential tabs if requested, even if already discarded
         tabsToDiscard.push(tab.id);
       }
     }
+    
+    // Process in parallel when possible
+    const promises = [];
     let totalProcessed = 0;
+    
     if (tabsToClose.length > 0) {
-      await browser.tabs.remove(tabsToClose);
-      tabsToClose.forEach(tabId => unregisterTab(tabId));
-      totalProcessed += tabsToClose.length;
+      promises.push(
+        browser.tabs.remove(tabsToClose).then(() => {
+          tabsToClose.forEach(tabId => unregisterTab(tabId));
+          totalProcessed += tabsToClose.length;
+        })
+      );
     }
+    
     if (tabsToDiscard.length > 0) {
-      for (const tabId of tabsToDiscard) {
-        try {
-          await browser.tabs.discard(tabId);
-          registerTab(tabId, now);
-        } catch (error) {
-          console.warn(`FFTabClose: Failed to discard tab ${tabId}:`, error);
-        }
+      // Process discards in smaller batches to avoid overwhelming the browser
+      const batchSize = 10;
+      for (let i = 0; i < tabsToDiscard.length; i += batchSize) {
+        const batch = tabsToDiscard.slice(i, i + batchSize);
+        promises.push(
+          Promise.all(batch.map(async (tabId) => {
+            try {
+              await browser.tabs.discard(tabId);
+              registerTab(tabId, now);
+              return true;
+            } catch (error) {
+              console.warn(`FFTabClose: Failed to discard tab ${tabId}:`, error);
+              return false;
+            }
+          })).then(results => {
+            totalProcessed += results.filter(Boolean).length;
+          })
+        );
       }
-      totalProcessed += tabsToDiscard.length;
     }
+    
+    await Promise.all(promises);
+    
     if (totalProcessed > 0) {
-      await saveTabTimestamps();
-      await showNotificationBadge(totalProcessed);
+      await Promise.all([
+        saveTabTimestamps(),
+        showNotificationBadge(totalProcessed)
+      ]);
     }
   } catch (error) {
     console.error('FFTabClose: Error checking tabs:', error);
@@ -255,47 +249,31 @@ function getTabAction(tab, now) {
 function getTabActionReal(tab, now) {
   const timestamp = tabTimestamps.get(tab.id.toString());
   if (!timestamp) {
-    // Register tab if not found
-    console.log(`Tab ${tab.id} has no timestamp, registering now`);
     registerTab(tab.id, now);
     return 'none';
   }
   
   const age = now - timestamp;
-  const ageMinutes = Math.floor(age / (60 * 1000));
-  const timeoutMinutes = Math.floor(currentConfig.autoCloseTime / (60 * 1000));
-  
-  console.log(`Tab ${tab.id}: age=${ageMinutes}min, timeout=${timeoutMinutes}min, pinned=${tab.pinned}, audible=${tab.audible}`);
-  
   if (age <= currentConfig.autoCloseTime) {
     return 'none';
   }
   
-  // Tab is expired, determine action based on type
-  console.log(`Tab ${tab.id} is EXPIRED (${ageMinutes}min > ${timeoutMinutes}min)`);
-  
   // Handle pinned tabs
   if (tab.pinned) {
     if (currentConfig.excludePinned) {
-      console.log(`Tab ${tab.id} is pinned and excluded`);
-      return 'none'; // Don't touch pinned tabs if excluded
+      return 'none';
     } else if (currentConfig.discardPinned) {
-      console.log(`Tab ${tab.id} is pinned, will discard`);
-      return 'discard'; // Discard pinned tabs instead of closing
+      return 'discard';
     } else {
-      console.log(`Tab ${tab.id} is pinned, will close`);
-      return 'close'; // Close pinned tabs (if user really wants to)
+      return 'close';
     }
   }
   
   // Handle audible tabs
   if (currentConfig.excludeAudible && tab.audible) {
-    console.log(`Tab ${tab.id} has audio and is excluded`);
     return 'none';
   }
   
-  // Regular non-pinned tabs get closed
-  console.log(`Tab ${tab.id} is regular tab, will close`);
   return 'close';
 }
 
@@ -386,7 +364,6 @@ async function handleMessage(message, sender, sendResponse) {
         break;
         
       case 'checkNow':
-        console.log('FFTabClose: Manual check triggered');
         await checkAndCloseTabs();
         sendResponse({ success: true });
         break;
@@ -453,47 +430,38 @@ async function handleMessage(message, sender, sendResponse) {
 browser.runtime.onStartup.addListener(initialize);
 browser.runtime.onInstalled.addListener(initialize);
 
-// Tab events
+// Tab events - optimized for minimal overhead
 browser.tabs.onCreated.addListener((tab) => {
-  // Register ALL new tabs, including pinned ones
   registerTab(tab.id);
-  saveTabTimestamps();
-  console.log(`FFTabClose: Registered new tab ${tab.id}`);
+  // Debounced save to avoid excessive storage writes
+  clearTimeout(window.saveDebounce);
+  window.saveDebounce = setTimeout(saveTabTimestamps, 1000);
 });
 
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.url || changeInfo.status === 'complete') {
-    // Register ALL updated tabs, including pinned ones
     registerTab(tabId);
-    saveTabTimestamps();
-    console.log(`FFTabClose: Updated timestamp for tab ${tabId}`);
+    clearTimeout(window.saveDebounce);
+    window.saveDebounce = setTimeout(saveTabTimestamps, 1000);
   }
 });
 
 browser.tabs.onActivated.addListener((activeInfo) => {
-  browser.tabs.get(activeInfo.tabId).then(tab => {
-    // Register ALL activated tabs, including pinned ones
-    registerTab(activeInfo.tabId);
-    saveTabTimestamps();
-    console.log(`FFTabClose: Updated timestamp for activated tab ${activeInfo.tabId}`);
-  }).catch(error => {
-    console.warn('FFTabClose: Failed to get active tab:', error);
-  });
+  registerTab(activeInfo.tabId);
+  clearTimeout(window.saveDebounce);
+  window.saveDebounce = setTimeout(saveTabTimestamps, 1000);
 });
 
 browser.tabs.onRemoved.addListener((tabId) => {
   unregisterTab(tabId);
-  saveTabTimestamps();
+  clearTimeout(window.saveDebounce);
+  window.saveDebounce = setTimeout(saveTabTimestamps, 1000);
 });
 
 // Alarm for periodic checks
 browser.alarms.onAlarm.addListener((alarm) => {
-  console.log(`FFTabClose: Alarm triggered: ${alarm.name}`);
   if (alarm.name === alarmName) {
-    console.log('FFTabClose: Running scheduled tab check...');
     checkAndCloseTabs();
-  } else {
-    console.log(`FFTabClose: Ignoring unknown alarm: ${alarm.name}`);
   }
 });
 
