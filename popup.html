@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFTabClose Settings</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="icon">🗂️</div>
+            <h1>FFTabClose</h1>
+            <div class="version">v1.0.0</div>
+        </header>
+        
+        <main class="main">
+            <!-- Statut et contrôles principaux -->
+            <section class="status-section">
+                <div class="status-row">
+                    <span class="status-label">Extension</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="enabledToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="stats" id="stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="totalTabs">-</span>
+                        <span class="stat-label">Onglets</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="eligibleTabs">-</span>
+                        <span class="stat-label">Éligibles</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="oldestTab">-</span>
+                        <span class="stat-label">Plus ancien (min)</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Configuration du délai -->
+            <section class="config-section">
+                <h3>Configuration</h3>
+                
+                <div class="setting-group">
+                    <label for="timeSlider" class="setting-label">
+                        Fermer après: <span id="timeValue">12 heures</span>
+                    </label>
+                    <input type="range" id="timeSlider" class="time-slider" 
+                           min="1" max="72" value="12" step="1">
+                    <div class="time-marks">
+                        <span>1h</span>
+                        <span>12h</span>
+                        <span>24h</span>
+                        <span>72h</span>
+                    </div>
+                </div>
+                
+                <div class="preset-buttons">
+                    <button class="preset-btn" data-hours="1">1h</button>
+                    <button class="preset-btn" data-hours="6">6h</button>
+                    <button class="preset-btn active" data-hours="12">12h</button>
+                    <button class="preset-btn" data-hours="24">24h</button>
+                </div>
+            </section>
+            
+            <!-- Options avancées -->
+            <section class="options-section">
+                <h3>Options</h3>
+                
+                <div class="option-item">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="excludePinned" checked>
+                        <span class="checkmark"></span>
+                        <span class="option-text">Exclure les onglets épinglés</span>
+                    </label>
+                </div>
+                
+                <div class="option-item">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="excludeAudible" checked>
+                        <span class="checkmark"></span>
+                        <span class="option-text">Exclure les onglets avec audio</span>
+                    </label>
+                </div>
+            </section>
+            
+            <!-- Actions -->
+            <section class="actions-section">
+                <button id="closeOldNow" class="action-btn primary">
+                    🧹 Fermer les anciens maintenant
+                </button>
+                
+                <button id="resetStats" class="action-btn secondary">
+                    🔄 Réinitialiser les compteurs
+                </button>
+            </section>
+        </main>
+        
+        <footer class="footer">
+            <div class="save-indicator" id="saveIndicator">
+                ✓ Paramètres sauvegardés
+            </div>
+        </footer>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>

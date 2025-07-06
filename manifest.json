@@ -1,0 +1,47 @@
+{
+  "manifest_version": 2,
+  "name": "FFTabClose - Auto Tab Closer",
+  "version": "1.0.0",
+  "description": "Automatically close non-pinned tabs after a configurable time period. Perfect for productivity and memory management.",
+  
+  "permissions": [
+    "tabs",
+    "storage",
+    "background",
+    "activeTab"
+  ],
+  
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "FFTabClose Settings",
+    "default_icon": {
+      "16": "icons/icon-16.svg",
+      "32": "icons/icon-32.svg",
+      "48": "icons/icon-48.svg",
+      "128": "icons/icon-128.svg"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/icon-16.svg",
+    "32": "icons/icon-32.svg",
+    "48": "icons/icon-48.svg",
+    "128": "icons/icon-128.svg"
+  },
+  
+  "web_accessible_resources": [
+    "popup.html"
+  ],
+  
+  "applications": {
+    "gecko": {
+      "id": "fftabclose@extension.local",
+      "strict_min_version": "57.0"
+    }
+  }
+}

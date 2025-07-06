@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator for FFTabClose</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .icon-preview { margin: 20px 0; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        button { padding: 10px 20px; margin: 5px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>FFTabClose Icon Generator</h1>
+    <p>Ce script génère les icônes PNG à partir des designs SVG pour l'extension.</p>
+    
+    <div class="icon-preview">
+        <h3>Aperçu des icônes :</h3>
+        <canvas id="icon16" width="16" height="16"></canvas>
+        <canvas id="icon32" width="32" height="32"></canvas>
+        <canvas id="icon48" width="48" height="48"></canvas>
+        <canvas id="icon128" width="128" height="128"></canvas>
+    </div>
+    
+    <button onclick="generateIcons()">Générer les icônes PNG</button>
+    <button onclick="downloadAll()">Télécharger toutes les icônes</button>
+    
+    <div id="downloads"></div>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const radius = size * 0.4;
+            
+            // Background gradient circle
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // White border
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = size > 32 ? 2 : 1;
+            ctx.stroke();
+            
+            // Tab icon
+            const tabWidth = size * 0.6;
+            const tabHeight = size * 0.3;
+            const tabX = (size - tabWidth) / 2;
+            const tabY = centerY - tabHeight / 2;
+            
+            ctx.fillStyle = 'white';
+            ctx.fillRect(tabX, tabY, tabWidth, tabHeight);
+            
+            // Tab header
+            ctx.fillStyle = '#667eea';
+            ctx.fillRect(tabX + 2, tabY + 2, tabWidth - 4, Math.max(2, size / 16));
+            
+            // Close X
+            if (size >= 32) {
+                ctx.strokeStyle = '#ff6b6b';
+                ctx.lineWidth = Math.max(1, size / 20);
+                ctx.lineCap = 'round';
+                
+                const xSize = size / 8;
+                const xX = centerX + radius * 0.6;
+                const xY = centerY - radius * 0.6;
+                
+                ctx.beginPath();
+                ctx.moveTo(xX - xSize, xY - xSize);
+                ctx.lineTo(xX + xSize, xY + xSize);
+                ctx.moveTo(xX + xSize, xY - xSize);
+                ctx.lineTo(xX - xSize, xY + xSize);
+                ctx.stroke();
+            }
+        }
+        
+        function generateIcons() {
+            const sizes = [16, 32, 48, 128];
+            sizes.forEach(size => {
+                const canvas = document.getElementById(`icon${size}`);
+                drawIcon(canvas, size);
+            });
+        }
+        
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        function downloadAll() {
+            const sizes = [16, 32, 48, 128];
+            sizes.forEach(size => {
+                const canvas = document.getElementById(`icon${size}`);
+                downloadCanvas(canvas, `icon-${size}.png`);
+            });
+        }
+        
+        // Generate icons on load
+        window.onload = generateIcons;
+    </script>
+</body>
+</html>
