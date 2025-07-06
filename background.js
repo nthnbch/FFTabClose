@@ -354,6 +354,12 @@ async function handleMessage(message, sender, sendResponse) {
         sendResponse({ success: true });
         break;
         
+      case 'manualClose':
+        // Manual close - process ALL eligible tabs, including active ones in other windows
+        await manualCloseOldTabs();
+        sendResponse({ success: true });
+        break;
+        
       case 'testMode':
         // Special test mode - mark all non-active tabs as old
         const testTabs = await browser.tabs.query({});
@@ -406,6 +412,92 @@ async function handleMessage(message, sender, sendResponse) {
   } catch (error) {
     console.error('FFTabClose: Error handling message:', error);
     sendResponse({ success: false, error: error.message });
+  }
+}
+
+/**
+ * Manually close/discard old tabs - includes ALL eligible tabs
+ * Used by the manual "Close now" button
+ */
+async function manualCloseOldTabs() {
+  if (!currentConfig.enabled) {
+    return;
+  }
+  try {
+    // Get ALL tabs across all windows
+    const [tabs, windows] = await Promise.all([
+      browser.tabs.query({}),
+      browser.windows.getAll({populate: false, windowTypes: ['normal']})
+    ]);
+    
+    const focusedWindowId = windows.find(w => w.focused)?.id || null;
+    const now = Date.now();
+    const tabsToClose = [];
+    const tabsToDiscard = [];
+    
+    // Process ALL tabs, but still protect the currently active tab in the focused window
+    for (const tab of tabs) {
+      // Only protect the current active tab in the focused window
+      if (tab.active && tab.windowId === focusedWindowId) {
+        continue;
+      }
+      
+      const action = getTabActionReal(tab, now);
+      if (action === 'close') {
+        tabsToClose.push(tab.id);
+      } else if (action === 'discard') {
+        tabsToDiscard.push(tab.id);
+      }
+    }
+    
+    // Process in parallel when possible
+    const promises = [];
+    let totalProcessed = 0;
+    
+    if (tabsToClose.length > 0) {
+      promises.push(
+        browser.tabs.remove(tabsToClose).then(() => {
+          tabsToClose.forEach(tabId => unregisterTab(tabId));
+          totalProcessed += tabsToClose.length;
+        })
+      );
+    }
+    
+    if (tabsToDiscard.length > 0) {
+      // Process discards in smaller batches to avoid overwhelming the browser
+      const batchSize = 10;
+      for (let i = 0; i < tabsToDiscard.length; i += batchSize) {
+        const batch = tabsToDiscard.slice(i, i + batchSize);
+        promises.push(
+          Promise.all(batch.map(async (tabId) => {
+            try {
+              await browser.tabs.discard(tabId);
+              registerTab(tabId, now);
+              return true;
+            } catch (error) {
+              console.warn(`FFTabClose: Failed to discard tab ${tabId}:`, error);
+              return false;
+            }
+          })).then(results => {
+            totalProcessed += results.filter(Boolean).length;
+          })
+        );
+      }
+    }
+    
+    await Promise.all(promises);
+    
+    if (totalProcessed > 0) {
+      await Promise.all([
+        saveTabTimestamps(),
+        showNotificationBadge(totalProcessed)
+      ]);
+    }
+    
+    console.log(`FFTabClose: Manual close processed ${totalProcessed} tabs (${tabsToClose.length} closed, ${tabsToDiscard.length} discarded)`);
+    
+  } catch (error) {
+    console.error('FFTabClose: Error in manual close:', error);
   }
 }
 

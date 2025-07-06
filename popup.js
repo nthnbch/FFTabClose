@@ -282,7 +282,8 @@ class PopupController {
       const originalText = this.elements.closeOldNow.textContent;
       this.elements.closeOldNow.textContent = browser.i18n?.getMessage('closingTabs') || 'Closing tabs...';
       
-      const response = await this.sendMessage({ action: 'checkNow' });
+      // Use manualClose action for immediate processing of all eligible tabs
+      const response = await this.sendMessage({ action: 'manualClose' });
       
       if (response && response.success) {
         await this.loadStats();
