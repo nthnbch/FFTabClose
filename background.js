@@ -6,7 +6,7 @@
 
 // Default configuration
 const DEFAULT_CONFIG = {
-  autoCloseTime: 12 * 60 * 60 * 1000, // 12 hours default
+  autoCloseTime: 2 * 60 * 1000, // 2 minutes for testing (normally 12 hours)
   enabled: true,
   excludePinned: false, // Allow processing pinned tabs
   excludeAudible: true,
@@ -125,14 +125,55 @@ function unregisterTab(tabId) {
 /**
  * Setup periodic alarm for checking tabs
  */
-function setupAlarm() {
-  if (!currentConfig.enabled) return;
+async function setupAlarm() {
+  if (!currentConfig.enabled) {
+    console.log('FFTabClose: Alarm setup skipped - extension disabled');
+    return;
+  }
   
-  // Clear existing alarm
-  browser.alarms.clear(alarmName);
+  try {
+    // Clear existing alarm
+    await browser.alarms.clear(alarmName);
+    console.log('FFTabClose: Existing alarm cleared');
+    
+    // Check alarm capabilities
+    const alarms = await browser.alarms.getAll();
+    console.log('FFTabClose: Existing alarms:', alarms);
+    
+    // Create new alarm (check every 1 minute for testing, normally 5 minutes)
+    await browser.alarms.create(alarmName, { periodInMinutes: 1 });
+    console.log('FFTabClose: New alarm created with 1 minute interval');
+    
+    // Verify alarm was created
+    const newAlarms = await browser.alarms.getAll();
+    console.log('FFTabClose: Alarms after creation:', newAlarms);
+    
+    // Also set up a backup interval as fallback
+    setupBackupInterval();
+    
+  } catch (error) {
+    console.error('FFTabClose: Failed to setup alarm:', error);
+    console.log('FFTabClose: Using fallback interval method');
+    setupBackupInterval();
+  }
+}
+
+/**
+ * Setup backup interval as fallback if alarms don't work
+ */
+function setupBackupInterval() {
+  // Clear any existing interval
+  if (window.ffTabCloseInterval) {
+    clearInterval(window.ffTabCloseInterval);
+  }
   
-  // Create new alarm (check every 5 minutes)
-  browser.alarms.create(alarmName, { periodInMinutes: 5 });
+  // Set up a 1-minute interval as backup
+  window.ffTabCloseInterval = setInterval(() => {
+    console.log('FFTabClose: Backup interval triggered');
+    checkAndCloseTabs();
+  }, 60000); // 1 minute
+  
+  console.log('FFTabClose: Backup interval set up');
 }
 
 /**
@@ -357,6 +398,23 @@ async function handleMessage(message, sender, sendResponse) {
         sendResponse({ success: true });
         break;
         
+      case 'testMode':
+        // Special test mode - mark all non-active tabs as old
+        const testTabs = await browser.tabs.query({});
+        const veryOldTime = Date.now() - (currentConfig.autoCloseTime + 60000); // 1 minute older than timeout
+        
+        for (const tab of testTabs) {
+          if (!tab.active) {
+            registerTab(tab.id, veryOldTime);
+            console.log(`FFTabClose: Test mode - marked tab ${tab.id} as very old`);
+          }
+        }
+        
+        await saveTabTimestamps();
+        await checkAndCloseTabs();
+        sendResponse({ success: true, message: 'Test mode activated and check executed' });
+        break;
+        
       case 'debugInfo':
         // Debug function to check current state
         const debugTabs = await browser.tabs.query({});
@@ -437,8 +495,12 @@ browser.tabs.onRemoved.addListener((tabId) => {
 
 // Alarm for periodic checks
 browser.alarms.onAlarm.addListener((alarm) => {
+  console.log(`FFTabClose: Alarm triggered: ${alarm.name}`);
   if (alarm.name === alarmName) {
+    console.log('FFTabClose: Running scheduled tab check...');
     checkAndCloseTabs();
+  } else {
+    console.log(`FFTabClose: Ignoring unknown alarm: ${alarm.name}`);
   }
 });
 

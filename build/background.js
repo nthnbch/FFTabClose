@@ -6,7 +6,7 @@
 
 // Default configuration
 const DEFAULT_CONFIG = {
-  autoCloseTime: 12 * 60 * 60 * 1000, // 12 hours default
+  autoCloseTime: 2 * 60 * 1000, // 2 minutes for testing (normally 12 hours)
   enabled: true,
   excludePinned: false, // Allow processing pinned tabs
   excludeAudible: true,
@@ -120,14 +120,47 @@ function unregisterTab(tabId) {
 /**
  * Setup periodic alarm for checking tabs
  */
-function setupAlarm() {
-  if (!currentConfig.enabled) return;
+async function setupAlarm() {
+  if (!currentConfig.enabled) {
+    return;
+  }
   
-  // Clear existing alarm
-  browser.alarms.clear(alarmName);
+  try {
+    // Clear existing alarm
+    await browser.alarms.clear(alarmName);
+    
+    // Check alarm capabilities
+    const alarms = await browser.alarms.getAll();
+    
+    // Create new alarm (check every 1 minute for testing, normally 5 minutes)
+    await browser.alarms.create(alarmName, { periodInMinutes: 1 });
+    
+    // Verify alarm was created
+    const newAlarms = await browser.alarms.getAll();
+    
+    // Also set up a backup interval as fallback
+    setupBackupInterval();
+    
+  } catch (error) {
+    console.error('FFTabClose: Failed to setup alarm:', error);
+    setupBackupInterval();
+  }
+}
+
+/**
+ * Setup backup interval as fallback if alarms don't work
+ */
+function setupBackupInterval() {
+  // Clear any existing interval
+  if (window.ffTabCloseInterval) {
+    clearInterval(window.ffTabCloseInterval);
+  }
   
-  // Create new alarm (check every 5 minutes)
-  browser.alarms.create(alarmName, { periodInMinutes: 5 });
+  // Set up a 1-minute interval as backup
+  window.ffTabCloseInterval = setInterval(() => {
+    checkAndCloseTabs();
+  }, 60000); // 1 minute
+  
 }
 
 /**
@@ -412,6 +445,7 @@ browser.tabs.onRemoved.addListener((tabId) => {
 browser.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === alarmName) {
     checkAndCloseTabs();
+  } else {
   }
 });
 
