@@ -1,203 +1,218 @@
 # FFTabClose - Auto Tab Closer
 
-![Extension Icon](icons/icon-48.svg)
+<div align="center">
 
-Une extension Firefox professionnelle qui ferme automatiquement les onglets non utilisés après un délai configurable. Parfait pour optimiser les performances et la gestion de la mémoire de votre navigateur.
+![FFTabClose Logo](icons/icon-128.svg)
 
-## 🚀 Fonctionnalités
+**Automatically close non-pinned tabs after a configurable time period**
 
-- ⏰ **Fermeture automatique** des onglets après un délai personnalisable (1h à 72h)
-- 📌 **Respect des onglets épinglés** - ne ferme jamais les onglets épinglés
-- 🔊 **Protection audio** - exclut les onglets qui diffusent de l'audio
-- 📊 **Statistiques en temps réel** - suivi des onglets et de leur âge
-- 🎛️ **Interface intuitive** - popup moderne et facile à utiliser
-- 🔧 **Configuration flexible** - préréglages rapides ou délai personnalisé
-- 💾 **Sauvegarde automatique** - vos préférences sont conservées
-- 🛡️ **Sécurisé** - aucune donnée envoyée vers l'extérieur
+[![Firefox](https://img.shields.io/badge/Firefox-FF7139?style=for-the-badge&logo=Firefox-Browser&logoColor=white)](https://addons.mozilla.org/)
+[![Zen Browser](https://img.shields.io/badge/Zen-Browser-blue?style=for-the-badge)](https://zen-browser.app/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-## 🎯 Cas d'usage
+</div>
 
-- **Développeurs** : Éviter l'accumulation d'onglets de documentation
-- **Chercheurs** : Garder seulement les ressources importantes
-- **Utilisateurs Zen Browser** : Améliorer l'expérience de navigation
-- **Optimisation mémoire** : Réduire la consommation RAM du navigateur
+## 🌟 Features
 
-## 📦 Installation
+- **🕒 Automatic Tab Closure**: Configurable timer (15 minutes to 48 hours)
+- **📌 Smart Exclusions**: Never closes pinned tabs or tabs with audio
+- **🎯 One-Click Action**: Manually close old tabs anytime
+- **📊 Real-time Stats**: Monitor total tabs, eligible tabs, and oldest tab age
+- **🌍 Multi-language**: English, French, Spanish, German support
+- **🎨 Modern UI**: Beautiful, responsive interface with dark mode
+- **🔒 Privacy-focused**: No data collection, works offline
+- **⚡ Lightweight**: Minimal memory footprint
 
-### Méthode 1: Installation développeur (recommandée pour test)
+## 📸 Screenshots
 
-1. **Télécharger l'extension**
-   ```bash
-   git clone https://github.com/votre-username/FFTabClose.git
-   cd FFTabClose
-   ```
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Light Mode](docs/screenshot-light.png) | ![Dark Mode](docs/screenshot-dark.png) |
 
-2. **Ouvrir Firefox et accéder aux extensions**
-   - Tapez `about:debugging` dans la barre d'adresse
-   - Cliquez sur "Ce Firefox" dans le menu de gauche
-   - Cliquez sur "Charger un module complémentaire temporaire..."
+## 🚀 Installation
 
-3. **Sélectionner le fichier manifest**
-   - Naviguez vers le dossier FFTabClose
-   - Sélectionnez le fichier `manifest.json`
-   - L'extension sera installée temporairement
+### Firefox Add-ons Store (Recommended)
+*Coming soon - under review*
 
-### Méthode 2: Installation via fichier XPI (production)
+### Manual Installation (Development)
+1. Download the latest [release](https://github.com/your-username/FFTabClose/releases)
+2. Open Firefox/Zen Browser
+3. Navigate to `about:debugging`
+4. Click "This Firefox"
+5. Click "Load Temporary Add-on"
+6. Select the downloaded `.xpi` file
 
-1. **Créer le package XPI**
-   ```bash
-   cd FFTabClose
-   zip -r fftabclose.xpi * -x "*.git*" "*.DS_Store*" "README.md"
-   ```
+### Build from Source
+```bash
+git clone https://github.com/your-username/FFTabClose.git
+cd FFTabClose
+chmod +x build.sh
+./build.sh
+```
 
-2. **Installer le XPI**
-   - Ouvrez Firefox
-   - Glissez-déposez le fichier `fftabclose.xpi` dans Firefox
-   - Confirmez l'installation
+## 🎛️ Configuration
 
-## 🔧 Configuration
+### Time Settings
+- **15 minutes** - Quick cleanup for active browsing
+- **30 minutes** - Short sessions
+- **1-2 hours** - Work sessions
+- **4-8 hours** - Extended work periods
+- **12 hours** - Default, daily cleanup
+- **24-48 hours** - Long-term projects
 
-### Paramètres principaux
+### Exclusions
+- **Pinned Tabs**: Always excluded (recommended)
+- **Audio Tabs**: Tabs playing sound (recommended)
 
-- **État** : Activer/désactiver l'extension
-- **Délai de fermeture** : De 1 heure à 72 heures (3 jours)
-- **Onglets épinglés** : Exclure automatiquement les onglets épinglés
-- **Onglets avec audio** : Exclure les onglets qui diffusent de l'audio
+### Manual Actions
+- **Close Old Tabs Now**: Immediate cleanup based on current settings
+- **Real-time Stats**: Monitor tab counts and oldest tab age
 
-### Préréglages rapides
+## 🔧 Technical Details
 
-- **1 heure** : Pour une gestion très stricte
-- **6 heures** : Pour une demi-journée de travail
-- **12 heures** : Paramètre par défaut (recommandé)
-- **24 heures** : Pour conserver les onglets une journée complète
+### Permissions Required
+- `tabs` - Read tab information and close tabs
+- `storage` - Save user preferences
+- `alarms` - Schedule automatic checks
 
-### Actions manuelles
+### Browser Compatibility
+- **Firefox**: 109.0+
+- **Zen Browser**: All versions
+- **Manifest**: V2 (Firefox standard)
 
-- **Fermer maintenant** : Force la fermeture des onglets éligibles
-- **Réinitialiser** : Remet à zéro les compteurs de temps
+### Architecture
+- **Background Script**: Persistent monitoring and cleanup
+- **Popup Interface**: User settings and manual controls
+- **Storage**: Local preferences with sync capability
+- **i18n**: Full internationalization support
 
-## 📊 Interface utilisateur
+## 🌍 Internationalization
 
-L'extension affiche en temps réel :
-- **Nombre total d'onglets** ouverts
-- **Onglets éligibles** pour fermeture
-- **Âge du plus ancien** onglet (en minutes)
+FFTabClose supports multiple languages:
 
-## 🔒 Sécurité et confidentialité
+| Language | Code | Status |
+|----------|------|--------|
+| English | `en` | ✅ Complete |
+| French | `fr` | ✅ Complete |
+| Spanish | `es` | ✅ Complete |
+| German | `de` | ✅ Complete |
 
-- **Aucune donnée externe** : Tout reste sur votre appareil
-- **Permissions minimales** : Seules les permissions nécessaires
-- **Code open source** : Entièrement auditable
-- **Pas de télémétrie** : Aucun suivi ou analyse
+Want to add your language? See [Contributing](#contributing).
 
-## 🛠️ Développement
+## 🛠️ Development
 
-### Structure du projet
+### Prerequisites
+- Node.js (optional, for development tools)
+- Git
+- Firefox/Zen Browser for testing
 
+### Setup
+```bash
+# Clone repository
+git clone https://github.com/your-username/FFTabClose.git
+cd FFTabClose
+
+# Install development dependencies (optional)
+npm install
+
+# Build extension
+./build.sh
+
+# Validate build
+./validate.sh
+```
+
+### Project Structure
 ```
 FFTabClose/
-├── manifest.json          # Configuration de l'extension
-├── background.js          # Logique principale
-├── popup.html            # Interface utilisateur
-├── popup.css             # Styles de l'interface
-├── popup.js              # Interactions utilisateur
-├── icons/                # Icônes de l'extension
-│   ├── icon-16.svg
-│   ├── icon-32.svg
-│   ├── icon-48.svg
-│   └── icon-128.svg
-└── README.md             # Documentation
+├── manifest.json          # Extension manifest
+├── background.js          # Background service worker
+├── popup.html            # Popup interface
+├── popup.js              # Popup logic
+├── popup.css             # Popup styles
+├── icons/                # Extension icons
+├── _locales/             # Internationalization
+│   ├── en/messages.json
+│   ├── fr/messages.json
+│   ├── es/messages.json
+│   └── de/messages.json
+├── build/                # Build output
+├── dist/                 # Distribution packages
+├── build.sh              # Build script
+├── validate.sh           # Validation script
+└── docs/                 # Documentation
 ```
 
-### Architecture technique
+### Testing
+1. Load the extension in Firefox (`about:debugging`)
+2. Open multiple tabs
+3. Wait for configured time period
+4. Verify tabs are closed according to settings
+5. Test manual actions and settings changes
 
-- **WebExtensions API** : Compatible Firefox/Chrome
-- **Background script** : Surveillance continue des onglets
-- **Storage API** : Sauvegarde des préférences utilisateur
-- **Tabs API** : Gestion intelligente des onglets
+## 📋 Contributing
 
-### Fonctionnalités avancées
+We welcome contributions! Here's how you can help:
 
-- **Détection d'état** : Vérifie si les onglets sont actifs, épinglés, ou diffusent de l'audio
-- **Gestion temporelle** : Suivi précis de l'âge de chaque onglet
-- **Interface réactive** : Mise à jour automatique des statistiques
-- **Gestion d'erreurs** : Récupération gracieuse en cas de problème
+### 🐛 Bug Reports
+1. Check existing [issues](https://github.com/your-username/FFTabClose/issues)
+2. Create a new issue with:
+   - Clear description
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Browser version and OS
 
-## 🎨 Personnalisation
+### 🌟 Feature Requests
+1. Check existing [feature requests](https://github.com/your-username/FFTabClose/issues?q=is%3Aissue+label%3Aenhancement)
+2. Create a new issue with:
+   - Clear use case
+   - Detailed description
+   - Benefits and potential drawbacks
 
-### Modifier les délais
+### 🔨 Code Contributions
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Test thoroughly
+5. Commit with clear messages: `git commit -m 'Add amazing feature'`
+6. Push to your fork: `git push origin feature/amazing-feature`
+7. Open a Pull Request
 
-Vous pouvez ajuster les délais dans `background.js` :
+### 🌍 Translations
+1. Copy `_locales/en/messages.json`
+2. Create new folder: `_locales/[language-code]/`
+3. Translate all strings
+4. Test with your browser language
+5. Submit a Pull Request
 
-```javascript
-// Délais personnalisés (en millisecondes)
-const CUSTOM_DELAYS = {
-  quick: 30 * 60 * 1000,     // 30 minutes
-  normal: 12 * 60 * 60 * 1000, // 12 heures
-  long: 48 * 60 * 60 * 1000   // 48 heures
-};
-```
+### Code Style
+- Use modern JavaScript (ES6+)
+- Follow existing code patterns
+- Add comments for complex logic
+- Test all changes thoroughly
 
-### Modifier l'apparence
+## 📄 License
 
-Les styles sont dans `popup.css`. Vous pouvez :
-- Changer les couleurs du thème
-- Ajuster la taille du popup
-- Modifier les animations
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🐛 Dépannage
+## 🙏 Acknowledgments
 
-### L'extension ne fonctionne pas
-
-1. **Vérifier les permissions**
-   - L'extension a-t-elle accès aux onglets ?
-   - Les permissions de stockage sont-elles accordées ?
-
-2. **Consulter la console**
-   - Ouvrez `about:debugging`
-   - Cliquez sur "Inspecter" à côté de l'extension
-   - Vérifiez les erreurs dans la console
-
-3. **Réinstaller l'extension**
-   - Supprimez l'extension
-   - Redémarrez Firefox
-   - Réinstallez l'extension
-
-### Les onglets ne se ferment pas
-
-1. **Vérifier la configuration**
-   - L'extension est-elle activée ?
-   - Le délai est-il approprié ?
-
-2. **Vérifier les exclusions**
-   - Les onglets sont-ils épinglés ?
-   - Diffusent-ils de l'audio ?
-   - Sont-ils actuellement actifs ?
-
-## 🤝 Contribution
-
-1. **Fork** le projet
-2. **Créer** une branche feature (`git checkout -b feature/nouvelle-fonctionnalite`)
-3. **Commiter** vos changements (`git commit -am 'Ajouter nouvelle fonctionnalite'`)
-4. **Pusher** vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
-5. **Créer** une Pull Request
-
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## 🙏 Remerciements
-
-- **Arc Browser** : Inspiration pour la fonctionnalité de fermeture automatique
-- **Zen Browser** : Compatibilité et test sur cette variante Firefox
-- **Communauté Firefox** : Pour les APIs et la documentation
+- Icon design inspired by modern browser interfaces
+- Built with Firefox WebExtensions API
+- Thanks to the open-source community for feedback and contributions
 
 ## 📞 Support
 
-- **Issues** : [GitHub Issues](https://github.com/votre-username/FFTabClose/issues)
-- **Email** : support@fftabclose.extension
-- **Documentation** : [Wiki du projet](https://github.com/votre-username/FFTabClose/wiki)
+- **Issues**: [GitHub Issues](https://github.com/your-username/FFTabClose/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/FFTabClose/discussions)
+- **Email**: support@example.com
 
 ---
 
-**Fait avec ❤️ pour améliorer votre expérience de navigation**
+<div align="center">
+
+Made with ❤️ by the FFTabClose team
+
+[⭐ Star us on GitHub](https://github.com/your-username/FFTabClose) • [🐛 Report a Bug](https://github.com/your-username/FFTabClose/issues) • [💡 Request Feature](https://github.com/your-username/FFTabClose/issues)
+
+</div>

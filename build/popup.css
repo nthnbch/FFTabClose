@@ -3,7 +3,7 @@
  * Professional and clean design for the extension popup
  */
 
-/* Reset and base styles */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -29,7 +29,7 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-/* Header */
+
 .header {
   text-align: center;
   margin-bottom: 16px;
@@ -53,7 +53,7 @@ h1 {
   margin: 0;
 }
 
-/* Toggle Section */
+
 .toggle-section {
   margin-bottom: 16px;
 }
@@ -120,7 +120,7 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
-/* Settings Section */
+
 .settings-section {
   margin-bottom: 16px;
 }
@@ -168,7 +168,7 @@ input:checked + .slider:before {
   border-color: #cbd5e0;
 }
 
-/* Checkbox Group */
+
 .checkbox-group {
   display: flex;
   flex-direction: column;
@@ -224,7 +224,7 @@ input:checked + .slider:before {
   display: block;
 }
 
-/* Stats Section */
+
 .stats-section {
   margin-bottom: 16px;
 }
@@ -257,7 +257,7 @@ input:checked + .slider:before {
   letter-spacing: 0.5px;
 }
 
-/* Actions Section */
+
 .actions-section {
   margin-bottom: 8px;
 }
@@ -299,7 +299,7 @@ input:checked + .slider:before {
   box-shadow: none !important;
 }
 
-/* Save Indicator */
+
 .save-indicator {
   background: #c6f6d5;
   color: #276749;
@@ -319,7 +319,7 @@ input:checked + .slider:before {
   pointer-events: none;
 }
 
-/* Info Section */
+
 .info-section {
   margin-top: 8px;
 }
@@ -337,7 +337,7 @@ input:checked + .slider:before {
   line-height: 1.3;
 }
 
-/* Animations */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -353,7 +353,7 @@ input:checked + .slider:before {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 400px) {
   body {
     width: 320px;
@@ -369,7 +369,7 @@ input:checked + .slider:before {
   }
 }
 
-/* Dark mode support */
+
 @media (prefers-color-scheme: dark) {
   .container {
     background: rgba(26, 32, 44, 0.95);

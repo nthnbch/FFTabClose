@@ -29,7 +29,6 @@ async function initialize() {
   await loadTabTimestamps();
   await initializeExistingTabs();
   setupAlarm();
-  
 }
 
 /**
@@ -155,7 +154,6 @@ async function checkAndCloseTabs() {
       // Remove from timestamps
       tabsToClose.forEach(tabId => unregisterTab(tabId));
       await saveTabTimestamps();
-      
       
       
       // Show notification badge
