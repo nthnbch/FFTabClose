@@ -185,13 +185,18 @@ async function checkAndCloseTabs() {
     return;
   }
   try {
-    const [focusedWindow] = await browser.windows.getAll({populate: false, windowTypes: ['normal']});
-    const focusedWindowId = focusedWindow ? focusedWindow.id : null;
+    const windows = await browser.windows.getAll({populate: false, windowTypes: ['normal']});
+    let focusedWindowId = null;
+    for (const win of windows) {
+      if (win.focused) {
+        focusedWindowId = win.id;
+        break;
+      }
+    }
     const tabs = await browser.tabs.query({});
     const now = Date.now();
     const tabsToClose = [];
     const tabsToDiscard = [];
-    
     for (const tab of tabs) {
       // Only skip the active tab in the focused window
       if (tab.active && tab.windowId === focusedWindowId) {
@@ -201,52 +206,31 @@ async function checkAndCloseTabs() {
       if (action === 'close') {
         tabsToClose.push(tab.id);
       } else if (action === 'discard') {
-        if (!tab.discarded) {
-          tabsToDiscard.push(tab.id);
-        }
+        // Always try to discard pinned/essential tabs if requested, even if already discarded
+        tabsToDiscard.push(tab.id);
       }
     }
-    
     let totalProcessed = 0;
-    
-    // Close regular expired tabs
     if (tabsToClose.length > 0) {
-      console.log(`FFTabClose: Closing ${tabsToClose.length} expired tabs`);
       await browser.tabs.remove(tabsToClose);
-      
-      // Remove from timestamps
       tabsToClose.forEach(tabId => unregisterTab(tabId));
-      
-      console.log(`FFTabClose: Closed ${tabsToClose.length} expired tab(s)`);
       totalProcessed += tabsToClose.length;
     }
-    
-    // Discard pinned expired tabs
     if (tabsToDiscard.length > 0) {
-      console.log(`FFTabClose: Discarding ${tabsToDiscard.length} pinned tabs`);
       for (const tabId of tabsToDiscard) {
         try {
           await browser.tabs.discard(tabId);
-          // Reset timestamp for discarded tabs so they get a fresh start
           registerTab(tabId, now);
         } catch (error) {
           console.warn(`FFTabClose: Failed to discard tab ${tabId}:`, error);
         }
       }
-      
-      console.log(`FFTabClose: Discarded ${tabsToDiscard.length} pinned tab(s)`);
       totalProcessed += tabsToDiscard.length;
     }
-    
     if (totalProcessed > 0) {
       await saveTabTimestamps();
-      
-      // Show notification badge
       await showNotificationBadge(totalProcessed);
-    } else {
-      console.log('FFTabClose: No tabs to process');
     }
-    
   } catch (error) {
     console.error('FFTabClose: Error checking tabs:', error);
   }
