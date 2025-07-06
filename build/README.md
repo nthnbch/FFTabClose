@@ -16,6 +16,7 @@
 
 - **🕒 Automatic Tab Closure**: Configurable timer (15 minutes to 48 hours)
 - **📌 Smart Exclusions**: Never closes pinned tabs or tabs with audio
+- **💤 Tab Discarding**: Option to discard (unload) pinned tabs instead of closing them
 - **🎯 One-Click Action**: Manually close old tabs anytime
 - **📊 Real-time Stats**: Monitor total tabs, eligible tabs, and oldest tab age
 - **🌍 Multi-language**: English, French, Spanish, German support
@@ -50,6 +51,38 @@ chmod +x build.sh
 ./build.sh
 ```
 
+## 📖 How It Works
+
+### ⏰ Timer System
+FFTabClose uses a **persistent timestamp system** that tracks when each tab was last accessed:
+
+- **Tab Creation**: New tabs get a timestamp when created
+- **Tab Interaction**: Timestamp updates when you switch to a tab or reload it
+- **Cross-Session Persistence**: Timestamps survive browser restarts and system sleep
+- **Age Calculation**: Extension calculates tab age in real-time on each check
+
+### 🔄 Automatic Processing
+Every 5 minutes, the extension checks all tabs and determines actions based on age:
+
+1. **Active Tab**: Never touched (safety measure)
+2. **Recently Used**: Under time limit → No action
+3. **Expired Regular Tabs**: Over time limit → **Closed**
+4. **Expired Pinned Tabs**: Over time limit → **Discarded** (if enabled) or excluded
+
+### 💤 Tab Discarding vs Closing
+
+| Action | What Happens | Memory | Tab Visibility | Data Loss |
+|--------|--------------|--------|----------------|-----------|
+| **Close** | Tab removed completely | ✅ Freed | ❌ Gone | ⚠️ Possible |
+| **Discard** | Tab unloaded from memory | ✅ Freed | ✅ Stays visible | ✅ None |
+
+**Discarding Benefits:**
+- 🧠 **Memory Efficient**: Unloads tab content from RAM
+- 👀 **Visual Continuity**: Tab stays in tab bar with title/favicon  
+- 🔄 **Auto-Reload**: Page reloads when you click the tab
+- 📌 **Perfect for Pinned Tabs**: Keep important tabs without memory cost
+- ⚡ **Instant Recovery**: No need to remember URLs or navigate back
+
 ## 🎛️ Configuration
 
 ### Time Settings
@@ -61,8 +94,16 @@ chmod +x build.sh
 - **24-48 hours** - Long-term projects
 
 ### Exclusions
-- **Pinned Tabs**: Always excluded (recommended)
-- **Audio Tabs**: Tabs playing sound (recommended)
+- **Pinned Tabs**: Can be excluded or discarded (unloaded) to save memory
+- **Audio Tabs**: Tabs playing sound (recommended to exclude)
+- **Discard vs. Close**: Discarded tabs stay open but are unloaded from memory
+
+### Tab Discarding
+When "Discard pinned tabs" is enabled:
+- ✅ Pinned tabs stay visible in the tab bar
+- ✅ Tab content is unloaded from memory (saves RAM)
+- ✅ Tab reloads automatically when clicked
+- ✅ Perfect for keeping important tabs without memory impact
 
 ### Manual Actions
 - **Close Old Tabs Now**: Immediate cleanup based on current settings

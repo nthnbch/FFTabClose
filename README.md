@@ -51,6 +51,38 @@ chmod +x build.sh
 ./build.sh
 ```
 
+## 📖 How It Works
+
+### ⏰ Timer System
+FFTabClose uses a **persistent timestamp system** that tracks when each tab was last accessed:
+
+- **Tab Creation**: New tabs get a timestamp when created
+- **Tab Interaction**: Timestamp updates when you switch to a tab or reload it
+- **Cross-Session Persistence**: Timestamps survive browser restarts and system sleep
+- **Age Calculation**: Extension calculates tab age in real-time on each check
+
+### 🔄 Automatic Processing
+Every 5 minutes, the extension checks all tabs and determines actions based on age:
+
+1. **Active Tab**: Never touched (safety measure)
+2. **Recently Used**: Under time limit → No action
+3. **Expired Regular Tabs**: Over time limit → **Closed**
+4. **Expired Pinned Tabs**: Over time limit → **Discarded** (if enabled) or excluded
+
+### 💤 Tab Discarding vs Closing
+
+| Action | What Happens | Memory | Tab Visibility | Data Loss |
+|--------|--------------|--------|----------------|-----------|
+| **Close** | Tab removed completely | ✅ Freed | ❌ Gone | ⚠️ Possible |
+| **Discard** | Tab unloaded from memory | ✅ Freed | ✅ Stays visible | ✅ None |
+
+**Discarding Benefits:**
+- 🧠 **Memory Efficient**: Unloads tab content from RAM
+- 👀 **Visual Continuity**: Tab stays in tab bar with title/favicon  
+- 🔄 **Auto-Reload**: Page reloads when you click the tab
+- 📌 **Perfect for Pinned Tabs**: Keep important tabs without memory cost
+- ⚡ **Instant Recovery**: No need to remember URLs or navigate back
+
 ## 🎛️ Configuration
 
 ### Time Settings

@@ -144,7 +144,7 @@ async function checkAndCloseTabs() {
     const tabsToDiscard = [];
     
     for (const tab of tabs) {
-      const action = await getTabAction(tab, now);
+      const action = getTabAction(tab, now);
       if (action === 'close') {
         tabsToClose.push(tab.id);
       } else if (action === 'discard') {
@@ -194,7 +194,7 @@ async function checkAndCloseTabs() {
 /**
  * Determine what action to take for a tab (close, discard, or none)
  */
-async function getTabAction(tab, now) {
+function getTabAction(tab, now) {
   // Never touch active tab
   if (tab.active) return 'none';
   
@@ -268,7 +268,7 @@ async function getStats() {
     
     for (const tab of tabs) {
       if (!tab.active) {
-        const action = await getTabAction(tab, now);
+        const action = getTabAction(tab, now);
         if (action === 'close') {
           eligibleTabs++;
         } else if (action === 'discard') {
