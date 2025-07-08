@@ -26,13 +26,11 @@ let currentConfig = { ...DEFAULT_CONFIG };
  * Initialize extension on startup/install
  */
 async function initialize() {
-  console.log('FFTabClose: Initializing extension...');
   try {
     await loadConfiguration();
     await loadTabTimestamps();
     await initializeExistingTabs();
     await setupAlarm();
-    console.log('FFTabClose: Extension initialized successfully');
   } catch (error) {
     console.error('FFTabClose: Failed to initialize extension:', error);
   }
@@ -227,7 +225,6 @@ async function checkAndCloseTabs() {
     return;
   }
   try {
-    console.log('FFTabClose: Starting tab check...');
     
     // Get ALL tabs from ALL windows and workspaces - more comprehensive approach
     let tabs = [];
@@ -235,7 +232,6 @@ async function checkAndCloseTabs() {
     try {
       // Try to get all tabs directly first (works across all spaces in Zen Browser)
       tabs = await browser.tabs.query({});
-      console.log(`FFTabClose: Found ${tabs.length} total tabs across all spaces`);
     } catch (error) {
       console.warn('FFTabClose: Direct tab query failed, trying window-based approach:', error);
       
@@ -248,18 +244,15 @@ async function checkAndCloseTabs() {
       for (const window of allWindows) {
         tabs.push(...window.tabs);
       }
-      console.log(`FFTabClose: Found ${tabs.length} tabs from ${allWindows.length} windows`);
     }
     
     if (tabs.length === 0) {
-      console.log('FFTabClose: No tabs found, skipping check');
       return;
     }
 
     // For automatic processing, protect all currently active tabs
     // (one per window/workspace in Zen Browser)
     const activeTabs = tabs.filter(tab => tab.active).map(tab => tab.id);
-    console.log(`FFTabClose: Protecting ${activeTabs.length} active tabs: ${activeTabs.join(', ')}`);
     
     const now = Date.now();
     const tabsToClose = [];
@@ -281,45 +274,59 @@ async function checkAndCloseTabs() {
     
     console.log(`FFTabClose: Tabs to close: ${tabsToClose.length}, Tabs to discard: ${tabsToDiscard.length}`);
     
-    // Process in parallel when possible
-    const promises = [];
+    // Process closures first with proper error handling
     let totalProcessed = 0;
     
     if (tabsToClose.length > 0) {
-      promises.push(
-        browser.tabs.remove(tabsToClose).then(() => {
-          tabsToClose.forEach(tabId => unregisterTab(tabId));
-          totalProcessed += tabsToClose.length;
-        })
-      );
-    }
-    
-    if (tabsToDiscard.length > 0) {
-      // Process discards in smaller batches to avoid overwhelming the browser
-      const batchSize = 10;
-      for (let i = 0; i < tabsToDiscard.length; i += batchSize) {
-        const batch = tabsToDiscard.slice(i, i + batchSize);
-        promises.push(
-          Promise.all(batch.map(async (tabId) => {
-            try {
-              await browser.tabs.discard(tabId);
-              registerTab(tabId, now);
-              return true;
-            } catch (error) {
-              console.warn(`FFTabClose: Failed to discard tab ${tabId}:`, error);
-              return false;
-            }
-          })).then(results => {
-            totalProcessed += results.filter(Boolean).length;
-          })
-        );
+      console.log(`FFTabClose: Attempting to close ${tabsToClose.length} tabs`);
+      try {
+        await browser.tabs.remove(tabsToClose);
+        console.log(`FFTabClose: Successfully closed ${tabsToClose.length} tabs`);
+        tabsToClose.forEach(tabId => unregisterTab(tabId));
+        totalProcessed += tabsToClose.length;
+      } catch (error) {
+        console.error('FFTabClose: Batch close failed, trying individually:', error);
+        // Try closing tabs individually as fallback
+        const results = await Promise.allSettled(tabsToClose.map(async (tabId) => {
+          try {
+            await browser.tabs.remove(tabId);
+            unregisterTab(tabId);
+            return true;
+          } catch (individualError) {
+            console.warn(`FFTabClose: Failed to close tab ${tabId}:`, individualError);
+            return false;
+          }
+        }));
+        totalProcessed += results.filter(r => r.status === 'fulfilled' && r.value === true).length;
       }
     }
     
-    await Promise.all(promises);
+    // Process discards with comprehensive error handling
+    if (tabsToDiscard.length > 0) {
+      console.log(`FFTabClose: Attempting to discard ${tabsToDiscard.length} tabs`);
+      const batchSize = 5; // Smaller batch size for better reliability
+      
+      for (let i = 0; i < tabsToDiscard.length; i += batchSize) {
+        const batch = tabsToDiscard.slice(i, i + batchSize);
+        const batchResults = await Promise.allSettled(batch.map(async (tabId) => {
+          try {
+            await browser.tabs.discard(tabId);
+            registerTab(tabId, now);
+            return true;
+          } catch (error) {
+            console.warn(`FFTabClose: Failed to discard tab ${tabId}:`, error);
+            return false;
+          }
+        }));
+        
+        const successCount = batchResults.filter(r => r.status === 'fulfilled' && r.value === true).length;
+        totalProcessed += successCount;
+      }
+    }
     
+    // Save state and show notification if any tabs were processed
     if (totalProcessed > 0) {
-      await Promise.all([
+      await Promise.allSettled([
         saveTabTimestamps(),
         showNotificationBadge(totalProcessed)
       ]);
@@ -513,10 +520,8 @@ async function handleMessage(message, sender, sendResponse) {
         break;
         
       case 'manualClose':
-        console.log('FFTabClose: Received manualClose request');
         // Manual close - process ALL eligible tabs, including active ones in other windows
         await manualCloseOldTabs();
-        console.log('FFTabClose: Manual close completed');
         sendResponse({ success: true });
         break;
         
@@ -555,7 +560,6 @@ async function handleMessage(message, sender, sendResponse) {
             action: getTabActionReal(tab, debugNow)
           }))
         };
-        console.log('FFTabClose Debug Info:', debugInfo);
         sendResponse({ success: true, debugInfo });
         break;
         
@@ -584,7 +588,6 @@ async function manualCloseOldTabs() {
     return;
   }
   try {
-    console.log('FFTabClose: Starting manual close...');
     
     // Get ALL tabs from ALL windows and workspaces - comprehensive approach
     let tabs = [];
@@ -592,7 +595,6 @@ async function manualCloseOldTabs() {
     try {
       // Try to get all tabs directly first (works across all spaces in Zen Browser)
       tabs = await browser.tabs.query({});
-      console.log(`FFTabClose: Manual close found ${tabs.length} total tabs across all spaces`);
     } catch (error) {
       console.warn('FFTabClose: Direct tab query failed in manual close, trying window-based approach:', error);
       
@@ -605,11 +607,9 @@ async function manualCloseOldTabs() {
       for (const window of allWindows) {
         tabs.push(...window.tabs);
       }
-      console.log(`FFTabClose: Manual close found ${tabs.length} tabs from ${allWindows.length} windows`);
     }
     
     if (tabs.length === 0) {
-      console.log('FFTabClose: No tabs found for manual close');
       return;
     }
     
@@ -642,46 +642,61 @@ async function manualCloseOldTabs() {
         tabsToDiscard.push(tab.id);
       }
     }
+    console.log(`FFTabClose: Manual close - ${tabsToClose.length} to close, ${tabsToDiscard.length} to discard`);
     
-    // Process in parallel when possible
-    const promises = [];
+    // Process closures first with proper error handling
     let totalProcessed = 0;
     
     if (tabsToClose.length > 0) {
-      promises.push(
-        browser.tabs.remove(tabsToClose).then(() => {
-          tabsToClose.forEach(tabId => unregisterTab(tabId));
-          totalProcessed += tabsToClose.length;
-        })
-      );
-    }
-    
-    if (tabsToDiscard.length > 0) {
-      // Process discards in smaller batches to avoid overwhelming the browser
-      const batchSize = 10;
-      for (let i = 0; i < tabsToDiscard.length; i += batchSize) {
-        const batch = tabsToDiscard.slice(i, i + batchSize);
-        promises.push(
-          Promise.all(batch.map(async (tabId) => {
-            try {
-              await browser.tabs.discard(tabId);
-              registerTab(tabId, now);
-              return true;
-            } catch (error) {
-              console.warn(`FFTabClose: Failed to discard tab ${tabId}:`, error);
-              return false;
-            }
-          })).then(results => {
-            totalProcessed += results.filter(Boolean).length;
-          })
-        );
+      console.log(`FFTabClose: Manual close - attempting to close ${tabsToClose.length} tabs`);
+      try {
+        await browser.tabs.remove(tabsToClose);
+        console.log(`FFTabClose: Manual close - successfully closed ${tabsToClose.length} tabs`);
+        tabsToClose.forEach(tabId => unregisterTab(tabId));
+        totalProcessed += tabsToClose.length;
+      } catch (error) {
+        console.error('FFTabClose: Manual close - batch close failed, trying individually:', error);
+        // Try closing tabs individually as fallback
+        const results = await Promise.allSettled(tabsToClose.map(async (tabId) => {
+          try {
+            await browser.tabs.remove(tabId);
+            unregisterTab(tabId);
+            return true;
+          } catch (individualError) {
+            console.warn(`FFTabClose: Manual close - failed to close tab ${tabId}:`, individualError);
+            return false;
+          }
+        }));
+        totalProcessed += results.filter(r => r.status === 'fulfilled' && r.value === true).length;
       }
     }
     
-    await Promise.all(promises);
+    // Process discards with comprehensive error handling
+    if (tabsToDiscard.length > 0) {
+      console.log(`FFTabClose: Manual close - attempting to discard ${tabsToDiscard.length} tabs`);
+      const batchSize = 5; // Smaller batch size for better reliability
+      
+      for (let i = 0; i < tabsToDiscard.length; i += batchSize) {
+        const batch = tabsToDiscard.slice(i, i + batchSize);
+        const batchResults = await Promise.allSettled(batch.map(async (tabId) => {
+          try {
+            await browser.tabs.discard(tabId);
+            registerTab(tabId, now);
+            return true;
+          } catch (error) {
+            console.warn(`FFTabClose: Manual close - failed to discard tab ${tabId}:`, error);
+            return false;
+          }
+        }));
+        
+        const successCount = batchResults.filter(r => r.status === 'fulfilled' && r.value === true).length;
+        totalProcessed += successCount;
+      }
+    }
     
+    // Save state and show notification if any tabs were processed
     if (totalProcessed > 0) {
-      await Promise.all([
+      await Promise.allSettled([
         saveTabTimestamps(),
         showNotificationBadge(totalProcessed)
       ]);

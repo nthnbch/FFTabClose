@@ -1,3 +1,7 @@
 SECURITY_AUDIT.md
 node_modules
 FUNCTIONAL_AUDIT.md
+CORRECTIONS_DETAILED.md
+debug.html
+debug_tabs.js
+test_quick.sh
