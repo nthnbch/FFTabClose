@@ -243,6 +243,18 @@ class PopupController {
       this.elements.closeOldNow.addEventListener('click', () => {
         this.closeOldTabsNow();
       });
+      
+      // Debug: double-click for test mode
+      this.elements.closeOldNow.addEventListener('dblclick', async () => {
+        try {
+          const response = await this.sendMessage({ action: 'testMode' });
+          if (response && response.success) {
+            this.showSaveIndicator('Test mode: All tabs marked as old');
+          }
+        } catch (error) {
+          console.error('FFTabClose: Test mode failed:', error);
+        }
+      });
     }
   }
   

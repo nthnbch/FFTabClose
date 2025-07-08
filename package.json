@@ -1,6 +1,6 @@
 {
   "name": "fftabclose",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Extension Firefox qui ferme automatiquement les onglets non utilisés après un délai configurable. Compatible Zen Browser.",
   "main": "background.js",
   "scripts": {

@@ -243,6 +243,20 @@ class PopupController {
       this.elements.closeOldNow.addEventListener('click', () => {
         this.closeOldTabsNow();
       });
+      
+      // Debug: double-click for test mode
+      this.elements.closeOldNow.addEventListener('dblclick', async () => {
+        console.log('FFTabClose: Test mode activated');
+        try {
+          const response = await this.sendMessage({ action: 'testMode' });
+          console.log('FFTabClose: Test mode response:', response);
+          if (response && response.success) {
+            this.showSaveIndicator('Test mode: All tabs marked as old');
+          }
+        } catch (error) {
+          console.error('FFTabClose: Test mode failed:', error);
+        }
+      });
     }
   }
   
@@ -305,12 +319,15 @@ class PopupController {
     if (!this.elements.closeOldNow) return;
     
     try {
+      console.log('FFTabClose: Manual close button clicked');
       this.elements.closeOldNow.disabled = true;
       const originalText = this.elements.closeOldNow.textContent;
       this.elements.closeOldNow.textContent = browser.i18n?.getMessage('closingTabs') || 'Closing tabs...';
       
+      console.log('FFTabClose: Sending manualClose message to background');
       // Use manualClose action for immediate processing of all eligible tabs
       const response = await this.sendMessage({ action: 'manualClose' });
+      console.log('FFTabClose: Received response:', response);
       
       if (response && response.success) {
         await this.loadStats();

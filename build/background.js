@@ -225,15 +225,31 @@ async function checkAndCloseTabs() {
     return;
   }
   try {
-    // Get ALL tabs from ALL windows and workspaces
-    const allWindows = await browser.windows.getAll({populate: true, windowTypes: ['normal']});
-    const tabs = [];
     
-    // Flatten all tabs from all windows
-    for (const window of allWindows) {
-      tabs.push(...window.tabs);
+    // Get ALL tabs from ALL windows and workspaces - more comprehensive approach
+    let tabs = [];
+    
+    try {
+      // Try to get all tabs directly first (works across all spaces in Zen Browser)
+      tabs = await browser.tabs.query({});
+    } catch (error) {
+      console.warn('FFTabClose: Direct tab query failed, trying window-based approach:', error);
+      
+      // Fallback: get tabs from windows
+      const allWindows = await browser.windows.getAll({
+        populate: true, 
+        windowTypes: ['normal', 'popup', 'panel', 'app', 'devtools']
+      });
+      
+      for (const window of allWindows) {
+        tabs.push(...window.tabs);
+      }
     }
     
+    if (tabs.length === 0) {
+      return;
+    }
+
     // For automatic processing, protect all currently active tabs
     // (one per window/workspace in Zen Browser)
     const activeTabs = tabs.filter(tab => tab.active).map(tab => tab.id);
@@ -255,6 +271,7 @@ async function checkAndCloseTabs() {
         tabsToDiscard.push(tab.id);
       }
     }
+    
     
     // Process in parallel when possible
     const promises = [];
@@ -299,6 +316,7 @@ async function checkAndCloseTabs() {
         showNotificationBadge(totalProcessed)
       ]);
     }
+    
   } catch (error) {
     console.error('FFTabClose: Error checking tabs:', error);
   }
@@ -364,13 +382,24 @@ async function showNotificationBadge(count) {
  */
 async function getStats() {
   try {
-    // Get ALL tabs from ALL windows and workspaces
-    const allWindows = await browser.windows.getAll({populate: true, windowTypes: ['normal']});
-    const tabs = [];
+    // Get ALL tabs from ALL windows and workspaces - comprehensive approach
+    let tabs = [];
     
-    // Flatten all tabs from all windows
-    for (const window of allWindows) {
-      tabs.push(...window.tabs);
+    try {
+      // Try to get all tabs directly first (works across all spaces in Zen Browser)
+      tabs = await browser.tabs.query({});
+    } catch (error) {
+      console.warn('FFTabClose: Direct tab query failed in getStats, trying window-based approach:', error);
+      
+      // Fallback: get tabs from windows
+      const allWindows = await browser.windows.getAll({
+        populate: true, 
+        windowTypes: ['normal', 'popup', 'panel', 'app', 'devtools']
+      });
+      
+      for (const window of allWindows) {
+        tabs.push(...window.tabs);
+      }
     }
     
     const now = Date.now();
@@ -543,13 +572,29 @@ async function manualCloseOldTabs() {
     return;
   }
   try {
-    // Get ALL tabs from ALL windows and workspaces
-    const allWindows = await browser.windows.getAll({populate: true, windowTypes: ['normal']});
-    const tabs = [];
     
-    // Flatten all tabs from all windows
-    for (const window of allWindows) {
-      tabs.push(...window.tabs);
+    // Get ALL tabs from ALL windows and workspaces - comprehensive approach
+    let tabs = [];
+    
+    try {
+      // Try to get all tabs directly first (works across all spaces in Zen Browser)
+      tabs = await browser.tabs.query({});
+    } catch (error) {
+      console.warn('FFTabClose: Direct tab query failed in manual close, trying window-based approach:', error);
+      
+      // Fallback: get tabs from windows
+      const allWindows = await browser.windows.getAll({
+        populate: true, 
+        windowTypes: ['normal', 'popup', 'panel', 'app', 'devtools']
+      });
+      
+      for (const window of allWindows) {
+        tabs.push(...window.tabs);
+      }
+    }
+    
+    if (tabs.length === 0) {
+      return;
     }
     
     const now = Date.now();

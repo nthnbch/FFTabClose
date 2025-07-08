@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 
 # Variables
 EXTENSION_NAME="fftabclose"
-VERSION="1.0.0"
+VERSION="1.0.1"
 BUILD_DIR="build"
 DIST_DIR="dist"
 
