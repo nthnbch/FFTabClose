@@ -53,9 +53,17 @@ class PopupController {
       const elements = document.querySelectorAll('[data-i18n]');
       elements.forEach(element => {
         const key = element.getAttribute('data-i18n');
+        
+        // Validation de la clé
+        if (!key || typeof key !== 'string' || !key.trim()) {
+          console.warn('FFTabClose: Invalid i18n key:', key);
+          return;
+        }
+        
         if (browser.i18n && browser.i18n.getMessage) {
           const message = browser.i18n.getMessage(key);
           if (message) {
+            // Échapper le contenu pour éviter les injections
             element.textContent = message;
           }
         }
@@ -243,6 +251,34 @@ class PopupController {
    */
   async updateConfigValue(key, value) {
     try {
+      // Validation des paramètres
+      if (typeof key !== 'string' || !key.trim()) {
+        throw new Error('Invalid configuration key');
+      }
+      
+      // Validation des clés autorisées
+      const allowedKeys = ['autoCloseTime', 'enabled', 'excludePinned', 'excludeAudible', 'discardPinned'];
+      if (!allowedKeys.includes(key)) {
+        throw new Error(`Invalid configuration key: ${key}`);
+      }
+      
+      // Validation des valeurs selon le type
+      switch (key) {
+        case 'autoCloseTime':
+          if (typeof value !== 'number' || value < 120000 || value > 172800000) {
+            throw new Error('Invalid autoCloseTime value');
+          }
+          break;
+        case 'enabled':
+        case 'excludePinned':
+        case 'excludeAudible':
+        case 'discardPinned':
+          if (typeof value !== 'boolean') {
+            throw new Error(`Invalid boolean value for ${key}`);
+          }
+          break;
+      }
+      
       this.config[key] = value;
       
       const response = await this.sendMessage({
@@ -348,7 +384,20 @@ class PopupController {
    */
   sendMessage(message) {
     return new Promise((resolve, reject) => {
+      // Validation du message avant envoi
+      if (!message || typeof message !== 'object' || !message.action) {
+        reject(new Error('Invalid message format'));
+        return;
+      }
+      
+      // Timeout pour éviter les blocages
+      const timeout = setTimeout(() => {
+        reject(new Error('Message timeout'));
+      }, 5000);
+      
       browser.runtime.sendMessage(message, (response) => {
+        clearTimeout(timeout);
+        
         if (browser.runtime.lastError) {
           reject(browser.runtime.lastError);
         } else if (response && response.error) {

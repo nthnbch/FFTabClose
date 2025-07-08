@@ -46,5 +46,7 @@
       "id": "fftabclose@nathan.swiss",
       "strict_min_version": "109.0"
     }
-  }
+  },
+  
+  "content_security_policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; worker-src 'none'; frame-src 'none'"
 }

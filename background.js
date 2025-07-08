@@ -39,10 +39,37 @@ async function loadConfiguration() {
   try {
     const result = await browser.storage.sync.get(STORAGE_CONFIG_KEY);
     if (result[STORAGE_CONFIG_KEY]) {
-      currentConfig = { ...DEFAULT_CONFIG, ...result[STORAGE_CONFIG_KEY] };
+      const storedConfig = result[STORAGE_CONFIG_KEY];
+      
+      // Validation et sanitisation des données stockées
+      const sanitizedConfig = {};
+      
+      // Validation autoCloseTime
+      if (typeof storedConfig.autoCloseTime === 'number' && 
+          storedConfig.autoCloseTime >= 120000 && 
+          storedConfig.autoCloseTime <= 172800000) {
+        sanitizedConfig.autoCloseTime = storedConfig.autoCloseTime;
+      }
+      
+      // Validation boolean values
+      if (typeof storedConfig.enabled === 'boolean') {
+        sanitizedConfig.enabled = storedConfig.enabled;
+      }
+      if (typeof storedConfig.excludePinned === 'boolean') {
+        sanitizedConfig.excludePinned = storedConfig.excludePinned;
+      }
+      if (typeof storedConfig.excludeAudible === 'boolean') {
+        sanitizedConfig.excludeAudible = storedConfig.excludeAudible;
+      }
+      if (typeof storedConfig.discardPinned === 'boolean') {
+        sanitizedConfig.discardPinned = storedConfig.discardPinned;
+      }
+      
+      currentConfig = { ...DEFAULT_CONFIG, ...sanitizedConfig };
     }
   } catch (error) {
     console.warn('FFTabClose: Failed to load config, using defaults:', error);
+    currentConfig = { ...DEFAULT_CONFIG };
   }
 }
 
@@ -64,10 +91,34 @@ async function loadTabTimestamps() {
   try {
     const result = await browser.storage.local.get(STORAGE_TIMESTAMPS_KEY);
     if (result[STORAGE_TIMESTAMPS_KEY]) {
-      tabTimestamps = new Map(Object.entries(result[STORAGE_TIMESTAMPS_KEY]));
+      const storedTimestamps = result[STORAGE_TIMESTAMPS_KEY];
+      
+      // Validation et sanitisation des timestamps
+      const sanitizedTimestamps = new Map();
+      const now = Date.now();
+      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 jours maximum
+      
+      for (const [tabId, timestamp] of Object.entries(storedTimestamps)) {
+        // Validation du tabId (doit être un nombre)
+        const numericTabId = parseInt(tabId);
+        if (isNaN(numericTabId) || numericTabId <= 0) {
+          continue;
+        }
+        
+        // Validation du timestamp
+        if (typeof timestamp === 'number' && 
+            timestamp > 0 && 
+            timestamp <= now &&
+            (now - timestamp) <= maxAge) {
+          sanitizedTimestamps.set(tabId, timestamp);
+        }
+      }
+      
+      tabTimestamps = sanitizedTimestamps;
     }
   } catch (error) {
     console.warn('FFTabClose: Failed to load timestamps:', error);
+    tabTimestamps = new Map();
   }
 }
 
@@ -106,7 +157,20 @@ async function initializeExistingTabs() {
  * Register a tab with current timestamp
  */
 function registerTab(tabId, timestamp = null) {
+  // Validation du tabId
+  if (typeof tabId !== 'number' || tabId <= 0) {
+    console.warn('FFTabClose: Invalid tabId for registration:', tabId);
+    return;
+  }
+  
   const now = timestamp || Date.now();
+  
+  // Validation du timestamp
+  if (typeof now !== 'number' || now <= 0) {
+    console.warn('FFTabClose: Invalid timestamp for registration:', now);
+    return;
+  }
+  
   tabTimestamps.set(tabId.toString(), now);
 }
 
@@ -349,12 +413,50 @@ async function getStats() {
  */
 async function handleMessage(message, sender, sendResponse) {
   try {
+    // Validation stricte des entrées
+    if (!message || typeof message !== 'object' || !message.action) {
+      sendResponse({ success: false, error: 'Invalid message format' });
+      return;
+    }
+
+    // Validation de l'origine du message
+    if (!sender || !sender.tab) {
+      // Les messages du popup n'ont pas de tab, c'est normal
+      // Mais on peut vérifier d'autres propriétés si nécessaire
+    }
+
     switch (message.action) {
       case 'getConfig':
         sendResponse({ success: true, config: currentConfig });
         break;
         
       case 'updateConfig':
+        if (!message.config || typeof message.config !== 'object') {
+          sendResponse({ success: false, error: 'Invalid config format' });
+          return;
+        }
+        
+        // Validation des clés autorisées
+        const allowedKeys = ['autoCloseTime', 'enabled', 'excludePinned', 'excludeAudible', 'discardPinned'];
+        const configKeys = Object.keys(message.config);
+        
+        for (const key of configKeys) {
+          if (!allowedKeys.includes(key)) {
+            sendResponse({ success: false, error: `Invalid config key: ${key}` });
+            return;
+          }
+        }
+        
+        // Validation des valeurs
+        if (message.config.autoCloseTime !== undefined) {
+          if (typeof message.config.autoCloseTime !== 'number' || 
+              message.config.autoCloseTime < 120000 || // minimum 2 minutes
+              message.config.autoCloseTime > 172800000) { // maximum 48 hours
+            sendResponse({ success: false, error: 'Invalid autoCloseTime value' });
+            return;
+          }
+        }
+        
         currentConfig = { ...currentConfig, ...message.config };
         await saveConfiguration();
         setupAlarm(); // Restart alarm with new config
