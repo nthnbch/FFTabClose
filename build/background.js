@@ -26,13 +26,11 @@ let currentConfig = { ...DEFAULT_CONFIG };
  * Initialize extension on startup/install
  */
 async function initialize() {
-  console.log('FFTabClose: Initializing extension...');
   try {
     await loadConfiguration();
     await loadTabTimestamps();
     await initializeExistingTabs();
     await setupAlarm();
-    console.log('FFTabClose: Extension initialized successfully');
   } catch (error) {
     console.error('FFTabClose: Failed to initialize extension:', error);
   }
@@ -517,7 +515,6 @@ async function handleMessage(message, sender, sendResponse) {
             action: getTabActionReal(tab, debugNow)
           }))
         };
-        console.log('FFTabClose Debug Info:', debugInfo);
         sendResponse({ success: true, debugInfo });
         break;
         
@@ -629,8 +626,6 @@ async function manualCloseOldTabs() {
       ]);
     }
     
-    console.log(`FFTabClose: Manual close processed ${totalProcessed} tabs (${tabsToClose.length} closed, ${tabsToDiscard.length} discarded)`);
-    console.log(`FFTabClose: Protected current tab ID: ${currentTabId}, Total tabs processed: ${tabs.length}`);
     
   } catch (error) {
     console.error('FFTabClose: Error in manual close:', error);

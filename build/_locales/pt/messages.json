@@ -1,0 +1,114 @@
+{
+  "extensionName": {
+    "message": "FFTabClose - Fechamento Automático de Abas",
+    "description": "Nome da extensão"
+  },
+  "extensionDescription": {
+    "message": "Fecha automaticamente abas inativas após um período configurável para liberar memória e manter o navegador organizado.",
+    "description": "Descrição da extensão"
+  },
+  "popupTitle": {
+    "message": "FFTabClose",
+    "description": "Título do popup"
+  },
+  "enableExtension": {
+    "message": "Ativar extensão",
+    "description": "Rótulo para ativar a extensão"
+  },
+  "closeTabsAfter": {
+    "message": "Fechar abas após:",
+    "description": "Rótulo para o seletor de tempo"
+  },
+  "minutes15": {
+    "message": "15 minutos",
+    "description": "Opção de 15 minutos"
+  },
+  "minutes30": {
+    "message": "30 minutos",
+    "description": "Opção de 30 minutos"
+  },
+  "hour1": {
+    "message": "1 hora",
+    "description": "Opção de 1 hora"
+  },
+  "hours2": {
+    "message": "2 horas",
+    "description": "Opção de 2 horas"
+  },
+  "hours4": {
+    "message": "4 horas",
+    "description": "Opção de 4 horas"
+  },
+  "hours8": {
+    "message": "8 horas",
+    "description": "Opção de 8 horas"
+  },
+  "hours12": {
+    "message": "12 horas",
+    "description": "Opção de 12 horas"
+  },
+  "hours24": {
+    "message": "24 horas",
+    "description": "Opção de 24 horas"
+  },
+  "hours48": {
+    "message": "48 horas",
+    "description": "Opção de 48 horas"
+  },
+  "exceptions": {
+    "message": "Exceções:",
+    "description": "Rótulo para exceções"
+  },
+  "excludePinnedTabs": {
+    "message": "Excluir abas fixadas",
+    "description": "Opção para excluir abas fixadas"
+  },
+  "excludeAudibleTabs": {
+    "message": "Excluir abas com áudio",
+    "description": "Opção para excluir abas com áudio"
+  },
+  "discardPinnedTabs": {
+    "message": "Descarregar abas fixadas em vez de fechar",
+    "description": "Opção para descarregar abas fixadas"
+  },
+  "statistics": {
+    "message": "Estatísticas",
+    "description": "Seção de estatísticas"
+  },
+  "totalTabs": {
+    "message": "Total de abas",
+    "description": "Número total de abas"
+  },
+  "normalTabs": {
+    "message": "Abas normais",
+    "description": "Número de abas normais (não fixadas)"
+  },
+  "eligibleTabs": {
+    "message": "Podem ser fechadas",
+    "description": "Abas que podem ser fechadas"
+  },
+  "totalPinnedTabs": {
+    "message": "Abas fixadas",
+    "description": "Número total de abas fixadas"
+  },
+  "pinnedTabsToDiscard": {
+    "message": "Abas fixadas para descarregar",
+    "description": "Abas fixadas que podem ser descarregadas"
+  },
+  "oldestTabAge": {
+    "message": "Aba mais antiga",
+    "description": "Idade da aba mais antiga"
+  },
+  "closeOldTabsNow": {
+    "message": "Fechar abas antigas agora",
+    "description": "Botão para fechar manualmente as abas"
+  },
+  "settingsSaved": {
+    "message": "Configurações salvas",
+    "description": "Mensagem de confirmação"
+  },
+  "pinnedTabsInfo": {
+    "message": "ℹ️ Abas fixadas nunca serão fechadas automaticamente. O cronômetro é reiniciado quando você interage com uma aba.",
+    "description": "Informações sobre abas fixadas"
+  }
+}

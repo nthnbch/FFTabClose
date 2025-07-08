@@ -1,0 +1,130 @@
+{
+  "extensionName": {
+    "message": "FFTabClose - Fermeture Auto Onglets",
+    "description": "Nom de l'extension"
+  },
+  "extensionDescription": {
+    "message": "Ferme automatiquement les onglets non épinglés après une période configurable. Parfait pour la productivité et la gestion mémoire.",
+    "description": "Description de l'extension"
+  },
+  "popupTitle": {
+    "message": "FFTabClose",
+    "description": "Titre affiché dans le popup"
+  },
+  "closeTabsAfter": {
+    "message": "Fermer les onglets après :",
+    "description": "Label pour la sélection du temps"
+  },
+  "minutes15": {
+    "message": "15 minutes",
+    "description": "Option 15 minutes"
+  },
+  "minutes30": {
+    "message": "30 minutes",
+    "description": "Option 30 minutes"
+  },
+  "hour1": {
+    "message": "1 heure",
+    "description": "Option 1 heure"
+  },
+  "hours2": {
+    "message": "2 heures",
+    "description": "Option 2 heures"
+  },
+  "hours4": {
+    "message": "4 heures",
+    "description": "Option 4 heures"
+  },
+  "hours8": {
+    "message": "8 heures",
+    "description": "Option 8 heures"
+  },
+  "hours12": {
+    "message": "12 heures",
+    "description": "Option 12 heures"
+  },
+  "hours24": {
+    "message": "24 heures",
+    "description": "Option 24 heures"
+  },
+  "hours48": {
+    "message": "48 heures",
+    "description": "Option 48 heures"
+  },
+  "extensionActive": {
+    "message": "Extension active",
+    "description": "Message de statut quand l'extension est active"
+  },
+  "pinnedTabsInfo": {
+    "message": "ℹ️ Les onglets épinglés peuvent être déchargés (déchargés) ou exclus. Les onglets déchargés économisent la mémoire mais restent ouverts. Le minuteur se remet à zéro lorsque vous interagissez avec un onglet.",
+    "description": "Information sur le comportement des onglets épinglés"
+  },
+  "activeTabsWillNotBeClosed": {
+    "message": "Les onglets actifs ne seront pas fermés automatiquement",
+    "description": "Info sur les onglets actifs"
+  },
+  "enableExtension": {
+    "message": "Activer l'extension",
+    "description": "Bascule pour activer/désactiver l'extension"
+  },
+  "exceptions": {
+    "message": "Exceptions",
+    "description": "Label pour les paramètres d'exception"
+  },
+  "excludePinnedTabs": {
+    "message": "Exclure les onglets épinglés",
+    "description": "Label de case à cocher pour exclure les onglets épinglés"
+  },
+  "excludeAudibleTabs": {
+    "message": "Exclure les onglets avec du son",
+    "description": "Label de case à cocher pour exclure les onglets audibles"
+  },
+  "discardPinnedTabs": {
+    "message": "Décharger les onglets épinglés (au lieu de les fermer)",
+    "description": "Label de case à cocher pour décharger les onglets épinglés au lieu de les fermer"
+  },
+  "totalTabs": {
+    "message": "Total onglets",
+    "description": "Label pour le nombre total d'onglets"
+  },
+  "normalTabs": {
+    "message": "Onglets normaux",
+    "description": "Label pour le nombre d'onglets normaux (non-épinglés)"
+  },
+  "eligibleTabs": {
+    "message": "Peuvent être fermés",
+    "description": "Label pour les onglets qui peuvent être fermés"
+  },
+  "totalPinnedTabs": {
+    "message": "Onglets épinglés",
+    "description": "Label pour le nombre total d'onglets épinglés"
+  },
+  "pinnedTabsToDiscard": {
+    "message": "Onglets épinglés à décharger",
+    "description": "Label pour les onglets épinglés qui seront déchargés"
+  },
+  "oldestTabAge": {
+    "message": "Onglet le plus ancien",
+    "description": "Label pour l'âge de l'onglet le plus ancien"
+  },
+  "closeOldTabsNow": {
+    "message": "Fermer les anciens onglets maintenant",
+    "description": "Texte du bouton pour fermer immédiatement les anciens onglets"
+  },
+  "closingTabs": {
+    "message": "Fermeture des onglets...",
+    "description": "Texte affiché pendant la fermeture des onglets"
+  },
+  "tabsClosedSuccess": {
+    "message": "Onglets fermés avec succès !",
+    "description": "Message de succès après fermeture des onglets"
+  },
+  "settingsSaved": {
+    "message": "Paramètres sauvegardés",
+    "description": "Message affiché quand les paramètres sont sauvegardés"
+  },
+  "settingsError": {
+    "message": "❌ Échec de la sauvegarde des paramètres",
+    "description": "Message d'erreur quand la sauvegarde des paramètres échoue"
+  }
+}

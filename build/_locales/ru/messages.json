@@ -1,0 +1,110 @@
+{
+  "extensionName": {
+    "message": "FFTabClose - Автозакрытие Вкладок",
+    "description": "Название расширения"
+  },
+  "extensionDescription": {
+    "message": "Автоматически закрывает неактивные вкладки через настраиваемый период для освобождения памяти и поддержания порядка в браузере.",
+    "description": "Описание расширения"
+  },
+  "popupTitle": {
+    "message": "FFTabClose",
+    "description": "Заголовок всплывающего окна"
+  },
+  "enableExtension": {
+    "message": "Включить расширение",
+    "description": "Метка для включения расширения"
+  },
+  "closeTabsAfter": {
+    "message": "Закрывать вкладки через:",
+    "description": "Метка для селектора времени"
+  },
+  "minutes15": {
+    "message": "15 минут",
+    "description": "Опция 15 минут"
+  },
+  "minutes30": {
+    "message": "30 минут",
+    "description": "Опция 30 минут"
+  },
+  "hour1": {
+    "message": "1 час",
+    "description": "Опция 1 час"
+  },
+  "hours2": {
+    "message": "2 часа",
+    "description": "Опция 2 часа"
+  },
+  "hours4": {
+    "message": "4 часа",
+    "description": "Опция 4 часа"
+  },
+  "hours8": {
+    "message": "8 часов",
+    "description": "Опция 8 часов"
+  },
+  "hours12": {
+    "message": "12 часов",
+    "description": "Опция 12 часов"
+  },
+  "hours24": {
+    "message": "24 часа",
+    "description": "Опция 24 часа"
+  },
+  "hours48": {
+    "message": "48 часов",
+    "description": "Опция 48 часов"
+  },
+  "exceptions": {
+    "message": "Исключения:",
+    "description": "Метка для исключений"
+  },
+  "excludePinnedTabs": {
+    "message": "Исключить закреплённые вкладки",
+    "description": "Опция для исключения закреплённых вкладок"
+  },
+  "excludeAudibleTabs": {
+    "message": "Исключить вкладки со звуком",
+    "description": "Опция для исключения вкладок со звуком"
+  },
+  "discardPinnedTabs": {
+    "message": "Выгружать закреплённые вкладки вместо закрытия",
+    "description": "Опция для выгрузки закреплённых вкладок"
+  },
+  "statistics": {
+    "message": "Статистика",
+    "description": "Раздел статистики"
+  },
+  "totalTabs": {
+    "message": "Всего вкладок",
+    "description": "Общее количество вкладок"
+  },
+  "eligibleTabs": {
+    "message": "Могут быть закрыты",
+    "description": "Вкладки, которые могут быть закрыты"
+  },
+  "totalPinnedTabs": {
+    "message": "Закреплённые вкладки",
+    "description": "Общее количество закреплённых вкладок"
+  },
+  "pinnedTabsToDiscard": {
+    "message": "Закреплённых вкладок для выгрузки",
+    "description": "Закреплённые вкладки, которые могут быть выгружены"
+  },
+  "oldestTabAge": {
+    "message": "Самая старая вкладка",
+    "description": "Возраст самой старой вкладки"
+  },
+  "closeOldTabsNow": {
+    "message": "Закрыть старые вкладки сейчас",
+    "description": "Кнопка для ручного закрытия вкладок"
+  },
+  "settingsSaved": {
+    "message": "Настройки сохранены",
+    "description": "Сообщение подтверждения"
+  },
+  "pinnedTabsInfo": {
+    "message": "ℹ️ Закреплённые вкладки никогда не будут закрыты автоматически. Таймер сбрасывается при взаимодействии с вкладкой.",
+    "description": "Информация о закреплённых вкладках"
+  }
+}
