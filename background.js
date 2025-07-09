@@ -337,7 +337,7 @@ async function getStats() {
  * Handle messages from popup
  */
 async function handleMessage(message) {
-  console.log("FFTabClose: Message received", message);
+  // console.log("FFTabClose: Message received", message); // Already verbose
   switch (message.action) {
     case 'getConfig':
       return { success: true, config: currentConfig };
@@ -345,17 +345,20 @@ async function handleMessage(message) {
     case 'setConfig':
       currentConfig = { ...currentConfig, ...message.config };
       await saveConfiguration();
-      // Re-evaluate the alarm state if 'enabled' status changed
+      // Re-evaluate the alarm state if 'enabled' status or time changed
       await setupAlarm();
+      console.log('FFTabClose: New config set, alarm re-evaluated.', currentConfig);
       return { success: true };
       
     case 'getStats':
       return await getStats();
       
     case 'manualClose':
+      console.log("FFTabClose: Manual close action triggered via message.");
       return await manualCloseOldTabs();
       
     default:
+      console.warn("FFTabClose: Unknown action received:", message.action);
       return { success: false, error: 'Unknown action' };
   }
 }
@@ -370,8 +373,9 @@ async function manualCloseOldTabs() {
     return { success: false, message: 'Extension is disabled.' };
   }
 
-  console.log('FFTabClose: Manual close triggered. Finding and closing old tabs...');
-  await checkAndCloseTabs(); // Reuse the main logic for simplicity and consistency
+  console.log('FFTabClose: Manual close process started. Re-checking all tabs now...');
+  // We call checkAndCloseTabs, which contains all the necessary logic and logging.
+  await checkAndCloseTabs(); 
   return { success: true, message: 'Manual close process completed.' };
 }
 
@@ -382,28 +386,25 @@ browser.runtime.onInstalled.addListener(initialize);
 // Initialize when the browser starts.
 browser.runtime.onStartup.addListener(initialize);
 
-// Tab events - optimized for minimal overhead
+// Tab events - Simplified for clarity and performance
 browser.tabs.onCreated.addListener((tab) => {
   if (tab.id) {
+    console.log(`FFTabClose: Tab created: ${tab.id}. Registering with current timestamp.`);
     registerTab(tab.id);
-    saveTabTimestamps(); // Save immediately
-  }
-});
-
-browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  // Update timestamp if URL changes, to prevent closing a tab being used.
-  if (changeInfo.url) {
-    registerTab(tabId);
     saveTabTimestamps();
   }
 });
 
+// Only update the timestamp when a tab is activated (becomes the focused tab).
+// This is a better indicator of "last used" than onUpdated.
 browser.tabs.onActivated.addListener((activeInfo) => {
+  console.log(`FFTabClose: Tab activated: ${activeInfo.tabId}. Updating timestamp.`);
   registerTab(activeInfo.tabId);
   saveTabTimestamps();
 });
 
 browser.tabs.onRemoved.addListener((tabId) => {
+  console.log(`FFTabClose: Tab removed: ${tabId}. Unregistering.`);
   unregisterTab(tabId);
   saveTabTimestamps();
 });

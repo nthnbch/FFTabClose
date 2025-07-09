@@ -409,122 +409,53 @@ async function getStats() {
 /**
  * Handle messages from popup
  */
-async function handleMessage(message, sender, sendResponse) {
-  try {
-    // Validation stricte des entrées
-    if (!message || typeof message !== 'object' || !message.action) {
-      sendResponse({ success: false, error: 'Invalid message format' });
-      return;
-    }
-
-    // Validation de l'origine du message (popup ou content script)
-    // Les messages du popup n'ont pas de sender.tab, c'est normal
-
-    switch (message.action) {
-      case 'getConfig':
-        sendResponse({ success: true, config: currentConfig });
-        break;
-        
-      case 'updateConfig':
-        if (!message.config || typeof message.config !== 'object') {
-          sendResponse({ success: false, error: 'Invalid config format' });
-          return;
+async function handleMessage(message) {
+  // console.log("FFTabClose: Message received", message); // Already verbose
+  switch (message.action) {
+    case 'getConfig':
+      return { success: true, config: currentConfig };
+    
+    case 'updateConfig':
+      if (!message.config || typeof message.config !== 'object') {
+        return { success: false, error: 'Invalid config format' };
+      }
+      
+      // Validation des clés autorisées
+      const allowedKeys = ['autoCloseTime', 'enabled', 'excludePinned', 'excludeAudible', 'discardPinned'];
+      const configKeys = Object.keys(message.config);
+      
+      for (const key of configKeys) {
+        if (!allowedKeys.includes(key)) {
+          return { success: false, error: `Invalid config key: ${key}` };
         }
-        
-        // Validation des clés autorisées
-        const allowedKeys = ['autoCloseTime', 'enabled', 'excludePinned', 'excludeAudible', 'discardPinned'];
-        const configKeys = Object.keys(message.config);
-        
-        for (const key of configKeys) {
-          if (!allowedKeys.includes(key)) {
-            sendResponse({ success: false, error: `Invalid config key: ${key}` });
-            return;
-          }
+      }
+      
+      // Validation des valeurs
+      if (message.config.autoCloseTime !== undefined) {
+        if (typeof message.config.autoCloseTime !== 'number' || 
+            message.config.autoCloseTime < 120000 || // minimum 2 minutes
+            message.config.autoCloseTime > 172800000) { // maximum 48 hours
+          return { success: false, error: 'Invalid autoCloseTime value' };
         }
-        
-        // Validation des valeurs
-        if (message.config.autoCloseTime !== undefined) {
-          if (typeof message.config.autoCloseTime !== 'number' || 
-              message.config.autoCloseTime < 120000 || // minimum 2 minutes
-              message.config.autoCloseTime > 172800000) { // maximum 48 hours
-            sendResponse({ success: false, error: 'Invalid autoCloseTime value' });
-            return;
-          }
-        }
-        
-        currentConfig = { ...currentConfig, ...message.config };
-        await saveConfiguration();
-        setupAlarm(); // Restart alarm with new config
-        sendResponse({ success: true });
-        break;
-        
-      case 'getStats':
-        const stats = await getStats();
-        sendResponse({ success: true, stats });
-        break;
-        
-      case 'checkNow':
-        await checkAndCloseTabs();
-        sendResponse({ success: true });
-        break;
-        
-      case 'manualClose':
-        // Manual close - process ALL eligible tabs, including active ones in other windows
-        await manualCloseOldTabs();
-        sendResponse({ success: true });
-        break;
-        
-      case 'testMode':
-        // Special test mode - mark all non-active tabs as old
-        const testTabs = await browser.tabs.query({});
-        const veryOldTime = Date.now() - (currentConfig.autoCloseTime + 60000); // 1 minute older than timeout
-        
-        for (const tab of testTabs) {
-          if (!tab.active) {
-            registerTab(tab.id, veryOldTime);
-          }
-        }
-        
-        await saveTabTimestamps();
-        await checkAndCloseTabs();
-        sendResponse({ success: true, message: 'Test mode activated and check executed' });
-        break;
-        
-      case 'debugInfo':
-        // Debug function to check current state
-        const debugTabs = await browser.tabs.query({});
-        const debugNow = Date.now();
-        const debugInfo = {
-          config: currentConfig,
-          tabCount: debugTabs.length,
-          timestamps: Object.fromEntries(tabTimestamps),
-          tabDetails: debugTabs.map(tab => ({
-            id: tab.id,
-            title: tab.title.substring(0, 30),
-            pinned: tab.pinned,
-            active: tab.active,
-            audible: tab.audible,
-            timestamp: tabTimestamps.get(tab.id.toString()),
-            age: tabTimestamps.get(tab.id.toString()) ? debugNow - tabTimestamps.get(tab.id.toString()) : 0,
-            action: getTabAction(tab, debugNow)
-          }))
-        };
-        sendResponse({ success: true, debugInfo });
-        break;
-        
-      case 'resetStats':
-        tabTimestamps.clear();
-        await saveTabTimestamps();
-        await initializeExistingTabs();
-        sendResponse({ success: true });
-        break;
-        
-      default:
-        sendResponse({ success: false, error: 'Unknown action' });
-    }
-  } catch (error) {
-    console.error('FFTabClose: Error handling message:', error);
-    sendResponse({ success: false, error: error.message });
+      }
+      
+      currentConfig = { ...currentConfig, ...message.config };
+      await saveConfiguration();
+      // Re-evaluate the alarm state if 'enabled' status or time changed
+      await setupAlarm();
+      console.log('FFTabClose: New config set, alarm re-evaluated.', currentConfig);
+      return { success: true };
+      
+    case 'getStats':
+      return await getStats();
+      
+    case 'manualClose':
+      console.log("FFTabClose: Manual close action triggered via message.");
+      return await manualCloseOldTabs();
+      
+    default:
+      console.warn("FFTabClose: Unknown action received:", message.action);
+      return { success: false, error: 'Unknown action' };
   }
 }
 
@@ -538,43 +469,40 @@ async function manualCloseOldTabs() {
     return { success: false, message: 'Extension is disabled.' };
   }
 
-  console.log('FFTabClose: Manual close triggered. Finding and closing old tabs...');
-  await checkAndCloseTabs(); // Reuse the main logic for simplicity and consistency
+  console.log('FFTabClose: Manual close process started. Re-checking all tabs now...');
+  // We call checkAndCloseTabs, which contains all the necessary logic and logging.
+  await checkAndCloseTabs(); 
   return { success: true, message: 'Manual close process completed.' };
 }
 
-// Event Listeners
+// --- Event Listeners ---
 
 // Extension startup/install
-browser.runtime.onStartup.addListener(initialize);
 browser.runtime.onInstalled.addListener(initialize);
+// Initialize when the browser starts.
+browser.runtime.onStartup.addListener(initialize);
 
-// Tab events - optimized for minimal overhead
+// Tab events - Simplified for clarity and performance
 browser.tabs.onCreated.addListener((tab) => {
-  registerTab(tab.id);
-  // Debounced save to avoid excessive storage writes
-  clearTimeout(window.saveDebounce);
-  window.saveDebounce = setTimeout(saveTabTimestamps, 1000);
-});
-
-browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.url || changeInfo.status === 'complete') {
-    registerTab(tabId);
-    clearTimeout(window.saveDebounce);
-    window.saveDebounce = setTimeout(saveTabTimestamps, 1000);
+  if (tab.id) {
+    console.log(`FFTabClose: Tab created: ${tab.id}. Registering with current timestamp.`);
+    registerTab(tab.id);
+    saveTabTimestamps();
   }
 });
 
+// Only update the timestamp when a tab is activated (becomes the focused tab).
+// This is a better indicator of "last used" than onUpdated.
 browser.tabs.onActivated.addListener((activeInfo) => {
+  console.log(`FFTabClose: Tab activated: ${activeInfo.tabId}. Updating timestamp.`);
   registerTab(activeInfo.tabId);
-  clearTimeout(window.saveDebounce);
-  window.saveDebounce = setTimeout(saveTabTimestamps, 1000);
+  saveTabTimestamps();
 });
 
 browser.tabs.onRemoved.addListener((tabId) => {
+  console.log(`FFTabClose: Tab removed: ${tabId}. Unregistering.`);
   unregisterTab(tabId);
-  clearTimeout(window.saveDebounce);
-  window.saveDebounce = setTimeout(saveTabTimestamps, 1000);
+  saveTabTimestamps();
 });
 
 // Alarm for periodic checks
