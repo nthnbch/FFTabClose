@@ -113,13 +113,15 @@ async function initializeExistingTabs() {
     const now = Date.now();
     
     for (const tab of tabs) {
-      if (tab.id && !tabTimestamps.has(tab.id.toString())) {
+      // Only initialize non-discarded tabs that don't have a timestamp.
+      // Discarded tabs are already "inactive".
+      if (tab.id && !tab.discarded && !tabTimestamps.has(tab.id.toString())) {
         registerTab(tab.id, now);
       }
     }
     
     await saveTabTimestamps();
-    console.log(`FFTabClose: Initialized ${tabs.length} existing tabs.`);
+    console.log(`FFTabClose: Initialized timestamps for non-discarded tabs.`);
   } catch (error) {
     console.error('FFTabClose: Failed to initialize existing tabs:', error);
   }
@@ -257,6 +259,11 @@ function getTabAction(tab, now) {
     return { action: 'none', registered };
   }
 
+  // Rule 0.5: Don't do anything with discarded tabs. They are already inactive.
+  if (tab.discarded) {
+    return { action: 'none', registered };
+  }
+
   const timestamp = tabTimestamps.get(tab.id.toString());
   if (!timestamp) {
     console.log(`FFTabClose: Tab ${tab.id} has no timestamp. Registering it now.`);
@@ -326,6 +333,7 @@ async function getStats() {
     let eligibleTabs = 0;
     let pinnedTabs = 0;
     let pinnedToDiscard = 0;
+    let discardedTabs = 0;
 
     for (const tab of tabs) {
       if (tab.pinned) {
@@ -334,6 +342,10 @@ async function getStats() {
         normalTabs++;
       }
       
+      if (tab.discarded) {
+        discardedTabs++;
+      }
+
       const { action } = getTabAction(tab, now);
       if (action === 'close') {
         eligibleTabs++;
@@ -350,6 +362,7 @@ async function getStats() {
         eligibleTabs,
         pinnedTabs: pinnedTabs,
         pinnedTabsToDiscard: pinnedToDiscard,
+        discardedTabs,
         lastClosedCount
       }
     };
@@ -427,6 +440,17 @@ browser.tabs.onActivated.addListener((activeInfo) => {
   console.log(`FFTabClose: Tab activated: ${activeInfo.tabId}. Updating timestamp.`);
   registerTab(activeInfo.tabId);
   saveTabTimestamps();
+});
+
+// Update timestamp if a tab is reloaded or its URL changes.
+browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  // We are interested when a tab is loaded with a new URL, not just reloaded.
+  // The 'status' check is to avoid multiple triggers.
+  if (changeInfo.status === 'complete' && changeInfo.url) {
+    console.log(`FFTabClose: Tab updated: ${tabId}. Updating timestamp due to URL change.`);
+    registerTab(tabId);
+    saveTabTimestamps();
+  }
 });
 
 browser.tabs.onRemoved.addListener((tabId) => {
