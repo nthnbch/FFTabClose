@@ -1,95 +1,134 @@
 {
   "extensionName": {
-    "message": "FFTabClose - Otomatik Sekme Kapatıcı"
+    "message": "FFTabClose - Otomatik Sekme Kapatıcı",
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Bellek tasarrufu ve performans iyileştirmesi için yapılandırılabilir süre sonra aktif olmayan sekmeleri otomatik olarak kapatır veya boşaltır."
+    "message": "Tarayıcınızı hızlı ve düzenli tutmak için eski sekmeleri ayarlanabilir bir süre sonra otomatik olarak kapatır.",
+    "description": "Description of the extension."
   },
-  "autoCloseTime": {
-    "message": "Otomatik kapatma süresi (saat)"
+  "browserActionTitle": {
+    "message": "FFTabClose",
+    "description": "Title shown when hovering over the browser action button."
   },
-  "enabled": {
-    "message": "Etkin"
+  "timeLimitLabel": {
+    "message": "Şundan eski sekmeleri kapat:",
+    "description": "Label for time limit setting."
   },
-  "excludePinned": {
-    "message": "Sabitlenmiş sekmeleri hariç tut"
+  "time15min": {
+    "message": "15 dakika",
+    "description": "15 minute time limit option."
   },
-  "excludeAudible": {
-    "message": "Sesli sekmeleri hariç tut"
+  "time30min": {
+    "message": "30 dakika",
+    "description": "30 minute time limit option."
   },
-  "discardPinned": {
-    "message": "Sabitlenmiş sekmeleri boşalt"
+  "time1hour": {
+    "message": "1 saat",
+    "description": "1 hour time limit option."
   },
-  "discardPinnedHelp": {
-    "message": "Etkinleştirildiğinde, sabitlenmiş sekmeler kapatılmak yerine boşaltılır (bellek serbest bırakılır)"
+  "time2hours": {
+    "message": "2 saat",
+    "description": "2 hour time limit option."
   },
-  "save": {
-    "message": "Kaydet"
+  "time4hours": {
+    "message": "4 saat",
+    "description": "4 hour time limit option."
   },
-  "checkNow": {
-    "message": "Şimdi kontrol et"
+  "time8hours": {
+    "message": "8 saat",
+    "description": "8 hour time limit option."
   },
-  "testMode": {
-    "message": "Test modu"
+  "time12hours": {
+    "message": "12 saat",
+    "description": "12 hour time limit option."
   },
-  "debugInfo": {
-    "message": "Hata ayıklama bilgisi"
+  "time24hours": {
+    "message": "24 saat",
+    "description": "24 hour time limit option."
   },
-  "resetStats": {
-    "message": "İstatistikleri sıfırla"
+  "time48hours": {
+    "message": "48 saat",
+    "description": "48 hour time limit option."
   },
-  "totalTabs": {
-    "message": "Toplam sekme"
+  "discardPinnedLabel": {
+    "message": "Sabitlenmiş sekmeleri boşalt",
+    "description": "Label for discard pinned tabs setting."
   },
-  "eligibleTabs": {
-    "message": "Kapatılabilir sekmeler"
+  "discardPinnedTooltip": {
+    "message": "Boşaltma, sekme içeriğini bellekten kaldırır ancak sekmeyi görünür tutar. Sekmeler tıklandığında yeniden yüklenir.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "pinnedTabsToDiscard": {
-    "message": "Boşaltılacak sabitlenmiş sekmeler"
+  "excludeAudioLabel": {
+    "message": "Ses çalan sekmeleri hariç tut",
+    "description": "Label for exclude audio tabs setting."
   },
-  "oldestTabAge": {
-    "message": "En eski sekme yaşı (dakika)"
+  "closeTabsButton": {
+    "message": "Eski Sekmeleri Şimdi Kapat",
+    "description": "Text for the button that closes old tabs."
   },
-  "status": {
-    "message": "Durum"
+  "closingTabsProgress": {
+    "message": "Kapatılıyor...",
+    "description": "Text shown while tabs are being closed."
   },
-  "timeout": {
-    "message": "Zaman aşımı"
+  "totalTabsLabel": {
+    "message": "Toplam sekme:",
+    "description": "Label for total tabs count."
   },
-  "hours": {
-    "message": "saat"
+  "eligibleTabsLabel": {
+    "message": "Kapatılabilecek:",
+    "description": "Label for eligible tabs count."
   },
-  "minutes": {
-    "message": "dakika"
+  "oldestTabLabel": {
+    "message": "En eski sekme:",
+    "description": "Label for oldest tab age."
   },
-  "configSaved": {
-    "message": "Yapılandırma kaydedildi"
+  "footerText": {
+    "message": "FFTabClose v2.0 - Sekmelerinizi otomatik yönetin",
+    "description": "Text shown in the footer."
   },
-  "checkComplete": {
-    "message": "Kontrol tamamlandı"
+  "timeMin": {
+    "message": "dk",
+    "description": "Abbreviation for minutes."
   },
-  "testModeActivated": {
-    "message": "Test modu etkinleştirildi"
+  "timeHours": {
+    "message": "sa",
+    "description": "Abbreviation for hours."
   },
-  "statsReset": {
-    "message": "İstatistikler sıfırlandı"
+  "timeDays": {
+    "message": "gün",
+    "description": "Word for days."
   },
-  "error": {
-    "message": "Hata"
+  "infoPageTitle": {
+    "message": "FFTabClose - Hakkında & Yardım",
+    "description": "Title of the info page."
   },
-  "infoTitle": {
-    "message": "Eklenti Hakkında"
+  "infoHeading": {
+    "message": "FFTabClose Hakkında",
+    "description": "Heading for the info page."
   },
   "infoDescription": {
-    "message": "FFTabClose tarayıcı sekmelerini otomatik olarak yönetir, belirli bir süre sonra aktif olmayan sekmeleri kapatır. Sabitlenmiş sekmeler erişilebilirliklerini korumak için kapatılmak yerine boşaltılabilir."
+    "message": "FFTabClose, bir süredir kullanmadığınız sekmeleri otomatik olarak kapatarak tarayıcınızı düzenli tutmanıza yardımcı olur.",
+    "description": "Description on the info page."
   },
-  "optionsTitle": {
-    "message": "Seçenekler"
+  "infoFeatures": {
+    "message": "Özellikler",
+    "description": "Features section heading."
   },
-  "statisticsTitle": {
-    "message": "İstatistikler"
+  "infoTimerHeading": {
+    "message": "Zamanlayıcı Nasıl Çalışır",
+    "description": "Timer section heading."
   },
-  "actionsTitle": {
-    "message": "Eylemler"
+  "infoExclusionsHeading": {
+    "message": "Sekme Dışlamaları",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "Sekme Boşaltmayı Anlamak",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Gizlilik & İzinler",
+    "description": "Privacy section heading."
   }
 }

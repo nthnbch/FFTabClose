@@ -1,130 +1,134 @@
 {
   "extensionName": {
-    "message": "FFTabClose - Fermeture Auto Onglets",
-    "description": "Nom de l'extension"
+    "message": "FFTabClose - Fermeture Automatique d'Onglets",
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Ferme automatiquement les onglets non épinglés après une période configurable. Parfait pour la productivité et la gestion mémoire.",
-    "description": "Description de l'extension"
+    "message": "Ferme automatiquement les onglets inutilisés après une période configurable pour garder votre navigateur rapide et organisé.",
+    "description": "Description of the extension."
   },
-  "popupTitle": {
+  "browserActionTitle": {
     "message": "FFTabClose",
-    "description": "Titre affiché dans le popup"
+    "description": "Title shown when hovering over the browser action button."
   },
-  "closeTabsAfter": {
-    "message": "Fermer les onglets après :",
-    "description": "Label pour la sélection du temps"
+  "timeLimitLabel": {
+    "message": "Fermer les onglets plus anciens que :",
+    "description": "Label for time limit setting."
   },
-  "minutes15": {
+  "time15min": {
     "message": "15 minutes",
-    "description": "Option 15 minutes"
+    "description": "15 minute time limit option."
   },
-  "minutes30": {
+  "time30min": {
     "message": "30 minutes",
-    "description": "Option 30 minutes"
+    "description": "30 minute time limit option."
   },
-  "hour1": {
+  "time1hour": {
     "message": "1 heure",
-    "description": "Option 1 heure"
+    "description": "1 hour time limit option."
   },
-  "hours2": {
+  "time2hours": {
     "message": "2 heures",
-    "description": "Option 2 heures"
+    "description": "2 hour time limit option."
   },
-  "hours4": {
+  "time4hours": {
     "message": "4 heures",
-    "description": "Option 4 heures"
+    "description": "4 hour time limit option."
   },
-  "hours8": {
+  "time8hours": {
     "message": "8 heures",
-    "description": "Option 8 heures"
+    "description": "8 hour time limit option."
   },
-  "hours12": {
+  "time12hours": {
     "message": "12 heures",
-    "description": "Option 12 heures"
+    "description": "12 hour time limit option."
   },
-  "hours24": {
+  "time24hours": {
     "message": "24 heures",
-    "description": "Option 24 heures"
+    "description": "24 hour time limit option."
   },
-  "hours48": {
+  "time48hours": {
     "message": "48 heures",
-    "description": "Option 48 heures"
+    "description": "48 hour time limit option."
   },
-  "extensionActive": {
-    "message": "Extension active",
-    "description": "Message de statut quand l'extension est active"
+  "discardPinnedLabel": {
+    "message": "Décharger les onglets épinglés",
+    "description": "Label for discard pinned tabs setting."
   },
-  "pinnedTabsInfo": {
-    "message": "ℹ️ Les onglets épinglés peuvent être déchargés (déchargés) ou exclus. Les onglets déchargés économisent la mémoire mais restent ouverts. Le minuteur se remet à zéro lorsque vous interagissez avec un onglet.",
-    "description": "Information sur le comportement des onglets épinglés"
+  "discardPinnedTooltip": {
+    "message": "Décharger un onglet libère la mémoire tout en gardant l'onglet visible. Les onglets se rechargent lorsque vous cliquez dessus.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "activeTabsWillNotBeClosed": {
-    "message": "Les onglets actifs ne seront pas fermés automatiquement",
-    "description": "Info sur les onglets actifs"
+  "excludeAudioLabel": {
+    "message": "Exclure les onglets jouant de l'audio",
+    "description": "Label for exclude audio tabs setting."
   },
-  "enableExtension": {
-    "message": "Activer l'extension",
-    "description": "Bascule pour activer/désactiver l'extension"
+  "closeTabsButton": {
+    "message": "Fermer les Anciens Onglets Maintenant",
+    "description": "Text for the button that closes old tabs."
   },
-  "exceptions": {
-    "message": "Exceptions",
-    "description": "Label pour les paramètres d'exception"
+  "closingTabsProgress": {
+    "message": "Fermeture...",
+    "description": "Text shown while tabs are being closed."
   },
-  "excludePinnedTabs": {
-    "message": "Exclure les onglets épinglés",
-    "description": "Label de case à cocher pour exclure les onglets épinglés"
+  "totalTabsLabel": {
+    "message": "Total des onglets :",
+    "description": "Label for total tabs count."
   },
-  "excludeAudibleTabs": {
-    "message": "Exclure les onglets avec du son",
-    "description": "Label de case à cocher pour exclure les onglets audibles"
+  "eligibleTabsLabel": {
+    "message": "Éligibles à la fermeture :",
+    "description": "Label for eligible tabs count."
   },
-  "discardPinnedTabs": {
-    "message": "Décharger les onglets épinglés (au lieu de les fermer)",
-    "description": "Label de case à cocher pour décharger les onglets épinglés au lieu de les fermer"
+  "oldestTabLabel": {
+    "message": "Onglet le plus ancien :",
+    "description": "Label for oldest tab age."
   },
-  "totalTabs": {
-    "message": "Total onglets",
-    "description": "Label pour le nombre total d'onglets"
+  "footerText": {
+    "message": "FFTabClose v2.0 - Gérer vos onglets automatiquement",
+    "description": "Text shown in the footer."
   },
-  "normalTabs": {
-    "message": "Onglets normaux",
-    "description": "Label pour le nombre d'onglets normaux (non-épinglés)"
+  "timeMin": {
+    "message": "min",
+    "description": "Abbreviation for minutes."
   },
-  "eligibleTabs": {
-    "message": "Peuvent être fermés",
-    "description": "Label pour les onglets qui peuvent être fermés"
+  "timeHours": {
+    "message": "h",
+    "description": "Abbreviation for hours."
   },
-  "totalPinnedTabs": {
-    "message": "Onglets épinglés",
-    "description": "Label pour le nombre total d'onglets épinglés"
+  "timeDays": {
+    "message": "jours",
+    "description": "Word for days."
   },
-  "pinnedTabsToDiscard": {
-    "message": "Onglets épinglés à décharger",
-    "description": "Label pour les onglets épinglés qui seront déchargés"
+  "infoPageTitle": {
+    "message": "FFTabClose - À Propos & Aide",
+    "description": "Title of the info page."
   },
-  "oldestTabAge": {
-    "message": "Onglet le plus ancien",
-    "description": "Label pour l'âge de l'onglet le plus ancien"
+  "infoHeading": {
+    "message": "À Propos de FFTabClose",
+    "description": "Heading for the info page."
   },
-  "closeOldTabsNow": {
-    "message": "Fermer les anciens onglets maintenant",
-    "description": "Texte du bouton pour fermer immédiatement les anciens onglets"
+  "infoDescription": {
+    "message": "FFTabClose vous aide à garder votre navigateur organisé en fermant automatiquement les onglets que vous n'avez pas utilisés depuis un moment.",
+    "description": "Description on the info page."
   },
-  "closingTabs": {
-    "message": "Fermeture des onglets...",
-    "description": "Texte affiché pendant la fermeture des onglets"
+  "infoFeatures": {
+    "message": "Fonctionnalités",
+    "description": "Features section heading."
   },
-  "tabsClosedSuccess": {
-    "message": "Onglets fermés avec succès !",
-    "description": "Message de succès après fermeture des onglets"
+  "infoTimerHeading": {
+    "message": "Comment Fonctionne la Minuterie",
+    "description": "Timer section heading."
   },
-  "settingsSaved": {
-    "message": "Paramètres sauvegardés",
-    "description": "Message affiché quand les paramètres sont sauvegardés"
+  "infoExclusionsHeading": {
+    "message": "Exclusions d'Onglets",
+    "description": "Exclusions section heading."
   },
-  "settingsError": {
-    "message": "❌ Échec de la sauvegarde des paramètres",
-    "description": "Message d'erreur quand la sauvegarde des paramètres échoue"
+  "infoDiscardHeading": {
+    "message": "Comprendre le Déchargement d'Onglets",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Confidentialité & Permissions",
+    "description": "Privacy section heading."
   }
 }

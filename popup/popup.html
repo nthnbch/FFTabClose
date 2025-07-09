@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FFTabClose</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>__MSG_extensionName__</h1>
+      <a href="../info/info.html" id="infoLink" class="info-icon" target="_blank">i</a>
+    </header>
+    
+    <div class="settings-section">
+      <div class="setting-group">
+        <label for="timeLimit">__MSG_timeLimitLabel__</label>
+        <select id="timeLimit" class="setting-control">
+          <option value="900000">__MSG_time15min__</option>
+          <option value="1800000">__MSG_time30min__</option>
+          <option value="3600000">__MSG_time1hour__</option>
+          <option value="7200000">__MSG_time2hours__</option>
+          <option value="14400000">__MSG_time4hours__</option>
+          <option value="28800000">__MSG_time8hours__</option>
+          <option value="43200000">__MSG_time12hours__</option>
+          <option value="86400000">__MSG_time24hours__</option>
+          <option value="172800000">__MSG_time48hours__</option>
+        </select>
+      </div>
+      
+      <div class="setting-group checkbox-group">
+        <input type="checkbox" id="discardPinned" class="setting-checkbox">
+        <label for="discardPinned">__MSG_discardPinnedLabel__</label>
+        <div class="tooltip">
+          <span class="tooltip-icon">?</span>
+          <span class="tooltip-text">__MSG_discardPinnedTooltip__</span>
+        </div>
+      </div>
+      
+      <div class="setting-group checkbox-group">
+        <input type="checkbox" id="excludeAudio" class="setting-checkbox">
+        <label for="excludeAudio">__MSG_excludeAudioLabel__</label>
+      </div>
+    </div>
+
+    <button id="closeTabsButton" class="action-button">__MSG_closeTabsButton__</button>
+    
+    <div class="stats-section">
+      <div class="stat-item">
+        <span class="stat-label">__MSG_totalTabsLabel__</span>
+        <span id="totalTabs" class="stat-value">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">__MSG_eligibleTabsLabel__</span>
+        <span id="eligibleTabs" class="stat-value">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">__MSG_oldestTabLabel__</span>
+        <span id="oldestTab" class="stat-value">0 __MSG_timeMin__</span>
+      </div>
+    </div>
+
+    <footer>
+      <small>__MSG_footerText__</small>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

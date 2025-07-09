@@ -1,106 +1,134 @@
 {
   "extensionName": {
     "message": "FFTabClose - 自动标签页关闭器",
-    "description": "扩展名称"
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "在可配置的时间后自动关闭不活跃的标签页，以释放内存并保持浏览器整洁。",
-    "description": "扩展描述"
+    "message": "在可配置的时间段后自动关闭旧标签页，保持浏览器快速和有序。",
+    "description": "Description of the extension."
   },
-  "popupTitle": {
+  "browserActionTitle": {
     "message": "FFTabClose",
-    "description": "弹出窗口标题"
+    "description": "Title shown when hovering over the browser action button."
   },
-  "enableExtension": {
-    "message": "启用扩展",
-    "description": "启用扩展的标签"
+  "timeLimitLabel": {
+    "message": "关闭超过以下时间的标签页：",
+    "description": "Label for time limit setting."
   },
-  "closeTabsAfter": {
-    "message": "关闭标签页时间：",
-    "description": "时间选择器的标签"
-  },
-  "minutes15": {
+  "time15min": {
     "message": "15分钟",
-    "description": "15分钟选项"
+    "description": "15 minute time limit option."
   },
-  "minutes30": {
+  "time30min": {
     "message": "30分钟",
-    "description": "30分钟选项"
+    "description": "30 minute time limit option."
   },
-  "hour1": {
+  "time1hour": {
     "message": "1小时",
-    "description": "1小时选项"
+    "description": "1 hour time limit option."
   },
-  "hours2": {
+  "time2hours": {
     "message": "2小时",
-    "description": "2小时选项"
+    "description": "2 hour time limit option."
   },
-  "hours4": {
+  "time4hours": {
     "message": "4小时",
-    "description": "4小时选项"
+    "description": "4 hour time limit option."
   },
-  "hours8": {
+  "time8hours": {
     "message": "8小时",
-    "description": "8小时选项"
+    "description": "8 hour time limit option."
   },
-  "hours12": {
+  "time12hours": {
     "message": "12小时",
-    "description": "12小时选项"
+    "description": "12 hour time limit option."
   },
-  "hours24": {
+  "time24hours": {
     "message": "24小时",
-    "description": "24小时选项"
+    "description": "24 hour time limit option."
   },
-  "hours48": {
+  "time48hours": {
     "message": "48小时",
-    "description": "48小时选项"
+    "description": "48 hour time limit option."
   },
-  "exceptions": {
-    "message": "例外：",
-    "description": "例外的标签"
+  "discardPinnedLabel": {
+    "message": "卸载已固定标签页",
+    "description": "Label for discard pinned tabs setting."
   },
-  "excludePinnedTabs": {
-    "message": "排除固定标签页",
-    "description": "排除固定标签页的选项"
+  "discardPinnedTooltip": {
+    "message": "卸载会从内存中移除标签页内容但保持标签页可见。点击时标签页会重新加载。",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "excludeAudibleTabs": {
-    "message": "排除有声音的标签页",
-    "description": "排除有声音标签页的选项"
+  "excludeAudioLabel": {
+    "message": "排除正在播放音频的标签页",
+    "description": "Label for exclude audio tabs setting."
   },
-  "discardPinnedTabs": {
-    "message": "丢弃固定标签页而不是关闭",
-    "description": "丢弃固定标签页的选项"
-  },
-  "statistics": {
-    "message": "统计",
-    "description": "统计部分"
-  },
-  "totalTabs": {
-    "message": "总标签页数",
-    "description": "总标签页数"
-  },
-  "eligibleTabs": {
-    "message": "可以关闭",
-    "description": "可以关闭的标签页"
-  },
-  "pinnedTabsToDiscard": {
-    "message": "要丢弃的固定标签页",
-    "description": "可以丢弃的固定标签页"
-  },
-  "oldestTabAge": {
-    "message": "最旧标签页",
-    "description": "最旧标签页的年龄"
-  },
-  "closeOldTabsNow": {
+  "closeTabsButton": {
     "message": "立即关闭旧标签页",
-    "description": "手动关闭标签页的按钮"
+    "description": "Text for the button that closes old tabs."
   },
-  "settingsSaved": {
-    "message": "设置已保存",
-    "description": "确认消息"
+  "closingTabsProgress": {
+    "message": "正在关闭...",
+    "description": "Text shown while tabs are being closed."
   },
-  "pinnedTabsInfo": {
-    "message": "ℹ️ 固定标签页永远不会被自动关闭。当您与标签页交互时计时器会重置。",
-    "description": "关于固定标签页的信息"
+  "totalTabsLabel": {
+    "message": "总标签页数：",
+    "description": "Label for total tabs count."
+  },
+  "eligibleTabsLabel": {
+    "message": "可关闭标签页：",
+    "description": "Label for eligible tabs count."
+  },
+  "oldestTabLabel": {
+    "message": "最旧标签页：",
+    "description": "Label for oldest tab age."
+  },
+  "footerText": {
+    "message": "FFTabClose v2.0 - 自动管理您的标签页",
+    "description": "Text shown in the footer."
+  },
+  "timeMin": {
+    "message": "分钟",
+    "description": "Abbreviation for minutes."
+  },
+  "timeHours": {
+    "message": "小时",
+    "description": "Abbreviation for hours."
+  },
+  "timeDays": {
+    "message": "天",
+    "description": "Word for days."
+  },
+  "infoPageTitle": {
+    "message": "FFTabClose - 关于 & 帮助",
+    "description": "Title of the info page."
+  },
+  "infoHeading": {
+    "message": "关于 FFTabClose",
+    "description": "Heading for the info page."
+  },
+  "infoDescription": {
+    "message": "FFTabClose 通过自动关闭您一段时间未使用的标签页，帮助您保持浏览器的整洁。",
+    "description": "Description on the info page."
+  },
+  "infoFeatures": {
+    "message": "功能",
+    "description": "Features section heading."
+  },
+  "infoTimerHeading": {
+    "message": "计时器工作原理",
+    "description": "Timer section heading."
+  },
+  "infoExclusionsHeading": {
+    "message": "标签页排除规则",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "理解标签页卸载",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "隐私 & 权限",
+    "description": "Privacy section heading."
   }
 }

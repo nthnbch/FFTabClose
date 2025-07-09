@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="__MSG_@@ui_locale__">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>__MSG_infoPageTitle__</title>
+  <style>
+    :root {
+      --text-color: #333;
+      --bg-color: #fff;
+      --heading-color: #2a4365;
+      --link-color: #3182ce;
+      --border-color: #e2e8f0;
+      --accent-color: #4299e1;
+      --code-bg: #f7fafc;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-color: #e2e8f0;
+        --bg-color: #1a202c;
+        --heading-color: #63b3ed;
+        --link-color: #4299e1;
+        --border-color: #2d3748;
+        --accent-color: #3182ce;
+        --code-bg: #2d3748;
+      }
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      line-height: 1.6;
+      color: var(--text-color);
+      background-color: var(--bg-color);
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    h1, h2 {
+      color: var(--heading-color);
+    }
+    
+    h1 {
+      border-bottom: 2px solid var(--accent-color);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    h2 {
+      margin-top: 2rem;
+    }
+    
+    a {
+      color: var(--link-color);
+      text-decoration: none;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+    
+    .container {
+      margin-bottom: 2rem;
+    }
+    
+    section {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    
+    .feature-item {
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 1rem;
+    }
+    
+    code {
+      background-color: var(--code-bg);
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    
+    footer {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      text-align: center;
+      border-top: 1px solid var(--border-color);
+      padding-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>__MSG_infoHeading__</h1>
+    
+    <section>
+      <p>__MSG_infoDescription__</p>
+    </section>
+
+    <section>
+      <h2>__MSG_infoFeatures__</h2>
+      <div class="feature-grid">
+        <div class="feature-item">
+          <h3>⏱️ Automatic Tab Management</h3>
+          <p>Close tabs automatically after they've been inactive for your chosen time period.</p>
+        </div>
+        
+        <div class="feature-item">
+          <h3>📌 Smart Tab Handling</h3>
+          <p>Option to discard (unload) pinned tabs instead of closing them, preserving your important tabs.</p>
+        </div>
+        
+        <div class="feature-item">
+          <h3>🔊 Media-Aware</h3>
+          <p>Option to exclude tabs that are currently playing audio or video from being closed.</p>
+        </div>
+        
+        <div class="feature-item">
+          <h3>💾 Persistent Settings</h3>
+          <p>Your preferences and tab timers are saved between browser sessions.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>__MSG_infoTimerHeading__</h2>
+      <p>FFTabClose tracks each tab's last active time. When a tab hasn't been used for longer than your selected time limit, it becomes eligible for closing.</p>
+      <p>The extension periodically checks for inactive tabs and closes or discards them based on your settings.</p>
+      <p>Timer information persists even if you restart your browser, ensuring consistent tab management.</p>
+    </section>
+
+    <section>
+      <h2>__MSG_infoExclusionsHeading__</h2>
+      <p>The following tabs are protected from automatic closing:</p>
+      <ul>
+        <li><strong>Active tab</strong> - The tab you're currently viewing is never closed</li>
+        <li><strong>Pinned tabs</strong> - Can be discarded (unloaded) instead if you enable that option</li>
+        <li><strong>Audio tabs</strong> - Tabs playing audio/video will be preserved if you enable that option</li>
+        <li><strong>Essential tabs</strong> - Tabs detected as essential in certain browsers are protected</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>__MSG_infoDiscardHeading__</h2>
+      <p>Tab discarding is a memory-saving feature that unloads a tab's content from memory while keeping the tab in your tab bar. When you click on a discarded tab, it reloads automatically.</p>
+      <p>This is especially useful for pinned tabs that you want to keep accessible but don't need loaded all the time.</p>
+    </section>
+
+    <section>
+      <h2>__MSG_infoPrivacy__</h2>
+      <p>FFTabClose operates entirely on your device and does not:</p>
+      <ul>
+        <li>Collect any browsing data</li>
+        <li>Send any information to remote servers</li>
+        <li>Track your browsing habits</li>
+      </ul>
+      <p>The extension only requires the following permissions:</p>
+      <ul>
+        <li><code>tabs</code> - To monitor and manage tabs</li>
+        <li><code>storage</code> - To save your preferences</li>
+        <li><code>alarms</code> - To schedule periodic tab checks</li>
+      </ul>
+    </section>
+  </div>
+  
+  <footer>
+    <p>FFTabClose v2.0.0 &copy; 2024 - <a href="https://github.com/bubu/FFTabClose" target="_blank">GitHub</a></p>
+  </footer>
+
+  <script src="../background.js"></script>
+  <script>
+    // Apply i18n translations when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      // Get all elements that contain a message key
+      const elements = document.querySelectorAll('[data-i18n]');
+      
+      // Replace message keys with localized strings
+      document.title = browser.i18n.getMessage('infoPageTitle');
+      
+      // Replace all placeholders in the document
+      const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      let node;
+      while (node = walk.nextNode()) {
+        if (node.nodeValue.includes('__MSG_')) {
+          let matches = node.nodeValue.match(/__MSG_([^_]+)__/g);
+          if (matches) {
+            let value = node.nodeValue;
+            matches.forEach(match => {
+              const messageName = match.substring(6, match.length - 2);
+              const messageValue = browser.i18n.getMessage(messageName);
+              if (messageValue) {
+                value = value.replace(match, messageValue);
+              }
+            });
+            node.nodeValue = value;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

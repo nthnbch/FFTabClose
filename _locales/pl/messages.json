@@ -1,95 +1,134 @@
 {
   "extensionName": {
-    "message": "FFTabClose - Automatyczne zamykanie kart"
+    "message": "FFTabClose - Automatyczne Zamykanie Kart",
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Automatycznie zamyka lub odładowuje nieaktywne karty po konfigurowalnym czasie, aby zaoszczędzić pamięć i poprawić wydajność."
+    "message": "Automatycznie zamyka stare karty po konfigurowalnym czasie, aby utrzymać przeglądarkę szybką i uporządkowaną.",
+    "description": "Description of the extension."
   },
-  "autoCloseTime": {
-    "message": "Czas automatycznego zamykania (godziny)"
+  "browserActionTitle": {
+    "message": "FFTabClose",
+    "description": "Title shown when hovering over the browser action button."
   },
-  "enabled": {
-    "message": "Włączone"
+  "timeLimitLabel": {
+    "message": "Zamykaj karty starsze niż:",
+    "description": "Label for time limit setting."
   },
-  "excludePinned": {
-    "message": "Wyklucz przypięte karty"
+  "time15min": {
+    "message": "15 minut",
+    "description": "15 minute time limit option."
   },
-  "excludeAudible": {
-    "message": "Wyklucz karty z dźwiękiem"
+  "time30min": {
+    "message": "30 minut",
+    "description": "30 minute time limit option."
   },
-  "discardPinned": {
-    "message": "Odładuj przypięte karty"
+  "time1hour": {
+    "message": "1 godzina",
+    "description": "1 hour time limit option."
   },
-  "discardPinnedHelp": {
-    "message": "Gdy włączone, przypięte karty będą odładowane (zwolnią pamięć) zamiast zamknięte"
+  "time2hours": {
+    "message": "2 godziny",
+    "description": "2 hour time limit option."
   },
-  "save": {
-    "message": "Zapisz"
+  "time4hours": {
+    "message": "4 godziny",
+    "description": "4 hour time limit option."
   },
-  "checkNow": {
-    "message": "Sprawdź teraz"
+  "time8hours": {
+    "message": "8 godzin",
+    "description": "8 hour time limit option."
   },
-  "testMode": {
-    "message": "Tryb testowy"
+  "time12hours": {
+    "message": "12 godzin",
+    "description": "12 hour time limit option."
   },
-  "debugInfo": {
-    "message": "Informacje debugowania"
+  "time24hours": {
+    "message": "24 godziny",
+    "description": "24 hour time limit option."
   },
-  "resetStats": {
-    "message": "Resetuj statystyki"
+  "time48hours": {
+    "message": "48 godzin",
+    "description": "48 hour time limit option."
   },
-  "totalTabs": {
-    "message": "Łączna liczba kart"
+  "discardPinnedLabel": {
+    "message": "Wyładuj przypięte karty",
+    "description": "Label for discard pinned tabs setting."
   },
-  "eligibleTabs": {
-    "message": "Karty do zamknięcia"
+  "discardPinnedTooltip": {
+    "message": "Wyładowywanie usuwa zawartość karty z pamięci, ale zachowuje ją widoczną. Karty przeładowują się po kliknięciu.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "pinnedTabsToDiscard": {
-    "message": "Przypięte karty do odładowania"
+  "excludeAudioLabel": {
+    "message": "Wyklucz karty odtwarzające dźwięk",
+    "description": "Label for exclude audio tabs setting."
   },
-  "oldestTabAge": {
-    "message": "Wiek najstarszej karty (min)"
+  "closeTabsButton": {
+    "message": "Zamknij Stare Karty Teraz",
+    "description": "Text for the button that closes old tabs."
   },
-  "status": {
-    "message": "Status"
+  "closingTabsProgress": {
+    "message": "Zamykanie...",
+    "description": "Text shown while tabs are being closed."
   },
-  "timeout": {
-    "message": "Limit czasu"
+  "totalTabsLabel": {
+    "message": "Łącznie kart:",
+    "description": "Label for total tabs count."
   },
-  "hours": {
-    "message": "godzin"
+  "eligibleTabsLabel": {
+    "message": "Do zamknięcia:",
+    "description": "Label for eligible tabs count."
   },
-  "minutes": {
-    "message": "minut"
+  "oldestTabLabel": {
+    "message": "Najstarsza karta:",
+    "description": "Label for oldest tab age."
   },
-  "configSaved": {
-    "message": "Konfiguracja zapisana"
+  "footerText": {
+    "message": "FFTabClose v2.0 - Zarządzaj kartami automatycznie",
+    "description": "Text shown in the footer."
   },
-  "checkComplete": {
-    "message": "Sprawdzanie zakończone"
+  "timeMin": {
+    "message": "min",
+    "description": "Abbreviation for minutes."
   },
-  "testModeActivated": {
-    "message": "Tryb testowy aktywowany"
+  "timeHours": {
+    "message": "godz",
+    "description": "Abbreviation for hours."
   },
-  "statsReset": {
-    "message": "Statystyki zresetowane"
+  "timeDays": {
+    "message": "dni",
+    "description": "Word for days."
   },
-  "error": {
-    "message": "Błąd"
+  "infoPageTitle": {
+    "message": "FFTabClose - Informacje & Pomoc",
+    "description": "Title of the info page."
   },
-  "infoTitle": {
-    "message": "O rozszerzeniu"
+  "infoHeading": {
+    "message": "O FFTabClose",
+    "description": "Heading for the info page."
   },
   "infoDescription": {
-    "message": "FFTabClose automatycznie zarządza kartami przeglądarki, zamykając nieaktywne karty po określonym czasie. Przypięte karty mogą być odładowane zamiast zamknięte, aby zachować ich dostępność."
+    "message": "FFTabClose pomaga utrzymać przeglądarkę w porządku, automatycznie zamykając karty, których nie używałeś przez jakiś czas.",
+    "description": "Description on the info page."
   },
-  "optionsTitle": {
-    "message": "Opcje"
+  "infoFeatures": {
+    "message": "Funkcje",
+    "description": "Features section heading."
   },
-  "statisticsTitle": {
-    "message": "Statystyki"
+  "infoTimerHeading": {
+    "message": "Jak Działa Licznik Czasu",
+    "description": "Timer section heading."
   },
-  "actionsTitle": {
-    "message": "Działania"
+  "infoExclusionsHeading": {
+    "message": "Wykluczenia Kart",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "Zrozumienie Wyładowywania Kart",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Prywatność & Uprawnienia",
+    "description": "Privacy section heading."
   }
 }

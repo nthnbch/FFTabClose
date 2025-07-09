@@ -1,110 +1,134 @@
 {
   "extensionName": {
     "message": "FFTabClose - Автозакрытие Вкладок",
-    "description": "Название расширения"
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Автоматически закрывает неактивные вкладки через настраиваемый период для освобождения памяти и поддержания порядка в браузере.",
-    "description": "Описание расширения"
+    "message": "Автоматически закрывает старые вкладки после настраиваемого периода времени для поддержания быстрой и организованной работы браузера.",
+    "description": "Description of the extension."
   },
-  "popupTitle": {
+  "browserActionTitle": {
     "message": "FFTabClose",
-    "description": "Заголовок всплывающего окна"
+    "description": "Title shown when hovering over the browser action button."
   },
-  "enableExtension": {
-    "message": "Включить расширение",
-    "description": "Метка для включения расширения"
+  "timeLimitLabel": {
+    "message": "Закрывать вкладки старше:",
+    "description": "Label for time limit setting."
   },
-  "closeTabsAfter": {
-    "message": "Закрывать вкладки через:",
-    "description": "Метка для селектора времени"
-  },
-  "minutes15": {
+  "time15min": {
     "message": "15 минут",
-    "description": "Опция 15 минут"
+    "description": "15 minute time limit option."
   },
-  "minutes30": {
+  "time30min": {
     "message": "30 минут",
-    "description": "Опция 30 минут"
+    "description": "30 minute time limit option."
   },
-  "hour1": {
+  "time1hour": {
     "message": "1 час",
-    "description": "Опция 1 час"
+    "description": "1 hour time limit option."
   },
-  "hours2": {
+  "time2hours": {
     "message": "2 часа",
-    "description": "Опция 2 часа"
+    "description": "2 hour time limit option."
   },
-  "hours4": {
+  "time4hours": {
     "message": "4 часа",
-    "description": "Опция 4 часа"
+    "description": "4 hour time limit option."
   },
-  "hours8": {
+  "time8hours": {
     "message": "8 часов",
-    "description": "Опция 8 часов"
+    "description": "8 hour time limit option."
   },
-  "hours12": {
+  "time12hours": {
     "message": "12 часов",
-    "description": "Опция 12 часов"
+    "description": "12 hour time limit option."
   },
-  "hours24": {
+  "time24hours": {
     "message": "24 часа",
-    "description": "Опция 24 часа"
+    "description": "24 hour time limit option."
   },
-  "hours48": {
+  "time48hours": {
     "message": "48 часов",
-    "description": "Опция 48 часов"
+    "description": "48 hour time limit option."
   },
-  "exceptions": {
-    "message": "Исключения:",
-    "description": "Метка для исключений"
+  "discardPinnedLabel": {
+    "message": "Выгружать закрепленные вкладки",
+    "description": "Label for discard pinned tabs setting."
   },
-  "excludePinnedTabs": {
-    "message": "Исключить закреплённые вкладки",
-    "description": "Опция для исключения закреплённых вкладок"
+  "discardPinnedTooltip": {
+    "message": "Выгрузка удаляет содержимое вкладки из памяти, но оставляет вкладку видимой. Вкладки перезагружаются при клике.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "excludeAudibleTabs": {
-    "message": "Исключить вкладки со звуком",
-    "description": "Опция для исключения вкладок со звуком"
+  "excludeAudioLabel": {
+    "message": "Исключать вкладки со звуком",
+    "description": "Label for exclude audio tabs setting."
   },
-  "discardPinnedTabs": {
-    "message": "Выгружать закреплённые вкладки вместо закрытия",
-    "description": "Опция для выгрузки закреплённых вкладок"
+  "closeTabsButton": {
+    "message": "Закрыть Старые Вкладки Сейчас",
+    "description": "Text for the button that closes old tabs."
   },
-  "statistics": {
-    "message": "Статистика",
-    "description": "Раздел статистики"
+  "closingTabsProgress": {
+    "message": "Закрытие...",
+    "description": "Text shown while tabs are being closed."
   },
-  "totalTabs": {
-    "message": "Всего вкладок",
-    "description": "Общее количество вкладок"
+  "totalTabsLabel": {
+    "message": "Всего вкладок:",
+    "description": "Label for total tabs count."
   },
-  "eligibleTabs": {
-    "message": "Могут быть закрыты",
-    "description": "Вкладки, которые могут быть закрыты"
+  "eligibleTabsLabel": {
+    "message": "Готовы к закрытию:",
+    "description": "Label for eligible tabs count."
   },
-  "totalPinnedTabs": {
-    "message": "Закреплённые вкладки",
-    "description": "Общее количество закреплённых вкладок"
+  "oldestTabLabel": {
+    "message": "Самая старая вкладка:",
+    "description": "Label for oldest tab age."
   },
-  "pinnedTabsToDiscard": {
-    "message": "Закреплённых вкладок для выгрузки",
-    "description": "Закреплённые вкладки, которые могут быть выгружены"
+  "footerText": {
+    "message": "FFTabClose v2.0 - Управляйте вкладками автоматически",
+    "description": "Text shown in the footer."
   },
-  "oldestTabAge": {
-    "message": "Самая старая вкладка",
-    "description": "Возраст самой старой вкладки"
+  "timeMin": {
+    "message": "мин",
+    "description": "Abbreviation for minutes."
   },
-  "closeOldTabsNow": {
-    "message": "Закрыть старые вкладки сейчас",
-    "description": "Кнопка для ручного закрытия вкладок"
+  "timeHours": {
+    "message": "ч",
+    "description": "Abbreviation for hours."
   },
-  "settingsSaved": {
-    "message": "Настройки сохранены",
-    "description": "Сообщение подтверждения"
+  "timeDays": {
+    "message": "дней",
+    "description": "Word for days."
   },
-  "pinnedTabsInfo": {
-    "message": "ℹ️ Закреплённые вкладки никогда не будут закрыты автоматически. Таймер сбрасывается при взаимодействии с вкладкой.",
-    "description": "Информация о закреплённых вкладках"
+  "infoPageTitle": {
+    "message": "FFTabClose - О расширении & Помощь",
+    "description": "Title of the info page."
+  },
+  "infoHeading": {
+    "message": "О FFTabClose",
+    "description": "Heading for the info page."
+  },
+  "infoDescription": {
+    "message": "FFTabClose помогает поддерживать порядок в браузере, автоматически закрывая вкладки, которые вы не использовали некоторое время.",
+    "description": "Description on the info page."
+  },
+  "infoFeatures": {
+    "message": "Возможности",
+    "description": "Features section heading."
+  },
+  "infoTimerHeading": {
+    "message": "Как Работает Таймер",
+    "description": "Timer section heading."
+  },
+  "infoExclusionsHeading": {
+    "message": "Исключения Вкладок",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "О Выгрузке Вкладок",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Приватность & Разрешения",
+    "description": "Privacy section heading."
   }
 }

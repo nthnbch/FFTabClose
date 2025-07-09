@@ -1,130 +1,134 @@
 {
   "extensionName": {
-    "message": "FFTabClose - Auto Tab-Schließer",
-    "description": "Name der Erweiterung"
+    "message": "FFTabClose - Automatisches Tab-Schließen",
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Schließt automatisch nicht gepinnte Tabs nach einer konfigurierbaren Zeitspanne. Perfekt für Produktivität und Speicherverwaltung.",
-    "description": "Beschreibung der Erweiterung"
+    "message": "Schließt alte Tabs nach einer konfigurierbaren Zeitspanne automatisch, um Ihren Browser schnell und organisiert zu halten.",
+    "description": "Description of the extension."
   },
-  "popupTitle": {
+  "browserActionTitle": {
     "message": "FFTabClose",
-    "description": "Titel im Popup angezeigt"
+    "description": "Title shown when hovering over the browser action button."
   },
-  "closeTabsAfter": {
-    "message": "Tabs schließen nach:",
-    "description": "Label für Zeitauswahl"
+  "timeLimitLabel": {
+    "message": "Schließe Tabs älter als:",
+    "description": "Label for time limit setting."
   },
-  "minutes15": {
+  "time15min": {
     "message": "15 Minuten",
-    "description": "15 Minuten Option"
+    "description": "15 minute time limit option."
   },
-  "minutes30": {
+  "time30min": {
     "message": "30 Minuten",
-    "description": "30 Minuten Option"
+    "description": "30 minute time limit option."
   },
-  "hour1": {
+  "time1hour": {
     "message": "1 Stunde",
-    "description": "1 Stunde Option"
+    "description": "1 hour time limit option."
   },
-  "hours2": {
+  "time2hours": {
     "message": "2 Stunden",
-    "description": "2 Stunden Option"
+    "description": "2 hour time limit option."
   },
-  "hours4": {
+  "time4hours": {
     "message": "4 Stunden",
-    "description": "4 Stunden Option"
+    "description": "4 hour time limit option."
   },
-  "hours8": {
+  "time8hours": {
     "message": "8 Stunden",
-    "description": "8 Stunden Option"
+    "description": "8 hour time limit option."
   },
-  "hours12": {
+  "time12hours": {
     "message": "12 Stunden",
-    "description": "12 Stunden Option"
+    "description": "12 hour time limit option."
   },
-  "hours24": {
+  "time24hours": {
     "message": "24 Stunden",
-    "description": "24 Stunden Option"
+    "description": "24 hour time limit option."
   },
-  "hours48": {
+  "time48hours": {
     "message": "48 Stunden",
-    "description": "48 Stunden Option"
+    "description": "48 hour time limit option."
   },
-  "extensionActive": {
-    "message": "Erweiterung aktiv",
-    "description": "Statusmeldung wenn Erweiterung aktiv ist"
+  "discardPinnedLabel": {
+    "message": "Angeheftete Tabs entladen",
+    "description": "Label for discard pinned tabs setting."
   },
-  "pinnedTabsInfo": {
-    "message": "ℹ️ Gepinnte Tabs können entladen (aus Speicher entfernt) oder ausgeschlossen werden. Entladene Tabs sparen Speicher, bleiben aber geöffnet. Der Timer wird zurückgesetzt, wenn Sie mit einem Tab interagieren.",
-    "description": "Information über das Verhalten gepinnter Tabs"
+  "discardPinnedTooltip": {
+    "message": "Entladen bedeutet, den Inhalt des Tabs aus dem Speicher zu entfernen, wobei der Tab aber sichtbar bleibt. Tabs werden beim Anklicken neu geladen.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "activeTabsWillNotBeClosed": {
-    "message": "Aktive Tabs werden nicht automatisch geschlossen",
-    "description": "Info über aktive Tabs"
+  "excludeAudioLabel": {
+    "message": "Tabs mit Audiowiedergabe ausschließen",
+    "description": "Label for exclude audio tabs setting."
   },
-  "enableExtension": {
-    "message": "Erweiterung aktivieren",
-    "description": "Schalter zum Aktivieren/Deaktivieren der Erweiterung"
-  },
-  "exceptions": {
-    "message": "Ausnahmen",
-    "description": "Label für Ausnahme-Einstellungen"
-  },
-  "excludePinnedTabs": {
-    "message": "Gepinnte Tabs ausschließen",
-    "description": "Checkbox-Label zum Ausschließen gepinnter Tabs"
-  },
-  "excludeAudibleTabs": {
-    "message": "Tabs mit Ton ausschließen",
-    "description": "Checkbox-Label zum Ausschließen von hörbaren Tabs"
-  },
-  "discardPinnedTabs": {
-    "message": "Gepinnte Tabs entladen (anstatt schließen)",
-    "description": "Checkbox-Label zum Entladen gepinnter Tabs anstatt sie zu schließen"
-  },
-  "totalTabs": {
-    "message": "Tabs insgesamt",
-    "description": "Label für Gesamtanzahl der Tabs"
-  },
-  "normalTabs": {
-    "message": "Normale Tabs",
-    "description": "Label für Anzahl normaler (nicht gepinnter) Tabs"
-  },
-  "eligibleTabs": {
-    "message": "Können geschlossen werden",
-    "description": "Label für Tabs die geschlossen werden können"
-  },
-  "totalPinnedTabs": {
-    "message": "Gepinnte Tabs",
-    "description": "Label für Gesamtanzahl der gepinnten Tabs"
-  },
-  "pinnedTabsToDiscard": {
-    "message": "Gepinnte Tabs zum Entladen",
-    "description": "Label für gepinnte Tabs die entladen werden"
-  },
-  "oldestTabAge": {
-    "message": "Ältester Tab",
-    "description": "Label für Alter des ältesten Tabs"
-  },
-  "closeOldTabsNow": {
+  "closeTabsButton": {
     "message": "Alte Tabs jetzt schließen",
-    "description": "Button-Text um alte Tabs sofort zu schließen"
+    "description": "Text for the button that closes old tabs."
   },
-  "closingTabs": {
-    "message": "Schließe Tabs...",
-    "description": "Text angezeigt während Tabs geschlossen werden"
+  "closingTabsProgress": {
+    "message": "Schließe...",
+    "description": "Text shown while tabs are being closed."
   },
-  "tabsClosedSuccess": {
-    "message": "Tabs erfolgreich geschlossen!",
-    "description": "Erfolgsmeldung nach dem Schließen von Tabs"
+  "totalTabsLabel": {
+    "message": "Tabs gesamt:",
+    "description": "Label for total tabs count."
   },
-  "settingsSaved": {
-    "message": "Einstellungen gespeichert",
-    "description": "Meldung angezeigt wenn Einstellungen gespeichert werden"
+  "eligibleTabsLabel": {
+    "message": "Zum Schließen bereit:",
+    "description": "Label for eligible tabs count."
   },
-  "settingsError": {
-    "message": "❌ Fehler beim Speichern der Einstellungen",
-    "description": "Fehlermeldung wenn Speichern der Einstellungen fehlschlägt"
+  "oldestTabLabel": {
+    "message": "Ältester Tab:",
+    "description": "Label for oldest tab age."
+  },
+  "footerText": {
+    "message": "FFTabClose v2.0 - Verwalten Sie Ihre Tabs automatisch",
+    "description": "Text shown in the footer."
+  },
+  "timeMin": {
+    "message": "Min",
+    "description": "Abbreviation for minutes."
+  },
+  "timeHours": {
+    "message": "Std",
+    "description": "Abbreviation for hours."
+  },
+  "timeDays": {
+    "message": "Tage",
+    "description": "Word for days."
+  },
+  "infoPageTitle": {
+    "message": "FFTabClose - Über & Hilfe",
+    "description": "Title of the info page."
+  },
+  "infoHeading": {
+    "message": "Über FFTabClose",
+    "description": "Heading for the info page."
+  },
+  "infoDescription": {
+    "message": "FFTabClose hilft Ihnen, Ihren Browser organisiert zu halten, indem Tabs automatisch geschlossen werden, die Sie schon länger nicht mehr benutzt haben.",
+    "description": "Description on the info page."
+  },
+  "infoFeatures": {
+    "message": "Funktionen",
+    "description": "Features section heading."
+  },
+  "infoTimerHeading": {
+    "message": "Wie der Timer funktioniert",
+    "description": "Timer section heading."
+  },
+  "infoExclusionsHeading": {
+    "message": "Tab-Ausnahmen",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "Erklärung zum Tab-Entladen",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Datenschutz & Berechtigungen",
+    "description": "Privacy section heading."
   }
 }

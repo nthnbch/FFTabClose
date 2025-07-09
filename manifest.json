@@ -1,16 +1,24 @@
 {
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
+  "author": "bubu",
   
-  "developer": {
-    "name": "nthnbch",
-    "url": "https://nathan.swiss"
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "fftabclose@nathan.swiss",
+      "strict_min_version": "109.0"
+    }
   },
   
-  "homepage_url": "https://github.com/nthnbch/FFTabClose",
+  "icons": {
+    "16": "icons/icon-16.svg",
+    "32": "icons/icon-32.svg",
+    "48": "icons/icon-48.svg",
+    "128": "icons/icon-128.svg"
+  },
   
   "permissions": [
     "tabs",
@@ -24,29 +32,12 @@
   },
   
   "browser_action": {
-    "default_popup": "popup.html",
-    "default_title": "__MSG_popupTitle__",
+    "default_title": "__MSG_browserActionTitle__",
+    "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon-16.svg",
       "32": "icons/icon-32.svg",
-      "48": "icons/icon-48.svg",
-      "128": "icons/icon-128.svg"
+      "48": "icons/icon-48.svg"
     }
-  },
-  
-  "icons": {
-    "16": "icons/icon-16.svg",
-    "32": "icons/icon-32.svg",
-    "48": "icons/icon-48.svg",
-    "128": "icons/icon-128.svg"
-  },
-  
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "fftabclose@nathan.swiss",
-      "strict_min_version": "109.0"
-    }
-  },
-  
-  "content_security_policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; worker-src 'none'; frame-src 'none'"
+  }
 }

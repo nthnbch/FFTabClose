@@ -1,114 +1,134 @@
 {
   "extensionName": {
     "message": "FFTabClose - Chiusura Automatica Schede",
-    "description": "Nome dell'estensione"
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Chiude automaticamente le schede inattive dopo un periodo configurabile per liberare memoria e mantenere il browser organizzato.",
-    "description": "Descrizione dell'estensione"
+    "message": "Chiude automaticamente le schede vecchie dopo un periodo configurabile per mantenere il browser veloce e organizzato.",
+    "description": "Description of the extension."
   },
-  "popupTitle": {
+  "browserActionTitle": {
     "message": "FFTabClose",
-    "description": "Titolo del popup"
+    "description": "Title shown when hovering over the browser action button."
   },
-  "enableExtension": {
-    "message": "Attiva estensione",
-    "description": "Etichetta per attivare l'estensione"
+  "timeLimitLabel": {
+    "message": "Chiudi schede più vecchie di:",
+    "description": "Label for time limit setting."
   },
-  "closeTabsAfter": {
-    "message": "Chiudi schede dopo:",
-    "description": "Etichetta per il selettore di tempo"
-  },
-  "minutes15": {
+  "time15min": {
     "message": "15 minuti",
-    "description": "Opzione di 15 minuti"
+    "description": "15 minute time limit option."
   },
-  "minutes30": {
+  "time30min": {
     "message": "30 minuti",
-    "description": "Opzione di 30 minuti"
+    "description": "30 minute time limit option."
   },
-  "hour1": {
+  "time1hour": {
     "message": "1 ora",
-    "description": "Opzione di 1 ora"
+    "description": "1 hour time limit option."
   },
-  "hours2": {
+  "time2hours": {
     "message": "2 ore",
-    "description": "Opzione di 2 ore"
+    "description": "2 hour time limit option."
   },
-  "hours4": {
+  "time4hours": {
     "message": "4 ore",
-    "description": "Opzione di 4 ore"
+    "description": "4 hour time limit option."
   },
-  "hours8": {
+  "time8hours": {
     "message": "8 ore",
-    "description": "Opzione di 8 ore"
+    "description": "8 hour time limit option."
   },
-  "hours12": {
+  "time12hours": {
     "message": "12 ore",
-    "description": "Opzione di 12 ore"
+    "description": "12 hour time limit option."
   },
-  "hours24": {
+  "time24hours": {
     "message": "24 ore",
-    "description": "Opzione di 24 ore"
+    "description": "24 hour time limit option."
   },
-  "hours48": {
+  "time48hours": {
     "message": "48 ore",
-    "description": "Opzione di 48 ore"
+    "description": "48 hour time limit option."
   },
-  "exceptions": {
-    "message": "Eccezioni:",
-    "description": "Etichetta per le eccezioni"
+  "discardPinnedLabel": {
+    "message": "Scaricare schede appuntate",
+    "description": "Label for discard pinned tabs setting."
   },
-  "excludePinnedTabs": {
-    "message": "Escludi schede fissate",
-    "description": "Opzione per escludere le schede fissate"
+  "discardPinnedTooltip": {
+    "message": "Scaricare significa rimuovere il contenuto dalla memoria ma mantenere la scheda visibile. Le schede si ricaricano quando ci si clicca sopra.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "excludeAudibleTabs": {
-    "message": "Escludi schede con audio",
-    "description": "Opzione per escludere le schede con audio"
+  "excludeAudioLabel": {
+    "message": "Escludi schede che riproducono audio",
+    "description": "Label for exclude audio tabs setting."
   },
-  "discardPinnedTabs": {
-    "message": "Scarica schede fissate invece di chiuderle",
-    "description": "Opzione per scaricare le schede fissate"
+  "closeTabsButton": {
+    "message": "Chiudi Schede Vecchie Ora",
+    "description": "Text for the button that closes old tabs."
   },
-  "statistics": {
-    "message": "Statistiche",
-    "description": "Sezione statistiche"
+  "closingTabsProgress": {
+    "message": "Chiusura...",
+    "description": "Text shown while tabs are being closed."
   },
-  "totalTabs": {
-    "message": "Totale schede",
-    "description": "Numero totale di schede"
+  "totalTabsLabel": {
+    "message": "Schede totali:",
+    "description": "Label for total tabs count."
   },
-  "normalTabs": {
-    "message": "Schede normali",
-    "description": "Numero di schede normali (non fissate)"
+  "eligibleTabsLabel": {
+    "message": "Idonee per chiusura:",
+    "description": "Label for eligible tabs count."
   },
-  "eligibleTabs": {
-    "message": "Possono essere chiuse",
-    "description": "Schede che possono essere chiuse"
+  "oldestTabLabel": {
+    "message": "Scheda più vecchia:",
+    "description": "Label for oldest tab age."
   },
-  "totalPinnedTabs": {
-    "message": "Schede fissate",
-    "description": "Numero totale di schede fissate"
+  "footerText": {
+    "message": "FFTabClose v2.0 - Gestisci le tue schede automaticamente",
+    "description": "Text shown in the footer."
   },
-  "pinnedTabsToDiscard": {
-    "message": "Schede fissate da scaricare",
-    "description": "Schede fissate che possono essere scaricate"
+  "timeMin": {
+    "message": "min",
+    "description": "Abbreviation for minutes."
   },
-  "oldestTabAge": {
-    "message": "Scheda più vecchia",
-    "description": "Età della scheda più vecchia"
+  "timeHours": {
+    "message": "ore",
+    "description": "Abbreviation for hours."
   },
-  "closeOldTabsNow": {
-    "message": "Chiudi schede vecchie ora",
-    "description": "Pulsante per chiudere manualmente le schede"
+  "timeDays": {
+    "message": "giorni",
+    "description": "Word for days."
   },
-  "settingsSaved": {
-    "message": "Impostazioni salvate",
-    "description": "Messaggio di conferma"
+  "infoPageTitle": {
+    "message": "FFTabClose - Informazioni & Aiuto",
+    "description": "Title of the info page."
   },
-  "pinnedTabsInfo": {
-    "message": "ℹ️ Le schede fissate non verranno mai chiuse automaticamente. Il timer si resetta quando interagisci con una scheda.",
-    "description": "Informazioni sulle schede fissate"
+  "infoHeading": {
+    "message": "Informazioni su FFTabClose",
+    "description": "Heading for the info page."
+  },
+  "infoDescription": {
+    "message": "FFTabClose ti aiuta a mantenere il tuo browser organizzato chiudendo automaticamente le schede che non hai utilizzato da un po' di tempo.",
+    "description": "Description on the info page."
+  },
+  "infoFeatures": {
+    "message": "Funzionalità",
+    "description": "Features section heading."
+  },
+  "infoTimerHeading": {
+    "message": "Come Funziona il Timer",
+    "description": "Timer section heading."
+  },
+  "infoExclusionsHeading": {
+    "message": "Esclusioni delle Schede",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "Capire lo Scaricamento delle Schede",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Privacy & Permessi",
+    "description": "Privacy section heading."
   }
 }

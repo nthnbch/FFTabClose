@@ -1,95 +1,134 @@
 {
   "extensionName": {
-    "message": "FFTabClose - إغلاق التبويبات التلقائي"
+    "message": "FFTabClose - مُغلق التبويبات التلقائي",
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "يغلق أو يفرغ التبويبات غير النشطة تلقائياً بعد وقت قابل للتكوين لتوفير الذاكرة وتحسين الأداء."
+    "message": "يغلق تلقائيًا التبويبات القديمة بعد فترة زمنية قابلة للتكوين للحفاظ على سرعة وتنظيم المتصفح.",
+    "description": "Description of the extension."
   },
-  "autoCloseTime": {
-    "message": "وقت الإغلاق التلقائي (ساعات)"
+  "browserActionTitle": {
+    "message": "FFTabClose",
+    "description": "Title shown when hovering over the browser action button."
   },
-  "enabled": {
-    "message": "مفعل"
+  "timeLimitLabel": {
+    "message": "إغلاق التبويبات الأقدم من:",
+    "description": "Label for time limit setting."
   },
-  "excludePinned": {
-    "message": "استثناء التبويبات المثبتة"
+  "time15min": {
+    "message": "15 دقيقة",
+    "description": "15 minute time limit option."
   },
-  "excludeAudible": {
-    "message": "استثناء التبويبات الصوتية"
+  "time30min": {
+    "message": "30 دقيقة",
+    "description": "30 minute time limit option."
   },
-  "discardPinned": {
-    "message": "إفراغ التبويبات المثبتة"
+  "time1hour": {
+    "message": "ساعة واحدة",
+    "description": "1 hour time limit option."
   },
-  "discardPinnedHelp": {
-    "message": "عند التفعيل، سيتم إفراغ التبويبات المثبتة (تحرير الذاكرة) بدلاً من إغلاقها"
+  "time2hours": {
+    "message": "ساعتان",
+    "description": "2 hour time limit option."
   },
-  "save": {
-    "message": "حفظ"
+  "time4hours": {
+    "message": "4 ساعات",
+    "description": "4 hour time limit option."
   },
-  "checkNow": {
-    "message": "فحص الآن"
+  "time8hours": {
+    "message": "8 ساعات",
+    "description": "8 hour time limit option."
   },
-  "testMode": {
-    "message": "وضع الاختبار"
+  "time12hours": {
+    "message": "12 ساعة",
+    "description": "12 hour time limit option."
   },
-  "debugInfo": {
-    "message": "معلومات التصحيح"
+  "time24hours": {
+    "message": "24 ساعة",
+    "description": "24 hour time limit option."
   },
-  "resetStats": {
-    "message": "إعادة تعيين الإحصائيات"
+  "time48hours": {
+    "message": "48 ساعة",
+    "description": "48 hour time limit option."
   },
-  "totalTabs": {
-    "message": "إجمالي التبويبات"
+  "discardPinnedLabel": {
+    "message": "تفريغ التبويبات المثبتة",
+    "description": "Label for discard pinned tabs setting."
   },
-  "eligibleTabs": {
-    "message": "التبويبات المؤهلة للإغلاق"
+  "discardPinnedTooltip": {
+    "message": "التفريغ يزيل محتوى التبويب من الذاكرة مع الحفاظ على ظهور التبويب. تتم إعادة تحميل التبويبات عند النقر عليها.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "pinnedTabsToDiscard": {
-    "message": "التبويبات المثبتة للإفراغ"
+  "excludeAudioLabel": {
+    "message": "استبعاد التبويبات التي تشغل الصوت",
+    "description": "Label for exclude audio tabs setting."
   },
-  "oldestTabAge": {
-    "message": "عمر أقدم تبويب (دقيقة)"
+  "closeTabsButton": {
+    "message": "إغلاق التبويبات القديمة الآن",
+    "description": "Text for the button that closes old tabs."
   },
-  "status": {
-    "message": "الحالة"
+  "closingTabsProgress": {
+    "message": "جاري الإغلاق...",
+    "description": "Text shown while tabs are being closed."
   },
-  "timeout": {
-    "message": "المهلة الزمنية"
+  "totalTabsLabel": {
+    "message": "إجمالي التبويبات:",
+    "description": "Label for total tabs count."
   },
-  "hours": {
-    "message": "ساعات"
+  "eligibleTabsLabel": {
+    "message": "المؤهلة للإغلاق:",
+    "description": "Label for eligible tabs count."
   },
-  "minutes": {
-    "message": "دقائق"
+  "oldestTabLabel": {
+    "message": "أقدم تبويب:",
+    "description": "Label for oldest tab age."
   },
-  "configSaved": {
-    "message": "تم حفظ التكوين"
+  "footerText": {
+    "message": "FFTabClose v2.0 - إدارة تبويباتك تلقائيًا",
+    "description": "Text shown in the footer."
   },
-  "checkComplete": {
-    "message": "اكتمل الفحص"
+  "timeMin": {
+    "message": "دقيقة",
+    "description": "Abbreviation for minutes."
   },
-  "testModeActivated": {
-    "message": "تم تفعيل وضع الاختبار"
+  "timeHours": {
+    "message": "س",
+    "description": "Abbreviation for hours."
   },
-  "statsReset": {
-    "message": "تم إعادة تعيين الإحصائيات"
+  "timeDays": {
+    "message": "أيام",
+    "description": "Word for days."
   },
-  "error": {
-    "message": "خطأ"
+  "infoPageTitle": {
+    "message": "FFTabClose - حول & مساعدة",
+    "description": "Title of the info page."
   },
-  "infoTitle": {
-    "message": "حول الإضافة"
+  "infoHeading": {
+    "message": "حول FFTabClose",
+    "description": "Heading for the info page."
   },
   "infoDescription": {
-    "message": "يدير FFTabClose تبويبات المتصفح تلقائياً، ويغلق التبويبات غير النشطة بعد فترة محددة. يمكن إفراغ التبويبات المثبتة بدلاً من إغلاقها للحفاظ على إمكانية الوصول إليها."
+    "message": "يساعدك FFTabClose على الحفاظ على تنظيم متصفحك من خلال إغلاق التبويبات التي لم تستخدمها منذ فترة تلقائيًا.",
+    "description": "Description on the info page."
   },
-  "optionsTitle": {
-    "message": "الخيارات"
+  "infoFeatures": {
+    "message": "المميزات",
+    "description": "Features section heading."
   },
-  "statisticsTitle": {
-    "message": "الإحصائيات"
+  "infoTimerHeading": {
+    "message": "كيف يعمل المؤقت",
+    "description": "Timer section heading."
   },
-  "actionsTitle": {
-    "message": "الإجراءات"
+  "infoExclusionsHeading": {
+    "message": "استثناءات التبويب",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "فهم تفريغ التبويبات",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "الخصوصية & الأذونات",
+    "description": "Privacy section heading."
   }
 }
