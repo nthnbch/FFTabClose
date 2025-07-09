@@ -277,7 +277,7 @@ class PopupController {
       // Validation des valeurs selon le type
       switch (key) {
         case 'autoCloseTime':
-          if (typeof value !== 'number' || value < 120000 || value > 172800000) {
+          if (typeof value !== 'number' || value < 30000 || value > 172800000) {
             throw new Error('Invalid autoCloseTime value');
           }
           break;
