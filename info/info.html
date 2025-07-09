@@ -13,8 +13,9 @@
       --border-color: #e2e8f0;
       --accent-color: #4299e1;
       --code-bg: #f7fafc;
+      --transition-speed: 0.3s;
     }
-    
+
     @media (prefers-color-scheme: dark) {
       :root {
         --text-color: #e2e8f0;
@@ -26,7 +27,7 @@
         --code-bg: #2d3748;
       }
     }
-    
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
         Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
@@ -36,35 +37,40 @@
       max-width: 800px;
       margin: 0 auto;
       padding: 2rem;
+      transition: background-color var(--transition-speed), color var(--transition-speed);
     }
-    
+
     h1, h2 {
       color: var(--heading-color);
     }
-    
+
     h1 {
       border-bottom: 2px solid var(--accent-color);
       padding-bottom: 0.5rem;
       margin-bottom: 1.5rem;
+      font-size: 2rem;
     }
-    
+
     h2 {
       margin-top: 2rem;
+      font-size: 1.5rem;
     }
-    
+
     a {
       color: var(--link-color);
       text-decoration: none;
+      transition: color var(--transition-speed);
     }
-    
+
     a:hover {
       text-decoration: underline;
+      color: var(--accent-color);
     }
-    
+
     .container {
       margin-bottom: 2rem;
     }
-    
+
     section {
       background-color: var(--bg-color);
       border: 1px solid var(--border-color);
@@ -72,27 +78,33 @@
       padding: 1.5rem;
       margin-bottom: 2rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: box-shadow var(--transition-speed);
     }
-    
+
+    section:hover {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
     .feature-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 1rem;
     }
-    
+
     .feature-item {
       border: 1px solid var(--border-color);
       border-radius: 4px;
       padding: 1rem;
+      text-align: center;
     }
-    
+
     code {
       background-color: var(--code-bg);
       padding: 0.2rem 0.4rem;
       border-radius: 3px;
       font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
-    
+
     footer {
       margin-top: 2rem;
       font-size: 0.9rem;
@@ -104,81 +116,34 @@
 </head>
 <body>
   <div class="container">
-    <h1>__MSG_infoHeading__</h1>
-    
+    <header>
+      <h1>__MSG_infoHeading__</h1>
+    </header>
+
     <section>
+      <h2>__MSG_infoFeatures__</h2>
       <p>__MSG_infoDescription__</p>
     </section>
 
     <section>
-      <h2>__MSG_infoFeatures__</h2>
-      <div class="feature-grid">
-        <div class="feature-item">
-          <h3>⏱️ Automatic Tab Management</h3>
-          <p>Close tabs automatically after they've been inactive for your chosen time period.</p>
-        </div>
-        
-        <div class="feature-item">
-          <h3>📌 Smart Tab Handling</h3>
-          <p>Option to discard (unload) pinned tabs instead of closing them, preserving your important tabs.</p>
-        </div>
-        
-        <div class="feature-item">
-          <h3>🔊 Media-Aware</h3>
-          <p>Option to exclude tabs that are currently playing audio or video from being closed.</p>
-        </div>
-        
-        <div class="feature-item">
-          <h3>💾 Persistent Settings</h3>
-          <p>Your preferences and tab timers are saved between browser sessions.</p>
-        </div>
-      </div>
-    </section>
-
-    <section>
       <h2>__MSG_infoTimerHeading__</h2>
-      <p>FFTabClose tracks each tab's last active time. When a tab hasn't been used for longer than your selected time limit, it becomes eligible for closing.</p>
-      <p>The extension periodically checks for inactive tabs and closes or discards them based on your settings.</p>
-      <p>Timer information persists even if you restart your browser, ensuring consistent tab management.</p>
+      <p>__MSG_infoTimerDescription__</p>
     </section>
 
     <section>
       <h2>__MSG_infoExclusionsHeading__</h2>
-      <p>The following tabs are protected from automatic closing:</p>
-      <ul>
-        <li><strong>Active tab</strong> - The tab you're currently viewing is never closed</li>
-        <li><strong>Pinned tabs</strong> - Can be discarded (unloaded) instead if you enable that option</li>
-        <li><strong>Audio tabs</strong> - Tabs playing audio/video will be preserved if you enable that option</li>
-        <li><strong>Essential tabs</strong> - Tabs detected as essential in certain browsers are protected</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>__MSG_infoDiscardHeading__</h2>
-      <p>Tab discarding is a memory-saving feature that unloads a tab's content from memory while keeping the tab in your tab bar. When you click on a discarded tab, it reloads automatically.</p>
-      <p>This is especially useful for pinned tabs that you want to keep accessible but don't need loaded all the time.</p>
+      <p>__MSG_infoExclusionsDescription__</p>
     </section>
 
     <section>
       <h2>__MSG_infoPrivacy__</h2>
-      <p>FFTabClose operates entirely on your device and does not:</p>
-      <ul>
-        <li>Collect any browsing data</li>
-        <li>Send any information to remote servers</li>
-        <li>Track your browsing habits</li>
-      </ul>
-      <p>The extension only requires the following permissions:</p>
-      <ul>
-        <li><code>tabs</code> - To monitor and manage tabs</li>
-        <li><code>storage</code> - To save your preferences</li>
-        <li><code>alarms</code> - To schedule periodic tab checks</li>
-      </ul>
+      <p>__MSG_infoPrivacyDescription__</p>
     </section>
+
+    <footer>
+      <p>FFTabClose v2.0.0 &copy; 2025 - <a href="https://github.com/bubu/FFTabClose" target="_blank">GitHub</a></p>
+    </footer>
   </div>
-  
-  <footer>
-    <p>FFTabClose v2.0.0 &copy; 2024 - <a href="https://github.com/bubu/FFTabClose" target="_blank">GitHub</a></p>
-  </footer>
 
   <script src="../background.js"></script>
   <script>

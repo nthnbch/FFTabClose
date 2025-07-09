@@ -39,5 +39,15 @@
       "32": "icons/icon-32.svg",
       "48": "icons/icon-48.svg"
     }
+  },
+  
+  "commands": {
+    "close-old-tabs": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "Command+Shift+O"
+      },
+      "description": "Close old tabs based on timeout settings"
+    }
   }
 }

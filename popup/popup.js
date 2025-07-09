@@ -131,15 +131,10 @@ function setupEventListeners() {
 
 // Initialize popup
 async function initializePopup() {
-  // Apply internationalization
   applyI18n();
-  
-  // Set up event listeners
-  setupEventListeners();
-  
-  // Load settings and update UI
   await loadSettings();
+  setupEventListeners();
 }
 
-// Start the popup
-document.addEventListener('DOMContentLoaded', initializePopup);
+// Run initialization
+initializePopup();
