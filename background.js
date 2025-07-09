@@ -23,6 +23,7 @@ let tabTimestamps = new Map();
 let alarmName = 'fftabclose_check';
 let currentConfig = { ...DEFAULT_CONFIG };
 let lastClosedCount = 0; // Track last closed count
+let saveTimeout = null; // For debouncing timestamp saves
 
 /**
  * Initialize extension on startup/install
@@ -105,6 +106,20 @@ async function saveTabTimestamps() {
 }
 
 /**
+ * Save tab timestamps to storage with a debounce mechanism to avoid excessive writes.
+ */
+function saveTabTimestampsDebounced() {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+  }
+  saveTimeout = setTimeout(() => {
+    saveTabTimestamps().then(() => {
+      console.log('FFTabClose: Debounced timestamp save completed.');
+    });
+  }, 3000); // 3-second debounce interval
+}
+
+/**
  * Initialize timestamps for existing tabs
  */
 async function initializeExistingTabs() {
@@ -120,7 +135,7 @@ async function initializeExistingTabs() {
       }
     }
     
-    await saveTabTimestamps();
+    saveTabTimestampsDebounced();
     console.log(`FFTabClose: Initialized timestamps for non-discarded tabs.`);
   } catch (error) {
     console.error('FFTabClose: Failed to initialize existing tabs:', error);
@@ -203,12 +218,15 @@ async function checkAndCloseTabs() {
       console.log(`FFTabClose: Closing ${tabsToClose.length} tabs.`);
       try {
         await browser.tabs.remove(tabsToClose);
+        // On successful removal, unregister these tabs
+        tabsToClose.forEach(unregisterTab);
         console.log('FFTabClose: Successfully closed tabs:', tabsToClose);
       } catch (error) {
         console.error(`FFTabClose: Error closing tabs in batch: ${error}. Trying individually.`);
         for (const tabId of tabsToClose) {
           try {
             await browser.tabs.remove(tabId);
+            unregisterTab(tabId); // Unregister on success
           } catch (e) {
             console.error(`FFTabClose: Failed to close tab ${tabId}:`, e);
           }
@@ -220,12 +238,15 @@ async function checkAndCloseTabs() {
       console.log(`FFTabClose: Discarding ${tabsToDiscard.length} tabs.`);
       try {
         await browser.tabs.discard(tabsToDiscard);
+        // After discarding, update their timestamps so they aren't immediately re-processed
+        tabsToDiscard.forEach(tabId => registerTab(tabId, now));
         console.log('FFTabClose: Successfully discarded tabs:', tabsToDiscard);
       } catch (error) {
         console.error(`FFTabClose: Error discarding tabs in batch: ${error}. Trying individually.`);
         for (const tabId of tabsToDiscard) {
           try {
             await browser.tabs.discard(tabId);
+            registerTab(tabId, now); // Update timestamp on success
           } catch (e) {
             console.error(`FFTabClose: Failed to discard tab ${tabId}:`, e);
           }
@@ -241,10 +262,10 @@ async function checkAndCloseTabs() {
     console.error('FFTabClose: Failed during tab check:', error);
   }
 
-  // If any new tabs were registered, save the updated timestamps
-  if (timestampsModified) {
-    console.log('FFTabClose: New timestamps were registered, saving to storage.');
-    await saveTabTimestamps();
+  // If any new tabs were registered or timestamps were modified, save the updated timestamps
+  if (timestampsModified || tabsToClose.length > 0 || tabsToDiscard.length > 0) {
+    console.log('FFTabClose: Timestamps were modified, saving to storage.');
+    saveTabTimestampsDebounced();
   }
 }
 
@@ -430,7 +451,7 @@ browser.tabs.onCreated.addListener((tab) => {
   if (tab.id) {
     console.log(`FFTabClose: Tab created: ${tab.id}. Registering with current timestamp.`);
     registerTab(tab.id);
-    saveTabTimestamps();
+    saveTabTimestampsDebounced();
   }
 });
 
@@ -439,24 +460,25 @@ browser.tabs.onCreated.addListener((tab) => {
 browser.tabs.onActivated.addListener((activeInfo) => {
   console.log(`FFTabClose: Tab activated: ${activeInfo.tabId}. Updating timestamp.`);
   registerTab(activeInfo.tabId);
-  saveTabTimestamps();
+  saveTabTimestampsDebounced();
 });
 
 // Update timestamp if a tab is reloaded or its URL changes.
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  // We are interested when a tab is loaded with a new URL, not just reloaded.
-  // The 'status' check is to avoid multiple triggers.
-  if (changeInfo.status === 'complete' && changeInfo.url) {
+  // We are interested when a tab is loaded with a new URL.
+  // The 'status' check is to avoid multiple triggers for the same navigation.
+  // We also check that it's not a discarded tab being restored without user action.
+  if (changeInfo.status === 'complete' && tab.url && !tab.discarded) {
     console.log(`FFTabClose: Tab updated: ${tabId}. Updating timestamp due to URL change.`);
     registerTab(tabId);
-    saveTabTimestamps();
+    saveTabTimestampsDebounced();
   }
 });
 
 browser.tabs.onRemoved.addListener((tabId) => {
   console.log(`FFTabClose: Tab removed: ${tabId}. Unregistering.`);
   unregisterTab(tabId);
-  saveTabTimestamps();
+  saveTabTimestampsDebounced();
 });
 
 // Alarm for periodic checks
