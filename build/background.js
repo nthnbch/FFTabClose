@@ -290,34 +290,48 @@ async function checkAndCloseTabs() {
  * Determine what action to take for a tab (close, discard, or none)
  */
 function getTabAction(tab, now) {
+  // Rule 0: Never close the currently active tab.
+  if (tab.active) {
+    return 'none';
+  }
+
   const timestamp = tabTimestamps.get(tab.id.toString());
   if (!timestamp) {
-    // If a tab has no timestamp, it might be new. Register it.
+    console.log(`FFTabClose: Tab ${tab.id} has no timestamp. Registering it now.`);
     registerTab(tab.id, now);
     return 'none';
   }
 
   const age = now - timestamp;
-  if (age < currentConfig.autoCloseTime) {
-    return 'none'; // Not old enough
+  const autoCloseTime = currentConfig.autoCloseTime || (12 * 60 * 60 * 1000);
+
+  // Rule 1: Check if the tab is old enough.
+  if (age < autoCloseTime) {
+    // This is not an error, just logging for debug purposes.
+    // console.log(`FFTabClose: Tab ${tab.id} is not old enough to be closed (age: ${Math.round(age/1000)}s, required: ${autoCloseTime/1000}s).`);
+    return 'none';
   }
 
-  // Handle pinned tabs
+  // Rule 2: Handle pinned tabs.
   if (tab.pinned) {
     if (currentConfig.excludePinned) {
-      return 'none'; // Excluded by user setting
+      console.log(`FFTabClose: Tab ${tab.id} is pinned and excluded by settings.`);
+      return 'none';
     }
     if (currentConfig.discardPinned) {
-      return 'discard'; // Discard instead of closing
+      console.log(`FFTabClose: Tab ${tab.id} is pinned and will be discarded.`);
+      return 'discard';
     }
   }
 
-  // Handle audible tabs
+  // Rule 3: Handle audible tabs.
   if (currentConfig.excludeAudible && tab.audible) {
-    return 'none'; // Excluded by user setting
+    console.log(`FFTabClose: Tab ${tab.id} is audible and excluded by settings.`);
+    return 'none';
   }
 
-  // If we reach here, the tab is eligible for closing
+  // If no exclusion rules match, the tab is eligible for closing.
+  console.log(`FFTabClose: Tab ${tab.id} is eligible for closing.`);
   return 'close';
 }
 
