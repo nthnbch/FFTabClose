@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="__MSG_@@ui_locale__">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>__MSG_infoPageTitle__</title>
+  <title>FFTabClose - About & Help</title>
   <style>
     :root {
       --text-color: #333;
@@ -85,26 +85,6 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     }
 
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1rem;
-    }
-
-    .feature-item {
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      padding: 1rem;
-      text-align: center;
-    }
-
-    code {
-      background-color: var(--code-bg);
-      padding: 0.2rem 0.4rem;
-      border-radius: 3px;
-      font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-
     footer {
       margin-top: 2rem;
       font-size: 0.9rem;
@@ -117,62 +97,73 @@
 <body>
   <div class="container">
     <header>
-      <h1>__MSG_infoHeading__</h1>
+      <h1 id="infoHeading">About FFTabClose</h1>
     </header>
 
     <section>
-      <h2>__MSG_infoFeatures__</h2>
-      <p>__MSG_infoDescription__</p>
+      <h2 id="infoFeatures">Features</h2>
+      <p id="infoDescription">FFTabClose helps you keep your browser organized by automatically closing tabs you haven't used in a while.</p>
     </section>
 
     <section>
-      <h2>__MSG_infoTimerHeading__</h2>
-      <p>__MSG_infoTimerDescription__</p>
+      <h2 id="infoTimerHeading">How the Timer Works</h2>
+      <p id="infoTimerDescription">Each tab has its own timer that starts when it's opened. Tabs are closed or discarded automatically once they exceed your specified time limit. Your settings persist even when restarting the browser.</p>
     </section>
 
     <section>
-      <h2>__MSG_infoExclusionsHeading__</h2>
-      <p>__MSG_infoExclusionsDescription__</p>
+      <h2 id="infoExclusionsHeading">Tab Exclusions</h2>
+      <p id="infoExclusionsDescription">Tabs that are playing audio are never closed or discarded. Pinned tabs are not closed but can be unloaded to save memory.</p>
     </section>
 
     <section>
-      <h2>__MSG_infoPrivacy__</h2>
-      <p>__MSG_infoPrivacyDescription__</p>
+      <h2 id="infoPrivacy">Privacy & Permissions</h2>
+      <p id="infoPrivacyDescription">FFTabClose requires the following permissions:</p>
+      <ul>
+        <li><code>tabs</code> - To monitor and manage tabs</li>
+        <li><code>storage</code> - To save your preferences</li>
+        <li><code>alarms</code> - To schedule periodic tab checks</li>
+      </ul>
     </section>
-
-    <footer>
-      <p>FFTabClose v2.0.0 &copy; 2025 - <a href="https://github.com/bubu/FFTabClose" target="_blank">GitHub</a></p>
-    </footer>
   </div>
+  
+  <footer>
+    <p>FFTabClose v2.0.0 &copy; 2025 - <a href="https://github.com/bubu/FFTabClose" target="_blank">GitHub</a></p>
+  </footer>
 
-  <script src="../background.js"></script>
+  <script src="../browser-polyfill.min.js"></script>
   <script>
-    // Apply i18n translations when the page loads
-    document.addEventListener('DOMContentLoaded', () => {
-      // Get all elements that contain a message key
-      const elements = document.querySelectorAll('[data-i18n]');
-      
-      // Replace message keys with localized strings
-      document.title = browser.i18n.getMessage('infoPageTitle');
-      
-      // Replace all placeholders in the document
-      const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-      let node;
-      while (node = walk.nextNode()) {
-        if (node.nodeValue.includes('__MSG_')) {
-          let matches = node.nodeValue.match(/__MSG_([^_]+)__/g);
-          if (matches) {
-            let value = node.nodeValue;
-            matches.forEach(match => {
-              const messageName = match.substring(6, match.length - 2);
-              const messageValue = browser.i18n.getMessage(messageName);
-              if (messageValue) {
-                value = value.replace(match, messageValue);
+    // Fonction pour charger les traductions
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Tenter de traduire le titre de la page
+        if (typeof browser !== 'undefined' && browser.i18n) {
+          document.title = browser.i18n.getMessage("infoPageTitle") || "FFTabClose - About & Help";
+          
+          // Traduire les éléments par ID
+          const elementsToTranslate = {
+            "infoHeading": "infoHeading",
+            "infoFeatures": "infoFeatures",
+            "infoDescription": "infoDescription",
+            "infoTimerHeading": "infoTimerHeading",
+            "infoTimerDescription": "infoTimerDescription",
+            "infoExclusionsHeading": "infoExclusionsHeading",
+            "infoExclusionsDescription": "infoExclusionsDescription",
+            "infoPrivacy": "infoPrivacy",
+            "infoPrivacyDescription": "infoPrivacyDescription"
+          };
+          
+          for (const [id, msgKey] of Object.entries(elementsToTranslate)) {
+            const element = document.getElementById(id);
+            if (element) {
+              const translated = browser.i18n.getMessage(msgKey);
+              if (translated) {
+                element.textContent = translated;
               }
-            });
-            node.nodeValue = value;
+            }
           }
         }
+      } catch (error) {
+        console.error("Error loading translations:", error);
       }
     });
   </script>
