@@ -15,6 +15,10 @@
     "message": "Schließe Tabs älter als:",
     "description": "Label for time limit setting."
   },
+  "time1min": {
+    "message": "1 Minute",
+    "description": "Option für Zeitlimit von 1 Minute."
+  },
   "time15min": {
     "message": "15 Minuten",
     "description": "15 minute time limit option."
@@ -130,5 +134,9 @@
   "infoPrivacy": {
     "message": "Datenschutz & Berechtigungen",
     "description": "Privacy section heading."
+  },
+  "infoLinkText": {
+    "message": "Erfahren Sie mehr über FFTabClose",
+    "description": "Text für den Link zur Informationsseite."
   }
 }

@@ -15,6 +15,10 @@
     "message": "Cerrar pestañas más antiguas que:",
     "description": "Label for time limit setting."
   },
+  "time1min": {
+    "message": "1 minuto",
+    "description": "Opción de límite de tiempo de 1 minuto."
+  },
   "time15min": {
     "message": "15 minutos",
     "description": "15 minute time limit option."
@@ -130,5 +134,9 @@
   "infoPrivacy": {
     "message": "Privacidad & Permisos",
     "description": "Privacy section heading."
+  },
+  "infoLinkText": {
+    "message": "Más información sobre FFTabClose",
+    "description": "Texto para el enlace a la página informativa."
   }
 }

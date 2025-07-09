@@ -49,15 +49,17 @@
       margin-bottom: 1rem;
     }
 
-    .info-icon {
-      font-size: 1.2rem;
+    .info-link {
+      display: block;
+      margin-top: 1rem;
+      text-align: center;
       color: var(--link-color);
       text-decoration: none;
-      margin-left: 0.5rem;
+      font-size: 0.9rem;
       transition: color var(--transition-speed);
     }
 
-    .info-icon:hover {
+    .info-link:hover {
       color: var(--accent-color);
     }
 
@@ -82,26 +84,6 @@
     .setting-control:focus {
       border-color: var(--accent-color);
       outline: none;
-    }
-
-    .setting-checkbox {
-      margin-right: 0.5rem;
-    }
-
-    .tooltip {
-      display: inline-block;
-      position: relative;
-    }
-
-    .tooltip-icon {
-      font-size: 0.9rem;
-      color: var(--link-color);
-      cursor: pointer;
-      transition: color var(--transition-speed);
-    }
-
-    .tooltip-icon:hover {
-      color: var(--accent-color);
     }
 
     button {
@@ -134,13 +116,13 @@
   <div class="container">
     <header>
       <h1>__MSG_extensionName__</h1>
-      <a href="../info/info.html" id="infoLink" class="info-icon" target="_blank">i</a>
     </header>
 
     <div class="settings-section">
       <div class="setting-group">
         <label for="timeLimit">__MSG_timeLimitLabel__</label>
         <select id="timeLimit" class="setting-control">
+          <option value="60000">__MSG_time1min__</option>
           <option value="900000">__MSG_time15min__</option>
           <option value="1800000">__MSG_time30min__</option>
           <option value="3600000">__MSG_time1hour__</option>
@@ -152,22 +134,6 @@
           <option value="172800000">__MSG_time48hours__</option>
         </select>
       </div>
-
-      <div class="setting-group checkbox-group">
-        <input type="checkbox" id="discardPinned" class="setting-checkbox">
-        <label for="discardPinned">__MSG_discardPinnedLabel__</label>
-        <div class="tooltip">
-          <span class="tooltip-icon">?</span>
-        </div>
-      </div>
-
-      <div class="setting-group checkbox-group">
-        <input type="checkbox" id="excludeAudio" class="setting-checkbox">
-        <label for="excludeAudio">__MSG_excludeAudioLabel__</label>
-        <div class="tooltip">
-          <span class="tooltip-icon">?</span>
-        </div>
-      </div>
     </div>
 
     <button id="closeTabsButton">__MSG_closeTabsButton__</button>
@@ -177,6 +143,8 @@
       <p><strong>__MSG_eligibleTabsLabel__</strong> <span id="eligibleTabs">0</span></p>
       <p><strong>__MSG_oldestTabLabel__</strong> <span id="oldestTab">0</span></p>
     </div>
+
+    <a href="../info/info.html" class="info-link" target="_blank">__MSG_infoLinkText__</a>
   </div>
 </body>
 </html>

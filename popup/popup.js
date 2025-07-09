@@ -7,8 +7,6 @@
 
 // DOM Elements
 const timeLimitSelect = document.getElementById('timeLimit');
-const discardPinnedCheckbox = document.getElementById('discardPinned');
-const excludeAudioCheckbox = document.getElementById('excludeAudio');
 const closeTabsButton = document.getElementById('closeTabsButton');
 const totalTabsElement = document.getElementById('totalTabs');
 const eligibleTabsElement = document.getElementById('eligibleTabs');
@@ -36,8 +34,6 @@ async function loadSettings() {
     
     // Apply settings to UI
     timeLimitSelect.value = settings.timeLimit.toString();
-    discardPinnedCheckbox.checked = settings.discardPinnedTabs;
-    excludeAudioCheckbox.checked = settings.excludeAudioTabs;
     
     // Update stats
     updateStats();
@@ -50,9 +46,7 @@ async function loadSettings() {
 async function saveSettings() {
   try {
     const settings = {
-      timeLimit: parseInt(timeLimitSelect.value, 10),
-      discardPinnedTabs: discardPinnedCheckbox.checked,
-      excludeAudioTabs: excludeAudioCheckbox.checked
+      timeLimit: parseInt(timeLimitSelect.value, 10)
     };
     
     await browser.runtime.sendMessage({ 
@@ -124,8 +118,6 @@ function applyI18n() {
 // Event listeners
 function setupEventListeners() {
   timeLimitSelect.addEventListener('change', saveSettings);
-  discardPinnedCheckbox.addEventListener('change', saveSettings);
-  excludeAudioCheckbox.addEventListener('change', saveSettings);
   closeTabsButton.addEventListener('click', handleCloseTabsClick);
 }
 
