@@ -181,11 +181,15 @@ async function checkAndCloseTabs() {
   const now = Date.now();
   const tabsToClose = [];
   const tabsToDiscard = [];
+  let timestampsModified = false;
 
   try {
     const tabs = await browser.tabs.query({});
     for (const tab of tabs) {
-      const action = getTabAction(tab, now);
+      const { action, registered } = getTabAction(tab, now);
+      if (registered) {
+        timestampsModified = true;
+      }
       if (action === 'close') {
         tabsToClose.push(tab.id);
       } else if (action === 'discard') {
@@ -234,6 +238,12 @@ async function checkAndCloseTabs() {
   } catch (error) {
     console.error('FFTabClose: Failed during tab check:', error);
   }
+
+  // If any new tabs were registered, save the updated timestamps
+  if (timestampsModified) {
+    console.log('FFTabClose: New timestamps were registered, saving to storage.');
+    await saveTabTimestamps();
+  }
 }
 
 
@@ -241,16 +251,18 @@ async function checkAndCloseTabs() {
  * Determine what action to take for a tab (close, discard, or none)
  */
 function getTabAction(tab, now) {
+  let registered = false;
   // Rule 0: Never close the currently active tab.
   if (tab.active) {
-    return 'none';
+    return { action: 'none', registered };
   }
 
   const timestamp = tabTimestamps.get(tab.id.toString());
   if (!timestamp) {
     console.log(`FFTabClose: Tab ${tab.id} has no timestamp. Registering it now.`);
     registerTab(tab.id, now);
-    return 'none';
+    registered = true;
+    return { action: 'none', registered };
   }
 
   const age = now - timestamp;
@@ -260,30 +272,30 @@ function getTabAction(tab, now) {
   if (age < autoCloseTime) {
     // This is not an error, just logging for debug purposes.
     // console.log(`FFTabClose: Tab ${tab.id} is not old enough to be closed (age: ${Math.round(age/1000)}s, required: ${autoCloseTime/1000}s).`);
-    return 'none';
+    return { action: 'none', registered };
   }
 
   // Rule 2: Handle pinned tabs.
   if (tab.pinned) {
     if (currentConfig.excludePinned) {
       console.log(`FFTabClose: Tab ${tab.id} is pinned and excluded by settings.`);
-      return 'none';
+      return { action: 'none', registered };
     }
     if (currentConfig.discardPinned) {
       console.log(`FFTabClose: Tab ${tab.id} is pinned and will be discarded.`);
-      return 'discard';
+      return { action: 'discard', registered };
     }
   }
 
   // Rule 3: Handle audible tabs.
   if (currentConfig.excludeAudible && tab.audible) {
     console.log(`FFTabClose: Tab ${tab.id} is audible and excluded by settings.`);
-    return 'none';
+    return { action: 'none', registered };
   }
 
   // If no exclusion rules match, the tab is eligible for closing.
   console.log(`FFTabClose: Tab ${tab.id} is eligible for closing.`);
-  return 'close';
+  return { action: 'close', registered };
 }
 
 /**
@@ -322,7 +334,7 @@ async function getStats() {
         normalTabs++;
       }
       
-      const action = getTabAction(tab, now);
+      const { action } = getTabAction(tab, now);
       if (action === 'close') {
         eligibleTabs++;
       } else if (action === 'discard') {
@@ -336,7 +348,7 @@ async function getStats() {
         totalTabs: tabs.length,
         normalTabs,
         eligibleTabs,
-        totalPinnedTabs: pinnedTabs,
+        totalPinnedTabs: pinnedTabs, // Corrected variable name
         pinnedTabsToDiscard: pinnedToDiscard,
         lastClosedCount
       }
