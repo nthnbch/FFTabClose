@@ -16,7 +16,7 @@
     "description": "Label for time limit setting."
   },
   "time1min": {
-    "message": "1 minute",
+    "message": "1 minute (test)",
     "description": "1 minute time limit option."
   },
   "time15min": {

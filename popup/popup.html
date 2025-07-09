@@ -1,150 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="__MSG_@@ui_locale__">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FFTabClose</title>
   <link rel="stylesheet" href="popup.css">
-  <style>
-    :root {
-      --text-color: #333;
-      --bg-color: #fff;
-      --heading-color: #2a4365;
-      --link-color: #3182ce;
-      --border-color: #e2e8f0;
-      --accent-color: #4299e1;
-      --button-bg: #3182ce;
-      --button-hover-bg: #2a4365;
-      --transition-speed: 0.3s;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --text-color: #e2e8f0;
-        --bg-color: #1a202c;
-        --heading-color: #63b3ed;
-        --link-color: #4299e1;
-        --border-color: #2d3748;
-        --accent-color: #3182ce;
-        --button-bg: #4299e1;
-        --button-hover-bg: #63b3ed;
-      }
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      line-height: 1.6;
-      color: var(--text-color);
-      background-color: var(--bg-color);
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 1rem;
-      transition: background-color var(--transition-speed), color var(--transition-speed);
-    }
-
-    h1 {
-      color: var(--heading-color);
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .info-link {
-      display: block;
-      margin-top: 1rem;
-      text-align: center;
-      color: var(--link-color);
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: color var(--transition-speed);
-    }
-
-    .info-link:hover {
-      color: var(--accent-color);
-    }
-
-    .settings-section {
-      margin-bottom: 1.5rem;
-    }
-
-    .setting-group {
-      margin-bottom: 1rem;
-    }
-
-    .setting-control {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: border-color var(--transition-speed);
-    }
-
-    .setting-control:focus {
-      border-color: var(--accent-color);
-      outline: none;
-    }
-
-    button {
-      width: 100%;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 4px;
-      background-color: var(--button-bg);
-      color: #fff;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color var(--transition-speed);
-    }
-
-    button:hover {
-      background-color: var(--button-hover-bg);
-    }
-
-    .stats-section {
-      margin-top: 1.5rem;
-      font-size: 0.9rem;
-    }
-
-    .stats-section p {
-      margin: 0.5rem 0;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>__MSG_extensionName__</h1>
+      <h1 id="extensionName"></h1>
+      <a href="../info/info.html" id="infoLink" class="info-icon" target="_blank">i</a>
     </header>
 
     <div class="settings-section">
       <div class="setting-group">
-        <label for="timeLimit">__MSG_timeLimitLabel__</label>
+        <label for="timeLimit" id="timeLimitLabel"></label>
         <select id="timeLimit" class="setting-control">
-          <option value="60000">__MSG_time1min__</option>
-          <option value="900000">__MSG_time15min__</option>
-          <option value="1800000">__MSG_time30min__</option>
-          <option value="3600000">__MSG_time1hour__</option>
-          <option value="7200000">__MSG_time2hours__</option>
-          <option value="14400000">__MSG_time4hours__</option>
-          <option value="28800000">__MSG_time8hours__</option>
-          <option value="43200000">__MSG_time12hours__</option>
-          <option value="86400000">__MSG_time24hours__</option>
-          <option value="172800000">__MSG_time48hours__</option>
+          <option value="60000" id="time1min"></option>
+          <option value="900000" id="time15min"></option>
+          <option value="1800000" id="time30min"></option>
+          <option value="3600000" id="time1hour"></option>
+          <option value="7200000" id="time2hours"></option>
+          <option value="14400000" id="time4hours"></option>
+          <option value="28800000" id="time8hours"></option>
+          <option value="43200000" id="time12hours"></option>
+          <option value="86400000" id="time24hours"></option>
+          <option value="172800000" id="time48hours"></option>
         </select>
       </div>
     </div>
 
-    <button id="closeTabsButton">__MSG_closeTabsButton__</button>
+    <button id="closeTabsButton" class="action-button"></button>
 
     <div class="stats-section">
-      <p><strong>__MSG_totalTabsLabel__</strong> <span id="totalTabs">0</span></p>
-      <p><strong>__MSG_eligibleTabsLabel__</strong> <span id="eligibleTabs">0</span></p>
-      <p><strong>__MSG_oldestTabLabel__</strong> <span id="oldestTab">0</span></p>
+      <div class="stat-item">
+        <span class="stat-label" id="totalTabsLabel"></span>
+        <span class="stat-value" id="totalTabs">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" id="eligibleTabsLabel"></span>
+        <span class="stat-value" id="eligibleTabs">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" id="oldestTabLabel"></span>
+        <span class="stat-value" id="oldestTab">0</span>
+      </div>
     </div>
-
-    <a href="../info/info.html" class="info-link" target="_blank">__MSG_infoLinkText__</a>
   </div>
+  <script src="popup.js"></script>
 </body>
 </html>

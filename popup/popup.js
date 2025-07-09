@@ -101,18 +101,25 @@ async function handleCloseTabsClick() {
 
 // Apply internationalization to the UI
 function applyI18n() {
-  // Replace all __MSG_ placeholders with localized strings
-  document.querySelectorAll('[data-i18n]').forEach(element => {
-    const key = element.getAttribute('data-i18n');
-    element.textContent = browser.i18n.getMessage(key);
-  });
+  // Set text content for elements with direct messages
+  document.getElementById('extensionName').textContent = browser.i18n.getMessage('extensionName');
+  document.getElementById('timeLimitLabel').textContent = browser.i18n.getMessage('timeLimitLabel');
+  document.getElementById('closeTabsButton').textContent = browser.i18n.getMessage('closeTabsButton');
+  document.getElementById('totalTabsLabel').textContent = browser.i18n.getMessage('totalTabsLabel');
+  document.getElementById('eligibleTabsLabel').textContent = browser.i18n.getMessage('eligibleTabsLabel');
+  document.getElementById('oldestTabLabel').textContent = browser.i18n.getMessage('oldestTabLabel');
   
-  // Replace all HTML content with localized strings
-  const htmlContent = document.documentElement.innerHTML;
-  document.documentElement.innerHTML = htmlContent.replace(
-    /__MSG_(\w+)__/g,
-    (match, key) => browser.i18n.getMessage(key) || match
-  );
+  // Set text for dropdown options
+  document.getElementById('time1min').textContent = browser.i18n.getMessage('time1min');
+  document.getElementById('time15min').textContent = browser.i18n.getMessage('time15min');
+  document.getElementById('time30min').textContent = browser.i18n.getMessage('time30min');
+  document.getElementById('time1hour').textContent = browser.i18n.getMessage('time1hour');
+  document.getElementById('time2hours').textContent = browser.i18n.getMessage('time2hours');
+  document.getElementById('time4hours').textContent = browser.i18n.getMessage('time4hours');
+  document.getElementById('time8hours').textContent = browser.i18n.getMessage('time8hours');
+  document.getElementById('time12hours').textContent = browser.i18n.getMessage('time12hours');
+  document.getElementById('time24hours').textContent = browser.i18n.getMessage('time24hours');
+  document.getElementById('time48hours').textContent = browser.i18n.getMessage('time48hours');
 }
 
 // Event listeners
@@ -128,5 +135,5 @@ async function initializePopup() {
   setupEventListeners();
 }
 
-// Run initialization
-initializePopup();
+// Run initialization when DOM is fully loaded
+document.addEventListener('DOMContentLoaded', initializePopup);
