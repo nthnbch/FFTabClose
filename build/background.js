@@ -16,11 +16,13 @@ const DEFAULT_CONFIG = {
 // Storage keys
 const STORAGE_CONFIG_KEY = 'fftabclose_config';
 const STORAGE_TIMESTAMPS_KEY = 'fftabclose_timestamps';
+const STORAGE_STATS_KEY = 'fftabclose_stats'; // For storing stats
 
 // Global state
 let tabTimestamps = new Map();
 let alarmName = 'fftabclose_check';
 let currentConfig = { ...DEFAULT_CONFIG };
+let lastClosedCount = 0; // Track last closed count
 
 /**
  * Initialize extension on startup/install
@@ -31,6 +33,7 @@ async function initialize() {
     await loadTabTimestamps();
     await initializeExistingTabs();
     await setupAlarm();
+    console.log('FFTabClose: Extension initialized successfully.');
   } catch (error) {
     console.error('FFTabClose: Failed to initialize extension:', error);
   }
@@ -43,33 +46,11 @@ async function loadConfiguration() {
   try {
     const result = await browser.storage.sync.get(STORAGE_CONFIG_KEY);
     if (result[STORAGE_CONFIG_KEY]) {
-      const storedConfig = result[STORAGE_CONFIG_KEY];
-      
-      // Validation et sanitisation des données stockées
-      const sanitizedConfig = {};
-      
-      // Validation autoCloseTime
-      if (typeof storedConfig.autoCloseTime === 'number' && 
-          storedConfig.autoCloseTime >= 120000 && 
-          storedConfig.autoCloseTime <= 172800000) {
-        sanitizedConfig.autoCloseTime = storedConfig.autoCloseTime;
-      }
-      
-      // Validation boolean values
-      if (typeof storedConfig.enabled === 'boolean') {
-        sanitizedConfig.enabled = storedConfig.enabled;
-      }
-      if (typeof storedConfig.excludePinned === 'boolean') {
-        sanitizedConfig.excludePinned = storedConfig.excludePinned;
-      }
-      if (typeof storedConfig.excludeAudible === 'boolean') {
-        sanitizedConfig.excludeAudible = storedConfig.excludeAudible;
-      }
-      if (typeof storedConfig.discardPinned === 'boolean') {
-        sanitizedConfig.discardPinned = storedConfig.discardPinned;
-      }
-      
-      currentConfig = { ...DEFAULT_CONFIG, ...sanitizedConfig };
+      currentConfig = { ...DEFAULT_CONFIG, ...result[STORAGE_CONFIG_KEY] };
+      console.log('FFTabClose: Configuration loaded.', currentConfig);
+    } else {
+      console.log('FFTabClose: No configuration found, using defaults.');
+      currentConfig = { ...DEFAULT_CONFIG };
     }
   } catch (error) {
     console.warn('FFTabClose: Failed to load config, using defaults:', error);
@@ -83,6 +64,7 @@ async function loadConfiguration() {
 async function saveConfiguration() {
   try {
     await browser.storage.sync.set({ [STORAGE_CONFIG_KEY]: currentConfig });
+    console.log('FFTabClose: Configuration saved.');
   } catch (error) {
     console.error('FFTabClose: Failed to save config:', error);
   }
@@ -96,29 +78,13 @@ async function loadTabTimestamps() {
     const result = await browser.storage.local.get(STORAGE_TIMESTAMPS_KEY);
     if (result[STORAGE_TIMESTAMPS_KEY]) {
       const storedTimestamps = result[STORAGE_TIMESTAMPS_KEY];
-      
-      // Validation et sanitisation des timestamps
-      const sanitizedTimestamps = new Map();
-      const now = Date.now();
-      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 jours maximum
-      
-      for (const [tabId, timestamp] of Object.entries(storedTimestamps)) {
-        // Validation du tabId (doit être un nombre)
-        const numericTabId = parseInt(tabId);
-        if (isNaN(numericTabId) || numericTabId <= 0) {
-          continue;
-        }
-        
-        // Validation du timestamp
-        if (typeof timestamp === 'number' && 
-            timestamp > 0 && 
-            timestamp <= now &&
-            (now - timestamp) <= maxAge) {
-          sanitizedTimestamps.set(tabId, timestamp);
+      // Ensure timestamps are numbers
+      for (const key in storedTimestamps) {
+        if (typeof storedTimestamps[key] === 'number') {
+          tabTimestamps.set(key, storedTimestamps[key]);
         }
       }
-      
-      tabTimestamps = sanitizedTimestamps;
+      console.log(`FFTabClose: Loaded ${tabTimestamps.size} timestamps.`);
     }
   } catch (error) {
     console.warn('FFTabClose: Failed to load timestamps:', error);
@@ -147,11 +113,13 @@ async function initializeExistingTabs() {
     const now = Date.now();
     
     for (const tab of tabs) {
-      // Register ALL tabs, including pinned ones
-      registerTab(tab.id, now);
+      if (tab.id && !tabTimestamps.has(tab.id.toString())) {
+        registerTab(tab.id, now);
+      }
     }
     
     await saveTabTimestamps();
+    console.log(`FFTabClose: Initialized ${tabs.length} existing tabs.`);
   } catch (error) {
     console.error('FFTabClose: Failed to initialize existing tabs:', error);
   }
@@ -161,20 +129,12 @@ async function initializeExistingTabs() {
  * Register a tab with current timestamp
  */
 function registerTab(tabId, timestamp = null) {
-  // Validation du tabId
   if (typeof tabId !== 'number' || tabId <= 0) {
-    console.warn('FFTabClose: Invalid tabId for registration:', tabId);
+    // console.warn('FFTabClose: Invalid tabId for registration:', tabId);
     return;
   }
   
   const now = timestamp || Date.now();
-  
-  // Validation du timestamp
-  if (typeof now !== 'number' || now <= 0) {
-    console.warn('FFTabClose: Invalid timestamp for registration:', now);
-    return;
-  }
-  
   tabTimestamps.set(tabId.toString(), now);
 }
 
@@ -182,39 +142,30 @@ function registerTab(tabId, timestamp = null) {
  * Unregister a tab
  */
 function unregisterTab(tabId) {
-  tabTimestamps.delete(tabId.toString());
+  if (typeof tabId === 'number') {
+    tabTimestamps.delete(tabId.toString());
+  }
 }
 
 /**
  * Setup periodic alarm for checking tabs
  */
 async function setupAlarm() {
-  if (!currentConfig.enabled) {
-    return;
-  }
-  
   try {
+    // Clear any existing alarm before creating a new one
     await browser.alarms.clear(alarmName);
-    await browser.alarms.create(alarmName, { periodInMinutes: 1 });
-    setupBackupInterval();
+    if (currentConfig.enabled) {
+      browser.alarms.create(alarmName, {
+        delayInMinutes: 1,
+        periodInMinutes: 1
+      });
+      console.log(`FFTabClose: Alarm created. Close time: ${currentConfig.autoCloseTime / 60000} minutes.`);
+    } else {
+      console.log('FFTabClose: Extension is disabled, alarm not set.');
+    }
   } catch (error) {
     console.error('FFTabClose: Failed to setup alarm:', error);
-    setupBackupInterval();
   }
-}
-
-/**
- * Setup backup interval as fallback if alarms don't work
- */
-function setupBackupInterval() {
-  if (window.ffTabCloseInterval) {
-    clearInterval(window.ffTabCloseInterval);
-  }
-  
-  // Set up a 1-minute interval as backup
-  window.ffTabCloseInterval = setInterval(() => {
-    checkAndCloseTabs();
-  }, 60000); // 1 minute
 }
 
 /**
@@ -351,21 +302,17 @@ function getTabAction(tab, now) {
  * Show notification badge
  */
 async function showNotificationBadge(count) {
-  try {
+  if (count > 0) {
     await browser.browserAction.setBadgeText({ text: count.toString() });
-    await browser.browserAction.setBadgeBackgroundColor({ color: '#4CAF50' });
-    
-    // Clear badge after 3 seconds
-    setTimeout(async () => {
-      try {
-        await browser.browserAction.setBadgeText({ text: '' });
-      } catch (error) {
-        console.warn('FFTabClose: Failed to clear badge:', error);
-      }
-    }, 3000);
-  } catch (error) {
-    console.warn('FFTabClose: Failed to show badge:', error);
+    await browser.browserAction.setBadgeBackgroundColor({ color: '#dc3545' });
   }
+}
+
+/**
+ * Clear notification badge
+ */
+async function clearNotificationBadge() {
+    await browser.browserAction.setBadgeText({ text: '' });
 }
 
 /**
@@ -375,13 +322,14 @@ async function getStats() {
   try {
     const tabs = await browser.tabs.query({});
     const now = Date.now();
-    
+    let normalTabs = 0;
     let eligibleTabs = 0;
+    let pinnedTabs = 0;
     let pinnedToDiscard = 0;
 
     for (const tab of tabs) {
       if (tab.pinned) {
-        totalPinnedTabs++;
+        pinnedTabs++;
       } else {
         normalTabs++;
       }
@@ -390,7 +338,7 @@ async function getStats() {
       if (action === 'close') {
         eligibleTabs++;
       } else if (action === 'discard') {
-        pinnedTabsToDiscard++;
+        pinnedToDiscard++;
       }
     }
     
@@ -400,14 +348,14 @@ async function getStats() {
         totalTabs: tabs.length,
         normalTabs,
         eligibleTabs,
-        totalPinnedTabs: pinnedTabs, // Corrected variable name
-        pinnedTabsToDiscard,
+        pinnedTabs: pinnedTabs,
+        pinnedTabsToDiscard: pinnedToDiscard,
         lastClosedCount
       }
     };
   } catch (error) {
     console.error('FFTabClose: Failed to get stats:', error);
-    return null;
+    return { success: false, error: error.message };
   }
 }
 
@@ -420,30 +368,7 @@ async function handleMessage(message) {
     case 'getConfig':
       return { success: true, config: currentConfig };
     
-    case 'updateConfig':
-      if (!message.config || typeof message.config !== 'object') {
-        return { success: false, error: 'Invalid config format' };
-      }
-      
-      // Validation des clés autorisées
-      const allowedKeys = ['autoCloseTime', 'enabled', 'excludePinned', 'excludeAudible', 'discardPinned'];
-      const configKeys = Object.keys(message.config);
-      
-      for (const key of configKeys) {
-        if (!allowedKeys.includes(key)) {
-          return { success: false, error: `Invalid config key: ${key}` };
-        }
-      }
-      
-      // Validation des valeurs
-      if (message.config.autoCloseTime !== undefined) {
-        if (typeof message.config.autoCloseTime !== 'number' || 
-            message.config.autoCloseTime < 120000 || // minimum 2 minutes
-            message.config.autoCloseTime > 172800000) { // maximum 48 hours
-          return { success: false, error: 'Invalid autoCloseTime value' };
-        }
-      }
-      
+    case 'setConfig':
       currentConfig = { ...currentConfig, ...message.config };
       await saveConfiguration();
       // Re-evaluate the alarm state if 'enabled' status or time changed
@@ -482,7 +407,7 @@ async function manualCloseOldTabs() {
 
 // --- Event Listeners ---
 
-// Extension startup/install
+// Initialize on first install or when the extension is updated.
 browser.runtime.onInstalled.addListener(initialize);
 // Initialize when the browser starts.
 browser.runtime.onStartup.addListener(initialize);
@@ -517,8 +442,12 @@ browser.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-// Message handling
+// Message handling from popup
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  handleMessage(message, sender, sendResponse);
-  return true; // Indicate async response
+  // handleMessage is async, so we need to return a promise.
+  handleMessage(message).then(sendResponse).catch(error => {
+    console.error("FFTabClose: Error handling message:", error);
+    sendResponse({ success: false, error: error.message });
+  });
+  return true; // Indicate that the response is sent asynchronously.
 });

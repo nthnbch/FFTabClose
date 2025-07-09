@@ -348,7 +348,7 @@ async function getStats() {
         totalTabs: tabs.length,
         normalTabs,
         eligibleTabs,
-        totalPinnedTabs: pinnedTabs, // Corrected variable name
+        pinnedTabs: pinnedTabs,
         pinnedTabsToDiscard: pinnedToDiscard,
         lastClosedCount
       }
