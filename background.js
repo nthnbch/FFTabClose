@@ -10,7 +10,7 @@ const DEFAULT_SETTINGS = {
   timeLimit: 12 * 60 * 60 * 1000, // 12 hours in milliseconds
   discardPinnedTabs: true, // Toujours décharger les onglets épinglés au lieu de les fermer
   excludeAudioTabs: true,
-  closeOnStart: false
+  closeOnStart: true
 };
 
 const ALARM_NAME = 'checkTabsAlarm';
