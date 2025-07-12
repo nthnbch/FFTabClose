@@ -5,14 +5,69 @@
  * Version 2.0.0
  */
 
-// DOM Elements
-const timeLimitSelect = document.getElementById('timeLimit');
-const closeTabsButton = document.getElementById('closeTabsButton');
-const totalTabsElement = document.getElementById('totalTabs');
-const eligibleTabsElement = document.getElementById('eligibleTabs');
-const oldestTabElement = document.getElementById('oldestTab');
+// Fonction pour charger les traductions
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    if (typeof browser !== 'undefined' && browser.i18n) {
+      // Traduire les éléments par ID
+      const elementsToTranslate = {
+        "extensionName": "extensionName",
+        "timeLimitLabel": "timeLimitLabel",
+        "timeTest": "time1min",
+        "time15min": "time15min",
+        "time30min": "time30min",
+        "time1hour": "time1hour",
+        "time2hours": "time2hours",
+        "time4hours": "time4hours",
+        "time8hours": "time8hours",
+        "time12hours": "time12hours",
+        "time24hours": "time24hours",
+        "closeTabsButton": "closeTabsButton",
+        "totalTabsLabel": "totalTabsLabel",
+        "eligibleTabsLabel": "eligibleTabsLabel",
+        "oldestTabLabel": "oldestTabLabel"
+      };
+      
+      for (const [id, msgKey] of Object.entries(elementsToTranslate)) {
+        const element = document.getElementById(id);
+        if (element) {
+          const translated = browser.i18n.getMessage(msgKey);
+          if (translated) {
+            element.textContent = translated;
+          }
+        }
+      }
+      
+      // S'assurer que le lien d'info a le texte correct
+      document.getElementById("infoLink").textContent = browser.i18n.getMessage("infoLinkText") || "Info";
+      
+      // Configurer les événements
+      document.getElementById("timeLimit").addEventListener("change", saveSettings);
+      document.getElementById("closeTabsButton").addEventListener("click", closeOldTabs);
+      
+      // Charger les paramètres au démarrage
+      loadSettings();
+    }
+  } catch (error) {
+    console.error("Error loading translations:", error);
+  }
+});
 
-// Utility functions
+// Fonction pour mettre à jour les statistiques
+async function updateStats() {
+  try {
+    const stats = await browser.runtime.sendMessage({action: 'getTabStats'});
+    document.getElementById("totalTabs").textContent = stats.totalTabs;
+    document.getElementById("eligibleTabs").textContent = stats.eligibleTabs;
+    
+    // Formater l'âge de l'onglet le plus ancien
+    document.getElementById("oldestTab").textContent = formatTimeForDisplay(stats.oldestTabAge || 0);
+  } catch (error) {
+    console.error("Error updating stats:", error);
+  }
+}
+
+// Formater le temps pour l'affichage
 function formatTimeForDisplay(minutes) {
   if (minutes < 60) {
     return `${minutes} ${browser.i18n.getMessage('timeMin')}`;
@@ -27,113 +82,52 @@ function formatTimeForDisplay(minutes) {
   }
 }
 
-// Load settings from background script
-async function loadSettings() {
-  try {
-    const settings = await browser.runtime.sendMessage({ action: 'getSettings' });
-    
-    // Apply settings to UI
-    timeLimitSelect.value = settings.timeLimit.toString();
-    
-    // Update stats
-    updateStats();
-  } catch (error) {
-    console.error('Error loading settings:', error);
-  }
-}
-
-// Save settings to background script
+// Fonction pour sauvegarder les paramètres
 async function saveSettings() {
   try {
-    const settings = {
-      timeLimit: parseInt(timeLimitSelect.value, 10)
-    };
-    
-    await browser.runtime.sendMessage({ 
-      action: 'updateSettings', 
-      settings: settings 
+    const timeLimit = document.getElementById("timeLimit").value;
+    await browser.runtime.sendMessage({
+      action: 'updateSettings',
+      settings: {
+        timeLimit: parseInt(timeLimit)
+      }
     });
-    
-    // Update stats after settings change
     updateStats();
   } catch (error) {
-    console.error('Error saving settings:', error);
+    console.error("Error saving settings:", error);
   }
 }
 
-// Update tab statistics display
-async function updateStats() {
+// Fonction pour fermer les onglets anciens
+async function closeOldTabs() {
   try {
-    const stats = await browser.runtime.sendMessage({ action: 'getTabStats' });
+    document.getElementById("closeTabsButton").textContent = browser.i18n.getMessage("closingTabsProgress") || "Closing...";
+    document.getElementById("closeTabsButton").disabled = true;
     
-    totalTabsElement.textContent = stats.totalTabs;
-    eligibleTabsElement.textContent = stats.eligibleTabs;
-    oldestTabElement.textContent = formatTimeForDisplay(stats.oldestTabAge);
-  } catch (error) {
-    console.error('Error updating stats:', error);
-  }
-}
-
-// Handle manual close button click
-async function handleCloseTabsClick() {
-  try {
-    closeTabsButton.disabled = true;
-    closeTabsButton.textContent = browser.i18n.getMessage('closingTabsProgress');
+    await browser.runtime.sendMessage({action: 'closeOldTabs'});
     
-    const stats = await browser.runtime.sendMessage({ action: 'closeOldTabs' });
-    
-    // Update UI with new stats
-    totalTabsElement.textContent = stats.totalTabs;
-    eligibleTabsElement.textContent = stats.eligibleTabs;
-    oldestTabElement.textContent = formatTimeForDisplay(stats.oldestTabAge);
-    
-    // Reset button after brief delay
+    // Petit délai pour permettre l'actualisation des statistiques
     setTimeout(() => {
-      closeTabsButton.disabled = false;
-      closeTabsButton.textContent = browser.i18n.getMessage('closeTabsButton');
+      updateStats();
+      document.getElementById("closeTabsButton").textContent = browser.i18n.getMessage("closeTabsButton") || "Close Old Tabs Now";
+      document.getElementById("closeTabsButton").disabled = false;
     }, 1000);
   } catch (error) {
-    console.error('Error closing tabs:', error);
-    closeTabsButton.disabled = false;
-    closeTabsButton.textContent = browser.i18n.getMessage('closeTabsButton');
+    console.error("Error closing tabs:", error);
+    document.getElementById("closeTabsButton").textContent = browser.i18n.getMessage("closeTabsButton") || "Close Old Tabs Now";
+    document.getElementById("closeTabsButton").disabled = false;
   }
 }
 
-// Apply internationalization to the UI
-function applyI18n() {
-  // Set text content for elements with direct messages
-  document.getElementById('extensionName').textContent = browser.i18n.getMessage('extensionName');
-  document.getElementById('timeLimitLabel').textContent = browser.i18n.getMessage('timeLimitLabel');
-  document.getElementById('closeTabsButton').textContent = browser.i18n.getMessage('closeTabsButton');
-  document.getElementById('totalTabsLabel').textContent = browser.i18n.getMessage('totalTabsLabel');
-  document.getElementById('eligibleTabsLabel').textContent = browser.i18n.getMessage('eligibleTabsLabel');
-  document.getElementById('oldestTabLabel').textContent = browser.i18n.getMessage('oldestTabLabel');
-  
-  // Set text for dropdown options
-  document.getElementById('time1min').textContent = browser.i18n.getMessage('time1min');
-  document.getElementById('time15min').textContent = browser.i18n.getMessage('time15min');
-  document.getElementById('time30min').textContent = browser.i18n.getMessage('time30min');
-  document.getElementById('time1hour').textContent = browser.i18n.getMessage('time1hour');
-  document.getElementById('time2hours').textContent = browser.i18n.getMessage('time2hours');
-  document.getElementById('time4hours').textContent = browser.i18n.getMessage('time4hours');
-  document.getElementById('time8hours').textContent = browser.i18n.getMessage('time8hours');
-  document.getElementById('time12hours').textContent = browser.i18n.getMessage('time12hours');
-  document.getElementById('time24hours').textContent = browser.i18n.getMessage('time24hours');
-  document.getElementById('time48hours').textContent = browser.i18n.getMessage('time48hours');
+// Charger les paramètres actuels
+async function loadSettings() {
+  try {
+    const settings = await browser.runtime.sendMessage({action: 'getSettings'});
+    if (settings && settings.timeLimit) {
+      document.getElementById("timeLimit").value = settings.timeLimit.toString();
+    }
+    updateStats();
+  } catch (error) {
+    console.error("Error loading settings:", error);
+  }
 }
-
-// Event listeners
-function setupEventListeners() {
-  timeLimitSelect.addEventListener('change', saveSettings);
-  closeTabsButton.addEventListener('click', handleCloseTabsClick);
-}
-
-// Initialize popup
-async function initializePopup() {
-  applyI18n();
-  await loadSettings();
-  setupEventListeners();
-}
-
-// Run initialization when DOM is fully loaded
-document.addEventListener('DOMContentLoaded', initializePopup);

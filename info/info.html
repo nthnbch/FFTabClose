@@ -85,6 +85,13 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     }
 
+    code {
+      background-color: var(--code-bg);
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
     footer {
       margin-top: 2rem;
       font-size: 0.9rem;
@@ -131,41 +138,6 @@
   </footer>
 
   <script src="../browser-polyfill.min.js"></script>
-  <script>
-    // Fonction pour charger les traductions
-    document.addEventListener('DOMContentLoaded', function() {
-      try {
-        // Tenter de traduire le titre de la page
-        if (typeof browser !== 'undefined' && browser.i18n) {
-          document.title = browser.i18n.getMessage("infoPageTitle") || "FFTabClose - About & Help";
-          
-          // Traduire les éléments par ID
-          const elementsToTranslate = {
-            "infoHeading": "infoHeading",
-            "infoFeatures": "infoFeatures",
-            "infoDescription": "infoDescription",
-            "infoTimerHeading": "infoTimerHeading",
-            "infoTimerDescription": "infoTimerDescription",
-            "infoExclusionsHeading": "infoExclusionsHeading",
-            "infoExclusionsDescription": "infoExclusionsDescription",
-            "infoPrivacy": "infoPrivacy",
-            "infoPrivacyDescription": "infoPrivacyDescription"
-          };
-          
-          for (const [id, msgKey] of Object.entries(elementsToTranslate)) {
-            const element = document.getElementById(id);
-            if (element) {
-              const translated = browser.i18n.getMessage(msgKey);
-              if (translated) {
-                element.textContent = translated;
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error loading translations:", error);
-      }
-    });
-  </script>
+  <script src="info.js"></script>
 </body>
 </html>

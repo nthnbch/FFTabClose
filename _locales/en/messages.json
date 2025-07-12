@@ -138,5 +138,21 @@
   "infoLinkText": {
     "message": "Learn more about FFTabClose",
     "description": "Text for the link to the informational page."
+  },
+  "timeTest": {
+    "message": "1 minute (test)",
+    "description": "1 minute time limit option for testing."
+  },
+  "infoTimerDescription": {
+    "message": "Each tab has its own timer that starts when it's opened. Tabs are closed or discarded automatically once they exceed your specified time limit. Your settings persist even when restarting the browser.",
+    "description": "Description of how the timer system works."
+  },
+  "infoExclusionsDescription": {
+    "message": "Tabs that are playing audio are never closed or discarded. Pinned tabs are not closed but can be unloaded to save memory.",
+    "description": "Description of which tabs are protected from closing."
+  },
+  "infoPrivacyDescription": {
+    "message": "FFTabClose requires the following permissions:",
+    "description": "Introduction to the permissions section."
   }
 }
