@@ -8,7 +8,7 @@
 // Constants
 const DEFAULT_SETTINGS = {
   timeLimit: 12 * 60 * 60 * 1000, // 12 hours in milliseconds
-  discardPinnedTabs: false,
+  discardPinnedTabs: true, // Toujours décharger les onglets épinglés au lieu de les fermer
   excludeAudioTabs: true,
   closeOnStart: false
 };
@@ -109,25 +109,33 @@ async function processTabs() {
       continue;
     }
 
-    // Handle audio tabs
-    if (tab.audible && settings.excludeAudioTabs) {
+    // Handle audio tabs - toujours les exclure selon les spécifications
+    if (tab.audible) {
       continue;
     }
     
-    // Handle pinned tabs
+    // Handle pinned tabs - toujours les décharger mais ne pas les fermer
     if (tab.pinned) {
-      if (settings.discardPinnedTabs) {
-        // Only discard if not already discarded
-        if (!tab.discarded) {
+      // Only discard if not already discarded
+      if (!tab.discarded) {
+        try {
           await browser.tabs.discard(tab.id);
+          console.log(`Discarded pinned tab ${tab.id}: ${tab.title}`);
+        } catch (error) {
+          console.error(`Error discarding pinned tab ${tab.id}:`, error);
         }
       }
       continue;
     }
     
     // Close regular tabs that exceed the time limit
-    await browser.tabs.remove(tab.id);
-    delete tabTimestamps[tab.id];
+    try {
+      await browser.tabs.remove(tab.id);
+      delete tabTimestamps[tab.id];
+      console.log(`Closed tab ${tab.id}: ${tab.title}`);
+    } catch (error) {
+      console.error(`Error closing tab ${tab.id}:`, error);
+    }
   }
   
   // Save the updated timestamps after processing
@@ -153,13 +161,13 @@ async function getTabStats() {
       return;
     }
     
-    // Skip pinned tabs unless set to discard
-    if (tab.pinned && !settings.discardPinnedTabs) {
+    // Skip pinned tabs that are already discarded
+    if (tab.pinned && tab.discarded) {
       return;
     }
     
-    // Skip audio tabs if excluded
-    if (tab.audible && settings.excludeAudioTabs) {
+    // Skip audio tabs
+    if (tab.audible) {
       return;
     }
     
@@ -186,7 +194,16 @@ async function getTabStats() {
 
 // Settings management
 async function updateSettings(newSettings) {
-  settings = { ...settings, ...newSettings };
+  // Conserver les comportements par défaut pour discardPinnedTabs et excludeAudioTabs
+  const updatedSettings = { 
+    ...settings, 
+    ...newSettings,
+    // Forcer ces paramètres selon les spécifications
+    discardPinnedTabs: true,
+    excludeAudioTabs: true
+  };
+  
+  settings = updatedSettings;
   await browser.storage.local.set({ [SETTINGS_KEY]: settings });
   return settings;
 }
