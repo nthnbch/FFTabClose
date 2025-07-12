@@ -17,6 +17,7 @@ const ALARM_NAME = 'checkTabsAlarm';
 const CHECK_INTERVAL = 5; // Minutes between tab checks
 const STORAGE_KEY = 'tabTimestamps';
 const SETTINGS_KEY = 'settings';
+const DEBUG_MODE = true; // Set to false to disable verbose logging
 
 // State variables
 let tabTimestamps = {};
@@ -24,6 +25,21 @@ let settings = {};
 
 // Initialize
 async function initialize() {
+  // Log browser environment information for debugging
+  try {
+    const browserInfo = await browser.runtime.getBrowserInfo();
+    const platformInfo = await browser.runtime.getPlatformInfo();
+    
+    if (DEBUG_MODE) {
+      console.log(`Browser: ${browserInfo.name} ${browserInfo.version} (${browserInfo.buildID})`);
+      console.log(`Platform: ${platformInfo.os} ${platformInfo.arch}`);
+      console.log('Extension initialized');
+    }
+  } catch (error) {
+    // getBrowserInfo might not be available in all browsers
+    console.log('Could not detect browser details: ' + error.message);
+  }
+
   // Load stored settings
   const storedSettings = await browser.storage.local.get(SETTINGS_KEY);
   settings = { ...DEFAULT_SETTINGS, ...(storedSettings[SETTINGS_KEY] || {}) };
@@ -35,8 +51,14 @@ async function initialize() {
   // Set up alarm for periodic tab checks
   browser.alarms.create(ALARM_NAME, { periodInMinutes: CHECK_INTERVAL });
   
-  // Record all current tabs 
-  recordAllCurrentTabs();
+  // Record all current tabs across all windows/workspaces
+  await recordAllCurrentTabs();
+  
+  // Check windows/workspaces count
+  const windows = await browser.windows.getAll();
+  if (DEBUG_MODE) {
+    console.log(`Detected ${windows.length} browser windows/workspaces`);
+  }
   
   // Run initial check if enabled
   if (settings.closeOnStart) {
@@ -46,6 +68,7 @@ async function initialize() {
 
 // Tab event listeners
 async function recordAllCurrentTabs() {
+  // Query all tabs in all windows to capture tabs from all workspaces
   const tabs = await browser.tabs.query({});
   const now = Date.now();
   
@@ -58,6 +81,8 @@ async function recordAllCurrentTabs() {
   
   // Save the updated timestamps
   await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
+  
+  console.log(`Recorded ${tabs.length} tabs across all workspaces/windows`);
 }
 
 async function handleTabCreated(tab) {
@@ -90,19 +115,25 @@ async function handleTabUpdated(tabId, changeInfo) {
 
 // Main tab processing function
 async function processTabs() {
+  // Query all tabs across all windows/workspaces
   const tabs = await browser.tabs.query({});
   const now = Date.now();
   const timeLimit = settings.timeLimit;
-  const activeTab = (await browser.tabs.query({ active: true, currentWindow: true }))[0];
+  
+  // Get all active tabs (one per window)
+  const activeTabs = await browser.tabs.query({ active: true });
+  const activeTabIds = activeTabs.map(tab => tab.id);
+  
+  console.log(`Processing ${tabs.length} tabs across all workspaces/windows`);
   
   // Process each tab
   for (const tab of tabs) {
     // Skip processing if:
-    // - Tab is active (currently in use)
+    // - Tab is active in any window (currently in use)
     // - Tab ID doesn't have a timestamp (new or untracked)
     // - Tab doesn't have a timestamp that exceeds the limit
     if (
-      (activeTab && tab.id === activeTab.id) ||
+      activeTabIds.includes(tab.id) ||
       !tabTimestamps[tab.id] ||
       (now - tabTimestamps[tab.id] < timeLimit)
     ) {
@@ -120,7 +151,7 @@ async function processTabs() {
       if (!tab.discarded) {
         try {
           await browser.tabs.discard(tab.id);
-          console.log(`Discarded pinned tab ${tab.id}: ${tab.title}`);
+          console.log(`Discarded pinned tab ${tab.id}: ${tab.title} in window ${tab.windowId}`);
         } catch (error) {
           console.error(`Error discarding pinned tab ${tab.id}:`, error);
         }
@@ -132,7 +163,7 @@ async function processTabs() {
     try {
       await browser.tabs.remove(tab.id);
       delete tabTimestamps[tab.id];
-      console.log(`Closed tab ${tab.id}: ${tab.title}`);
+      console.log(`Closed tab ${tab.id}: ${tab.title} in window ${tab.windowId}`);
     } catch (error) {
       console.error(`Error closing tab ${tab.id}:`, error);
     }
@@ -150,14 +181,20 @@ async function closeOldTabs() {
 
 // Get current tab statistics
 async function getTabStats() {
+  // Query all tabs across all windows/workspaces
   const tabs = await browser.tabs.query({});
   const now = Date.now();
+  
+  // Get all active tabs (one per window)
+  const activeTabs = await browser.tabs.query({ active: true });
+  const activeTabIds = activeTabs.map(tab => tab.id);
+  
   let eligibleCount = 0;
   let oldestTabAge = 0;
   
   tabs.forEach(tab => {
-    // Skip active tab
-    if (tab.active) {
+    // Skip active tabs in any window
+    if (activeTabIds.includes(tab.id)) {
       return;
     }
     
@@ -188,7 +225,8 @@ async function getTabStats() {
   return {
     totalTabs: tabs.length,
     eligibleTabs: eligibleCount,
-    oldestTabAge: Math.floor(oldestTabAge / (60 * 1000)) // Convert to minutes
+    oldestTabAge: Math.floor(oldestTabAge / (60 * 1000)), // Convert to minutes
+    workspaceCount: (await browser.windows.getAll()).length // Estimate number of workspaces by window count
   };
 }
 
@@ -210,6 +248,27 @@ async function updateSettings(newSettings) {
 
 async function getSettings() {
   return settings;
+}
+
+// Debugging and logging
+function logDebugInfo() {
+  if (!DEBUG_MODE) {
+    return;
+  }
+  
+  // Log browser and workspace information
+  browser.windows.getAll().then(windows => {
+    console.log(`Detected ${windows.length} workspaces`);
+    
+    windows.forEach(window => {
+      console.log(`Workspace ${window.id}: ${window.tabs.length} tabs`);
+    });
+  }).catch(error => {
+    console.error(`Error retrieving windows:`, error);
+  });
+  
+  // Log current settings
+  console.log(`Current settings:`, settings);
 }
 
 // Event listeners
@@ -238,3 +297,4 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Initialize on startup
 initialize();
+logDebugInfo();
