@@ -3,6 +3,13 @@
  * Background script for automatic tab closure and management
  * 
  * Version 2.0.0
+ * 
+ * Notes sur Zen Browser et les espaces de travail (workspaces):
+ * - Les espaces de travail dans Zen Browser sont similaires aux conteneurs Firefox
+ * - Chaque espace de travail peut avoir ses propres onglets et ses propres conteneurs par défaut
+ * - Les espaces de travail semblent correspondre à des fenêtres distinctes dans l'API tabs
+ * - Pour accéder à tous les onglets dans tous les espaces, nous utilisons browser.tabs.query({})
+ *   sans spécifier de fenêtre ou de conteneur spécifique
  */
 
 // Constants
@@ -73,17 +80,36 @@ async function recordAllCurrentTabs() {
   const tabs = await browser.tabs.query({});
   const now = Date.now();
   
+  // Groupe les onglets par fenêtre (workspaces) pour le débogage
+  const windowsMap = new Map();
   tabs.forEach(tab => {
+    if (!windowsMap.has(tab.windowId)) {
+      windowsMap.set(tab.windowId, []);
+    }
+    windowsMap.get(tab.windowId).push(tab);
+    
     // Only set timestamp if not already tracked
     if (!tabTimestamps[tab.id]) {
       tabTimestamps[tab.id] = now;
     }
   });
   
+  // Log des détails sur les espaces de travail en mode DEBUG
+  if (DEBUG_MODE) {
+    console.log(`Recorded ${tabs.length} tabs across ${windowsMap.size} windows/workspaces`);
+    windowsMap.forEach((windowTabs, windowId) => {
+      console.log(`Workspace/Window ${windowId}: ${windowTabs.length} tabs`);
+      
+      // Vérifier si certains onglets ont des cookieStoreId différents (conteneurs)
+      const cookieStoreIds = [...new Set(windowTabs.map(tab => tab.cookieStoreId).filter(Boolean))];
+      if (cookieStoreIds.length > 0) {
+        console.log(`Window ${windowId} has tabs with cookie stores: ${cookieStoreIds.join(', ')}`);
+      }
+    });
+  }
+  
   // Save the updated timestamps
   await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
-  
-  console.log(`Recorded ${tabs.length} tabs across all workspaces/windows`);
 }
 
 async function handleTabCreated(tab) {
@@ -125,7 +151,42 @@ async function processTabs() {
   const activeTabs = await browser.tabs.query({ active: true });
   const activeTabIds = activeTabs.map(tab => tab.id);
   
-  console.log(`Processing ${tabs.length} tabs across all workspaces/windows`);
+  // Group tabs by window for better logging
+  const windowsMap = new Map();
+  tabs.forEach(tab => {
+    if (!windowsMap.has(tab.windowId)) {
+      windowsMap.set(tab.windowId, []);
+    }
+    windowsMap.get(tab.windowId).push(tab);
+  });
+  
+  if (DEBUG_MODE) {
+    console.log(`Processing ${tabs.length} tabs across ${windowsMap.size} windows/workspaces`);
+    console.log(`Active tabs: ${activeTabIds.length} (one per window/workspace)`);
+    
+    // Log container info if available
+    const containersMap = new Map();
+    tabs.forEach(tab => {
+      if (tab.cookieStoreId && tab.cookieStoreId !== 'firefox-default') {
+        if (!containersMap.has(tab.cookieStoreId)) {
+          containersMap.set(tab.cookieStoreId, 0);
+        }
+        containersMap.set(tab.cookieStoreId, containersMap.get(tab.cookieStoreId) + 1);
+      }
+    });
+    
+    if (containersMap.size > 0) {
+      console.log('Container tabs detected:');
+      containersMap.forEach((count, containerId) => {
+        console.log(`Container ${containerId}: ${count} tabs`);
+      });
+    }
+  }
+  
+  // Counter des actions effectuées
+  let closedCount = 0;
+  let discardedCount = 0;
+  let skippedCount = 0;
   
   // Process each tab
   for (const tab of tabs) {
@@ -138,11 +199,13 @@ async function processTabs() {
       !tabTimestamps[tab.id] ||
       (now - tabTimestamps[tab.id] < timeLimit)
     ) {
+      skippedCount++;
       continue;
     }
 
     // Handle audio tabs - toujours les exclure selon les spécifications
     if (tab.audible) {
+      skippedCount++;
       continue;
     }
     
@@ -152,10 +215,15 @@ async function processTabs() {
       if (!tab.discarded) {
         try {
           await browser.tabs.discard(tab.id);
-          console.log(`Discarded pinned tab ${tab.id}: ${tab.title} in window ${tab.windowId}`);
+          discardedCount++;
+          if (DEBUG_MODE) {
+            console.log(`Discarded pinned tab ${tab.id}: ${tab.title} in window ${tab.windowId}${tab.cookieStoreId ? ' (container: ' + tab.cookieStoreId + ')' : ''}`);
+          }
         } catch (error) {
           console.error(`Error discarding pinned tab ${tab.id}:`, error);
         }
+      } else {
+        skippedCount++; // Already discarded
       }
       continue;
     }
@@ -164,10 +232,17 @@ async function processTabs() {
     try {
       await browser.tabs.remove(tab.id);
       delete tabTimestamps[tab.id];
-      console.log(`Closed tab ${tab.id}: ${tab.title} in window ${tab.windowId}`);
+      closedCount++;
+      if (DEBUG_MODE) {
+        console.log(`Closed tab ${tab.id}: ${tab.title} in window ${tab.windowId}${tab.cookieStoreId ? ' (container: ' + tab.cookieStoreId + ')' : ''}`);
+      }
     } catch (error) {
       console.error(`Error closing tab ${tab.id}:`, error);
     }
+  }
+  
+  if (DEBUG_MODE) {
+    console.log(`Tabs processed: ${closedCount} closed, ${discardedCount} discarded, ${skippedCount} skipped`);
   }
   
   // Save the updated timestamps after processing
@@ -189,6 +264,23 @@ async function getTabStats() {
   // Get all active tabs (one per window)
   const activeTabs = await browser.tabs.query({ active: true });
   const activeTabIds = activeTabs.map(tab => tab.id);
+  
+  // Group tabs by window (workspace)
+  const windowsMap = new Map();
+  tabs.forEach(tab => {
+    if (!windowsMap.has(tab.windowId)) {
+      windowsMap.set(tab.windowId, []);
+    }
+    windowsMap.get(tab.windowId).push(tab);
+  });
+  
+  // Collect containers if present
+  const containersSet = new Set();
+  tabs.forEach(tab => {
+    if (tab.cookieStoreId && tab.cookieStoreId !== 'firefox-default') {
+      containersSet.add(tab.cookieStoreId);
+    }
+  });
   
   let eligibleCount = 0;
   let oldestTabAge = 0;
@@ -223,14 +315,19 @@ async function getTabStats() {
     }
   });
   
-  // Group tabs by windowId to estimate workspace count
-  const windowIds = [...new Set(tabs.map(tab => tab.windowId))];
-  
   return {
     totalTabs: tabs.length,
     eligibleTabs: eligibleCount,
     oldestTabAge: Math.floor(oldestTabAge / (60 * 1000)), // Convert to minutes
-    workspaceCount: windowIds.length // Estimate number of workspaces by unique windowIds
+    workspaceCount: windowsMap.size, // Nombre d'espaces de travail basé sur windowId
+    containersCount: containersSet.size, // Nombre de conteneurs différents
+    workspaceSummary: Array.from(windowsMap.entries()).map(([windowId, tabs]) => {
+      return {
+        windowId,
+        tabCount: tabs.length,
+        activeTab: tabs.find(tab => tab.active)?.title || 'none'
+      };
+    })
   };
 }
 
@@ -260,29 +357,61 @@ function logDebugInfo() {
     return;
   }
   
-  // Log browser and workspace information using tabs API instead of windows API
+  // Log browser and workspace information using tabs API
   browser.tabs.query({}).then(tabs => {
     const windowsMap = new Map();
+    const containersMap = new Map();
     
     // Group tabs by windowId
     tabs.forEach(tab => {
+      // Groupe par fenêtre
       if (!windowsMap.has(tab.windowId)) {
         windowsMap.set(tab.windowId, []);
       }
       windowsMap.get(tab.windowId).push(tab);
+      
+      // Groupe par conteneur
+      const containerId = tab.cookieStoreId || 'default';
+      if (!containersMap.has(containerId)) {
+        containersMap.set(containerId, []);
+      }
+      containersMap.get(containerId).push(tab);
     });
     
-    console.log(`Detected ${windowsMap.size} workspaces`);
+    console.log(`FFTabClose debug info:`);
+    console.log(`Total tabs: ${tabs.length}`);
+    console.log(`Workspaces detected: ${windowsMap.size}`);
     
-    windowsMap.forEach((tabs, windowId) => {
-      console.log(`Workspace ${windowId}: ${tabs.length} tabs`);
+    if (containersMap.size > 1) {
+      console.log(`Containers detected: ${containersMap.size - 1}`); // -1 pour exclure 'default'
+    }
+    
+    console.log(`\nWorkspace details:`);
+    windowsMap.forEach((windowTabs, windowId) => {
+      console.log(`Workspace ${windowId}: ${windowTabs.length} tabs`);
+      console.log(`  Active tab: ${windowTabs.find(tab => tab.active)?.title || 'none'}`);
+      
+      // Vérifier les conteneurs dans cette fenêtre
+      const windowContainers = [...new Set(windowTabs.map(tab => tab.cookieStoreId).filter(id => id && id !== 'firefox-default'))];
+      if (windowContainers.length > 0) {
+        console.log(`  Containers: ${windowContainers.join(', ')}`);
+      }
     });
+    
+    if (containersMap.size > 1) {
+      console.log(`\nContainer details:`);
+      containersMap.forEach((containerTabs, containerId) => {
+        if (containerId !== 'default') {
+          console.log(`Container ${containerId}: ${containerTabs.length} tabs`);
+        }
+      });
+    }
   }).catch(error => {
     console.error(`Error retrieving tabs:`, error);
   });
   
   // Log current settings
-  console.log(`Current settings:`, settings);
+  console.log(`\nCurrent settings:`, settings);
 }
 
 // Event listeners
