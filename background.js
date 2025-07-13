@@ -54,10 +54,11 @@ async function initialize() {
   // Record all current tabs across all windows/workspaces
   await recordAllCurrentTabs();
   
-  // Check windows/workspaces count
-  const windows = await browser.windows.getAll();
+  // Check windows/workspaces count using tab windowIds instead of windows API
+  const allTabs = await browser.tabs.query({});
+  const uniqueWindowIds = [...new Set(allTabs.map(tab => tab.windowId))];
   if (DEBUG_MODE) {
-    console.log(`Detected ${windows.length} browser windows/workspaces`);
+    console.log(`Detected ${uniqueWindowIds.length} browser windows/workspaces`);
   }
   
   // Run initial check if enabled
@@ -222,11 +223,14 @@ async function getTabStats() {
     }
   });
   
+  // Group tabs by windowId to estimate workspace count
+  const windowIds = [...new Set(tabs.map(tab => tab.windowId))];
+  
   return {
     totalTabs: tabs.length,
     eligibleTabs: eligibleCount,
     oldestTabAge: Math.floor(oldestTabAge / (60 * 1000)), // Convert to minutes
-    workspaceCount: (await browser.windows.getAll()).length // Estimate number of workspaces by window count
+    workspaceCount: windowIds.length // Estimate number of workspaces by unique windowIds
   };
 }
 
@@ -256,15 +260,25 @@ function logDebugInfo() {
     return;
   }
   
-  // Log browser and workspace information
-  browser.windows.getAll().then(windows => {
-    console.log(`Detected ${windows.length} workspaces`);
+  // Log browser and workspace information using tabs API instead of windows API
+  browser.tabs.query({}).then(tabs => {
+    const windowsMap = new Map();
     
-    windows.forEach(window => {
-      console.log(`Workspace ${window.id}: ${window.tabs.length} tabs`);
+    // Group tabs by windowId
+    tabs.forEach(tab => {
+      if (!windowsMap.has(tab.windowId)) {
+        windowsMap.set(tab.windowId, []);
+      }
+      windowsMap.get(tab.windowId).push(tab);
+    });
+    
+    console.log(`Detected ${windowsMap.size} workspaces`);
+    
+    windowsMap.forEach((tabs, windowId) => {
+      console.log(`Workspace ${windowId}: ${tabs.length} tabs`);
     });
   }).catch(error => {
-    console.error(`Error retrieving windows:`, error);
+    console.error(`Error retrieving tabs:`, error);
   });
   
   // Log current settings

@@ -23,8 +23,7 @@
   "permissions": [
     "tabs",
     "storage",
-    "alarms",
-    "windows"
+    "alarms"
   ],
   
   "background": {
