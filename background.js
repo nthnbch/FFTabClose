@@ -21,7 +21,8 @@ const DEFAULT_SETTINGS = {
 };
 
 const ALARM_NAME = 'checkTabsAlarm';
-const CHECK_INTERVAL = 5; // Minutes between tab checks
+// Intervalle plus court pour mieux gérer le timeout d'une minute
+const CHECK_INTERVAL = 0.5; // Minutes between tab checks (0.5 = 30 seconds)
 const STORAGE_KEY = 'tabTimestamps';
 const SETTINGS_KEY = 'settings';
 const DEBUG_MODE = true; // Set to false to disable verbose logging
@@ -58,15 +59,46 @@ async function initialize() {
   // Set up alarm for periodic tab checks
   browser.alarms.create(ALARM_NAME, { periodInMinutes: CHECK_INTERVAL });
   
+  // Vérifier l'existence de la fonctionnalité contextualIdentities (conteneurs)
+  try {
+    if (browser.contextualIdentities) {
+      const containers = await browser.contextualIdentities.query({});
+      if (DEBUG_MODE && containers.length > 0) {
+        console.log(`Detected ${containers.length} containers:`);
+        containers.forEach(container => {
+          console.log(` - ${container.name} (${container.cookieStoreId})`);
+        });
+      }
+    }
+  } catch (error) {
+    // La fonctionnalité peut ne pas être disponible
+    console.log("Container detection not available:", error.message);
+  }
+  
   // Record all current tabs across all windows/workspaces
   await recordAllCurrentTabs();
   
-  // Check windows/workspaces count using tab windowIds instead of windows API
+  // Check windows/workspaces count using tab windowIds
   const allTabs = await browser.tabs.query({});
   const uniqueWindowIds = [...new Set(allTabs.map(tab => tab.windowId))];
   if (DEBUG_MODE) {
     console.log(`Detected ${uniqueWindowIds.length} browser windows/workspaces`);
+    
+    // Log explicit browser.windows API capabilities 
+    try {
+      const windows = await browser.windows.getAll({ populate: true });
+      console.log(`Using windows API: ${windows.length} windows detected`);
+      windows.forEach((win, i) => {
+        console.log(`Window ${win.id}: ${win.tabs?.length || 0} tabs, focused: ${win.focused}`);
+      });
+    } catch (error) {
+      console.log("Windows API not fully accessible:", error.message);
+    }
   }
+  
+  // Configurer un timer spécifique pour mettre à jour les timestamps fréquemment
+  // Cela aide à maintenir à jour les timestamps, en particulier pour le timer d'une minute
+  browser.alarms.create('updateTimestamps', { periodInMinutes: 0.25 }); // Toutes les 15 secondes
   
   // Run initial check if enabled
   if (settings.closeOnStart) {
@@ -88,10 +120,9 @@ async function recordAllCurrentTabs() {
     }
     windowsMap.get(tab.windowId).push(tab);
     
-    // Only set timestamp if not already tracked
-    if (!tabTimestamps[tab.id]) {
-      tabTimestamps[tab.id] = now;
-    }
+    // Toujours mettre à jour le timestamp des onglets pour assurer le bon fonctionnement du timer
+    // Particulièrement important pour le timer d'une minute en mode test
+    tabTimestamps[tab.id] = now;
   });
   
   // Log des détails sur les espaces de travail en mode DEBUG
@@ -140,14 +171,72 @@ async function handleTabUpdated(tabId, changeInfo) {
   }
 }
 
+// Détection des changements de workspaces (fenêtres)
+async function handleWindowFocusChanged(windowId) {
+  if (DEBUG_MODE) {
+    if (windowId === browser.windows.WINDOW_ID_NONE) {
+      console.log('All browser windows lost focus');
+    } else {
+      console.log(`Window/workspace ${windowId} gained focus`);
+      
+      // Log current workspace details when focused
+      try {
+        const tabs = await browser.tabs.query({ windowId });
+        console.log(`Focused workspace has ${tabs.length} tabs`);
+        
+        // Check for containers
+        const containers = [...new Set(tabs.map(tab => tab.cookieStoreId).filter(Boolean))];
+        if (containers.length > 0) {
+          console.log(`Workspace ${windowId} has containers: ${containers.join(', ')}`);
+        }
+      } catch (error) {
+        console.error(`Error getting tabs for focused window:`, error);
+      }
+    }
+  }
+  
+  // Mettre à jour les timestamps pour tous les onglets pour s'assurer 
+  // que le timer fonctionne correctement après un changement de workspace
+  await recordAllCurrentTabs();
+}
+
+// Fonction pour forcer la mise à jour des timestamps des onglets
+async function forceUpdateAllTabTimestamps() {
+  if (DEBUG_MODE) {
+    console.log("Force updating all tab timestamps");
+  }
+  
+  const tabs = await browser.tabs.query({});
+  const now = Date.now();
+  
+  // Mettre à jour uniquement les timestamps des onglets actifs dans chaque fenêtre
+  const activeTabs = await browser.tabs.query({ active: true });
+  const activeTabIds = new Set(activeTabs.map(tab => tab.id));
+  
+  // Conserver les anciens timestamps des onglets non actifs
+  tabs.forEach(tab => {
+    if (activeTabIds.has(tab.id)) {
+      // Mise à jour des onglets actifs
+      tabTimestamps[tab.id] = now;
+    } else if (!tabTimestamps[tab.id]) {
+      // Initialiser les onglets sans timestamp
+      tabTimestamps[tab.id] = now;
+    }
+    // Les autres onglets gardent leur timestamp existant
+  });
+  
+  await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
+}
+
 // Main tab processing function
 async function processTabs() {
-  // Query all tabs across all windows/workspaces
+  // Forcer une requête ALL_TABS pour être sûr d'obtenir tous les onglets de tous les workspaces
   const tabs = await browser.tabs.query({});
   const now = Date.now();
   const timeLimit = settings.timeLimit;
   
   // Get all active tabs (one per window)
+  // Utiliser une requête explicite pour tous les onglets actifs
   const activeTabs = await browser.tabs.query({ active: true });
   const activeTabIds = activeTabs.map(tab => tab.id);
   
@@ -181,6 +270,15 @@ async function processTabs() {
         console.log(`Container ${containerId}: ${count} tabs`);
       });
     }
+    
+    // Lister explicitement tous les tabs pour débogage
+    console.log("List of all tabs by windowId:");
+    windowsMap.forEach((tabs, windowId) => {
+      console.log(`Window ${windowId}:`);
+      tabs.forEach(tab => {
+        console.log(`  Tab ${tab.id}: "${tab.title}" (${tab.url.substring(0, 50)}...)`);
+      });
+    });
   }
   
   // Counter des actions effectuées
@@ -419,13 +517,24 @@ browser.tabs.onCreated.addListener(handleTabCreated);
 browser.tabs.onActivated.addListener(handleTabActivated);
 browser.tabs.onRemoved.addListener(handleTabRemoved);
 browser.tabs.onUpdated.addListener(handleTabUpdated);
+
+// Écouteurs pour les fenêtres/workspaces (si l'API est disponible)
+try {
+  browser.windows.onFocusChanged.addListener(handleWindowFocusChanged);
+} catch (error) {
+  if (DEBUG_MODE) {
+    console.log('Windows focus change events not available:', error.message);
+  }
+}
+
 browser.alarms.onAlarm.addListener(alarm => {
   if (alarm.name === ALARM_NAME) {
     processTabs();
+  } else if (alarm.name === 'updateTimestamps') {
+    // Mise à jour périodique des timestamps pour garantir le bon fonctionnement du timer
+    forceUpdateAllTabTimestamps();
   }
 });
-
-// Message listener for communication with popup
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'getSettings') {
     return getSettings();

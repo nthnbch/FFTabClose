@@ -23,7 +23,8 @@
   "permissions": [
     "tabs",
     "storage",
-    "alarms"
+    "alarms",
+    "contextualIdentities"
   ],
   
   "background": {
