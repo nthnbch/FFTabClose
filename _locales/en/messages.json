@@ -112,7 +112,7 @@
     "description": "Heading for the info page."
   },
   "infoDescription": {
-    "message": "FFTabClose helps you keep your browser organized by automatically closing tabs you haven't used in a while.",
+    "message": "FFTabClose helps you keep your browser organized by automatically closing tabs you haven't used in a while, across all browser windows and workspaces.",
     "description": "Description on the info page."
   },
   "infoFeatures": {
@@ -144,11 +144,11 @@
     "description": "1 minute time limit option for testing."
   },
   "infoTimerDescription": {
-    "message": "Each tab has its own timer that starts when it's opened. Tabs are closed or discarded automatically once they exceed your specified time limit. Your settings persist even when restarting the browser.",
+    "message": "Each tab has its own timer that starts when it's opened or activated. Tabs are closed or discarded automatically once they exceed your specified time limit. Your settings persist even when restarting the browser.",
     "description": "Description of how the timer system works."
   },
   "infoExclusionsDescription": {
-    "message": "Tabs that are playing audio are never closed or discarded. Pinned tabs are not closed but can be unloaded to save memory.",
+    "message": "Tabs that are playing audio are never closed or discarded. Pinned tabs are not closed but can be unloaded to save memory. Currently active tabs in any window are never closed.",
     "description": "Description of which tabs are protected from closing."
   },
   "infoPrivacyDescription": {

@@ -13,7 +13,9 @@
       --border-color: #e2e8f0;
       --accent-color: #4299e1;
       --code-bg: #f7fafc;
-      --transition-speed: 0.3s;
+      --transition-speed: 0.2s;
+      --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --section-bg: #fafafa;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -25,35 +27,45 @@
         --border-color: #2d3748;
         --accent-color: #3182ce;
         --code-bg: #2d3748;
+        --section-bg: #2a2a30;
+        --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
         Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      line-height: 1.6;
+      line-height: 1.5;
       color: var(--text-color);
       background-color: var(--bg-color);
-      max-width: 800px;
+      max-width: 700px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 1.5rem 1rem;
       transition: background-color var(--transition-speed), color var(--transition-speed);
     }
 
     h1, h2 {
       color: var(--heading-color);
+      line-height: 1.2;
     }
 
     h1 {
       border-bottom: 2px solid var(--accent-color);
       padding-bottom: 0.5rem;
-      margin-bottom: 1.5rem;
-      font-size: 2rem;
+      margin-bottom: 1.25rem;
+      font-size: 1.8rem;
     }
 
     h2 {
-      margin-top: 2rem;
-      font-size: 1.5rem;
+      margin-top: 0;
+      margin-bottom: 0.75rem;
+      font-size: 1.3rem;
     }
 
     a {
@@ -67,37 +79,76 @@
       color: var(--accent-color);
     }
 
+    p {
+      margin-bottom: 0.75rem;
+    }
+
     .container {
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     section {
-      background-color: var(--bg-color);
+      background-color: var(--section-bg);
       border: 1px solid var(--border-color);
       border-radius: 6px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: box-shadow var(--transition-speed);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--box-shadow);
+      transition: box-shadow var(--transition-speed), transform var(--transition-speed);
     }
 
     section:hover {
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
     }
 
     code {
       background-color: var(--code-bg);
-      padding: 0.2rem 0.4rem;
+      padding: 0.1rem 0.3rem;
       border-radius: 3px;
       font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.9em;
+    }
+
+    ul {
+      padding-left: 1.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0;
+    }
+
+    li {
+      margin-bottom: 0.25rem;
+    }
+
+    li:last-child {
+      margin-bottom: 0;
     }
 
     footer {
-      margin-top: 2rem;
-      font-size: 0.9rem;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
       text-align: center;
       border-top: 1px solid var(--border-color);
-      padding-top: 1rem;
+      padding-top: 0.75rem;
+      color: rgba(var(--text-color), 0.8);
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 1rem 0.75rem;
+      }
+      
+      h1 {
+        font-size: 1.6rem;
+      }
+      
+      h2 {
+        font-size: 1.2rem;
+      }
+      
+      section {
+        padding: 1rem;
+      }
     }
   </style>
 </head>
@@ -109,32 +160,32 @@
 
     <section>
       <h2 id="infoFeatures">Features</h2>
-      <p id="infoDescription">FFTabClose helps you keep your browser organized by automatically closing tabs you haven't used in a while.</p>
+      <p id="infoDescription">FFTabClose helps you keep your browser organized by automatically closing tabs you haven't used in a while, across all browser windows and workspaces.</p>
     </section>
 
     <section>
       <h2 id="infoTimerHeading">How the Timer Works</h2>
-      <p id="infoTimerDescription">Each tab has its own timer that starts when it's opened. Tabs are closed or discarded automatically once they exceed your specified time limit. Your settings persist even when restarting the browser.</p>
+      <p id="infoTimerDescription">Each tab has its own timer that starts when it's opened or activated. Tabs are closed or discarded automatically once they exceed your specified time limit. Your settings persist even when restarting the browser.</p>
     </section>
 
     <section>
       <h2 id="infoExclusionsHeading">Tab Exclusions</h2>
-      <p id="infoExclusionsDescription">Tabs that are playing audio are never closed or discarded. Pinned tabs are not closed but can be unloaded to save memory.</p>
+      <p id="infoExclusionsDescription">Tabs that are playing audio are never closed or discarded. Pinned tabs are not closed but can be unloaded to save memory. Currently active tabs in any window are never closed.</p>
     </section>
 
     <section>
       <h2 id="infoPrivacy">Privacy & Permissions</h2>
       <p id="infoPrivacyDescription">FFTabClose requires the following permissions:</p>
       <ul>
-        <li><code>tabs</code> - To monitor and manage tabs</li>
-        <li><code>storage</code> - To save your preferences</li>
+        <li><code>tabs</code> - To monitor and manage tabs across all windows</li>
+        <li><code>storage</code> - To save your preferences and tab timers</li>
         <li><code>alarms</code> - To schedule periodic tab checks</li>
       </ul>
     </section>
   </div>
   
   <footer>
-    <p>FFTabClose v2.0.0 &copy; 2025 - <a href="https://github.com/bubu/FFTabClose" target="_blank">GitHub</a></p>
+    <p>FFTabClose v2.0.0 &copy; 2025 - <a href="https://github.com/nthnbch/FFTabClose" target="_blank">GitHub</a></p>
   </footer>
 
   <script src="../browser-polyfill.min.js"></script>

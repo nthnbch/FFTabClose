@@ -112,7 +112,7 @@
     "description": "Heading for the info page."
   },
   "infoDescription": {
-    "message": "FFTabClose vous aide à garder votre navigateur organisé en fermant automatiquement les onglets que vous n'avez pas utilisés depuis un moment.",
+    "message": "FFTabClose vous aide à garder votre navigateur organisé en fermant automatiquement les onglets que vous n'avez pas utilisés depuis un moment, dans toutes les fenêtres et espaces de travail.",
     "description": "Description on the info page."
   },
   "infoFeatures": {
@@ -138,5 +138,17 @@
   "infoLinkText": {
     "message": "En savoir plus sur FFTabClose",
     "description": "Texte pour le lien vers la page d'information."
+  },
+  "infoTimerDescription": {
+    "message": "Chaque onglet possède sa propre minuterie qui démarre lorsqu'il est ouvert ou activé. Les onglets sont fermés ou déchargés automatiquement une fois qu'ils dépassent votre limite de temps spécifiée. Vos paramètres sont conservés même après le redémarrage du navigateur.",
+    "description": "Description du fonctionnement du système de minuterie."
+  },
+  "infoExclusionsDescription": {
+    "message": "Les onglets qui jouent de l'audio ne sont jamais fermés ou déchargés. Les onglets épinglés ne sont pas fermés mais peuvent être déchargés pour économiser de la mémoire. Les onglets actifs dans n'importe quelle fenêtre ne sont jamais fermés.",
+    "description": "Description des onglets protégés contre la fermeture."
+  },
+  "infoPrivacyDescription": {
+    "message": "FFTabClose nécessite les permissions suivantes :",
+    "description": "Introduction à la section des permissions."
   }
 }
