@@ -467,22 +467,65 @@ async function processTabs() {
   }
   
   // Get all active tabs (one per window/container)
+  // C'est une étape critique pour éviter de fermer des onglets actuellement utilisés
   let activeTabs = [];
   try {
-    activeTabs = await browser.tabs.query({ active: true });
+    // Récupérer explicitement les onglets actifs dans toutes les fenêtres
+    const allWindows = await browser.windows.getAll();
+    
+    if (DEBUG_MODE) {
+      console.log(`Found ${allWindows.length} windows/workspaces to check for active tabs`);
+    }
+    
+    // Pour chaque fenêtre, trouver l'onglet actif
+    for (const window of allWindows) {
+      try {
+        const windowActiveTabs = await browser.tabs.query({ 
+          windowId: window.id,
+          active: true 
+        });
+        
+        if (windowActiveTabs.length > 0) {
+          activeTabs = activeTabs.concat(windowActiveTabs);
+        }
+      } catch (windowError) {
+        console.error(`Error getting active tab for window ${window.id}:`, windowError);
+      }
+    }
+    
+    // Double vérification avec une requête globale comme fallback
+    if (activeTabs.length === 0) {
+      console.warn("No active tabs found via window-specific queries, falling back to global query");
+      activeTabs = await browser.tabs.query({ active: true });
+    }
   } catch (error) {
-    console.error("Error getting active tabs:", error);
+    console.error("Error getting windows or active tabs:", error);
+    // Fallback ultime - requête globale simple
+    try {
+      activeTabs = await browser.tabs.query({ active: true });
+    } catch (fallbackError) {
+      console.error("Critical error getting active tabs:", fallbackError);
+    }
   }
-  const activeTabIds = activeTabs.map(tab => tab.id);
+  
+  // Utiliser un Set pour éviter les doublons potentiels
+  const activeTabIds = new Set(activeTabs.map(tab => tab.id));
   
   if (DEBUG_MODE) {
     console.log(`Found ${activeTabs.length} active tabs across all windows/workspaces`);
+    console.log(`Active tab IDs: ${Array.from(activeTabIds).join(', ')}`);
     
     // Log the active tabs for debugging
     activeTabs.forEach(tab => {
       const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
-      console.log(`Active tab in window ${tab.windowId}${containerInfo}: ${tab.title}`);
+      console.log(`Active tab in window ${tab.windowId}${containerInfo}: "${tab.title}" (ID: ${tab.id})`);
     });
+    
+    // Vérifier s'il y a des onglets sans fenêtre (cas rare mais possible)
+    const tabsWithoutWindow = activeTabs.filter(tab => !tab.windowId);
+    if (tabsWithoutWindow.length > 0) {
+      console.warn(`Found ${tabsWithoutWindow.length} active tabs without window ID`);
+    }
   }
   
   // Group tabs by window and container for better logging
@@ -525,22 +568,54 @@ async function processTabs() {
   let discardedCount = 0;
   let skippedCount = 0;
   
+  // Log de debug pour mieux comprendre le traitement des onglets
+  if (DEBUG_MODE) {
+    console.log(`Starting processing of ${tabs.length} tabs with time limit of ${timeLimit/60000} minutes`);
+    console.log(`Active tab IDs (${activeTabIds.length}): ${JSON.stringify(Array.from(activeTabIds))}`);
+    
+    // Analyser les onglets par fenêtre pour le debug
+    const tabsByWindow = {};
+    tabs.forEach(t => {
+      if (!tabsByWindow[t.windowId]) tabsByWindow[t.windowId] = [];
+      tabsByWindow[t.windowId].push({id: t.id, active: t.active, title: t.title});
+    });
+    console.log(`Tabs by window: ${JSON.stringify(tabsByWindow)}`);
+  }
+
   // Process each tab
   for (const tab of tabs) {
+    // Vérifier l'âge de l'onglet
+    const tabAge = now - (tabTimestamps[tab.id] || now);
+    const isOldEnough = tabAge >= timeLimit;
+    
+    // Log détaillé pour le debug
+    if (DEBUG_MODE && isOldEnough) {
+      const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
+      console.log(`Tab ${tab.id}: "${tab.title}" in window ${tab.windowId}${containerInfo}`);
+      console.log(`  Age: ${Math.floor(tabAge/60000)} minutes, Active: ${tab.active}, Pinned: ${tab.pinned}, Audible: ${tab.audible}`);
+      console.log(`  In activeTabIds: ${activeTabIds.has(tab.id)}`);
+    }
+    
     // Skip processing if:
     // - Tab is active in any window (currently in use)
     // - Tab doesn't have a timestamp that exceeds the limit
     if (
-      activeTabIds.includes(tab.id) ||
-      (now - tabTimestamps[tab.id] < timeLimit)
+      activeTabIds.has(tab.id) ||
+      !isOldEnough
     ) {
       skippedCount++;
+      if (DEBUG_MODE && isOldEnough) {
+        console.log(`  Skipped: active tab or not old enough`);
+      }
       continue;
     }
 
     // Handle audio tabs - toujours les exclure selon les spécifications
     if (tab.audible) {
       skippedCount++;
+      if (DEBUG_MODE) {
+        console.log(`  Skipped: tab is playing audio`);
+      }
       continue;
     }
     
@@ -560,21 +635,42 @@ async function processTabs() {
         }
       } else {
         skippedCount++; // Already discarded
+        if (DEBUG_MODE) {
+          console.log(`  Skipped: pinned tab already discarded`);
+        }
       }
       continue;
     }
     
     // Close regular tabs that exceed the time limit
     try {
+      if (DEBUG_MODE) {
+        const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
+        console.log(`Closing tab ${tab.id}: "${tab.title}" in window ${tab.windowId}${containerInfo}`);
+        console.log(`  Tab age: ${Math.floor((now - (tabTimestamps[tab.id] || now))/60000)} minutes (limit: ${timeLimit/60000} minutes)`);
+      }
+      
+      // Vérifier une dernière fois si l'onglet est actif
+      // C'est une précaution supplémentaire pour ne pas fermer l'onglet actif
+      const isStillActive = activeTabIds.has(tab.id);
+      if (isStillActive) {
+        if (DEBUG_MODE) {
+          console.log(`  SAFETY CHECK: Tab ${tab.id} is now active, skipping close operation`);
+        }
+        skippedCount++;
+        continue;
+      }
+      
       await browser.tabs.remove(tab.id);
       delete tabTimestamps[tab.id];
       closedCount++;
+      
       if (DEBUG_MODE) {
-        const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
-        console.log(`Closed tab ${tab.id}: ${tab.title} in window ${tab.windowId}${containerInfo}`);
+        console.log(`  ✓ Successfully closed tab ${tab.id}`);
       }
     } catch (error) {
       console.error(`Error closing tab ${tab.id}:`, error);
+      console.error(`  Error details: ${error.message}`);
     }
   }
   
@@ -681,16 +777,24 @@ async function getTabStats() {
   
   // Get all active tabs (one per window)
   const activeTabs = await browser.tabs.query({ active: true });
-  const activeTabIds = activeTabs.map(tab => tab.id);
-  
-  // Group tabs by window (workspace)
+  const activeTabIds = activeTabs.map(tab => tab.id);    // Group tabs by window (workspace)
   const windowsMap = new Map();
   tabs.forEach(tab => {
-    if (!windowsMap.has(tab.windowId)) {
-      windowsMap.set(tab.windowId, []);
+    // S'assurer que l'ID de fenêtre est valide
+    if (tab.windowId !== undefined) {
+      if (!windowsMap.has(tab.windowId)) {
+        windowsMap.set(tab.windowId, []);
+      }
+      windowsMap.get(tab.windowId).push(tab);
     }
-    windowsMap.get(tab.windowId).push(tab);
   });
+  
+  if (DEBUG_MODE) {
+    console.log(`Tabs grouped into ${windowsMap.size} windows/workspaces`);
+    windowsMap.forEach((tabs, windowId) => {
+      console.log(`Window ${windowId}: ${tabs.length} tabs`);
+    });
+  }
   
   let eligibleCount = 0;
   let oldestTabAge = 0;
