@@ -18,6 +18,12 @@ function sanitizeHTML(str) {
   return tempElement.textContent;
 }
 
+// Helper function for logging with locale info
+function logWithLocale(message, ...args) {
+  const locale = browser?.i18n?.getUILanguage() || 'unknown';
+  console.log(`[${locale}] ${message}`, ...args);
+}
+
 // Load and display changelog information
 function displayChangelog() {
   try {

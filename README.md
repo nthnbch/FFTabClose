@@ -51,8 +51,13 @@ FFTabClose is compatible with Zen Browser and can be installed through Firefox a
 ```bash
 git clone https://github.com/nthnbch/FFTabClose.git
 cd FFTabClose
-# Package the extension into an .xpi file
-zip -r -FS ../fftabclose.xpi * --exclude '*.git*'
+# Using npm (recommended)
+npm install
+npm run build
+# The XPI file will be created in the dist/ folder
+
+# OR manually with zip
+zip -r -FS ../fftabclose.xpi manifest.json background.js browser-polyfill.min.js popup/ info/ icons/ _locales/ --exclude '*.DS_Store'
 ```
 
 ## 📖 How It Works
