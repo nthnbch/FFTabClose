@@ -59,6 +59,21 @@ async function initialize() {
   // Set up alarm for periodic tab checks
   browser.alarms.create(ALARM_NAME, { periodInMinutes: CHECK_INTERVAL });
   
+  // Obtenir d'abord tous les onglets dans toutes les fenêtres
+  // C'est la méthode la plus fiable pour détecter tous les espaces de travail
+  const allTabs = await browser.tabs.query({});
+  const uniqueWindowIds = [...new Set(allTabs.map(tab => tab.windowId))];
+  
+  if (DEBUG_MODE) {
+    console.log(`Detected ${allTabs.length} tabs across ${uniqueWindowIds.length} browser windows/workspaces`);
+    
+    // Analyser la distribution des onglets par fenêtre
+    uniqueWindowIds.forEach(windowId => {
+      const windowTabs = allTabs.filter(tab => tab.windowId === windowId);
+      console.log(`Window ${windowId}: ${windowTabs.length} tabs`);
+    });
+  }
+  
   // Vérifier l'existence de la fonctionnalité contextualIdentities (conteneurs)
   let containersSupported = false;
   try {
@@ -70,6 +85,18 @@ async function initialize() {
         containers.forEach(container => {
           console.log(` - ${container.name} (${container.cookieStoreId})`);
         });
+        
+        // Vérifier les cookieStoreIds (conteneurs) disponibles dans les onglets
+        const cookieStoreIds = [...new Set(allTabs.map(tab => tab.cookieStoreId).filter(Boolean))];
+        if (cookieStoreIds.length > 0) {
+          console.log(`Detected ${cookieStoreIds.length} containers in use: ${cookieStoreIds.join(', ')}`);
+          
+          // Analyser la distribution des onglets par conteneur
+          cookieStoreIds.forEach(containerId => {
+            const containerTabs = allTabs.filter(tab => tab.cookieStoreId === containerId);
+            console.log(`Container ${containerId}: ${containerTabs.length} tabs`);
+          });
+        }
       }
     }
   } catch (error) {
@@ -84,19 +111,6 @@ async function initialize() {
   
   // Record all current tabs across all windows/workspaces
   await recordAllCurrentTabs();
-  
-  // Check windows/workspaces count using tab windowIds
-  const allTabs = await browser.tabs.query({});
-  const uniqueWindowIds = [...new Set(allTabs.map(tab => tab.windowId))];
-  if (DEBUG_MODE) {
-    console.log(`Detected ${uniqueWindowIds.length} browser windows/workspaces`);
-    
-    // Vérifier les cookieStoreIds (conteneurs) disponibles
-    const cookieStoreIds = [...new Set(allTabs.map(tab => tab.cookieStoreId).filter(Boolean))];
-    if (cookieStoreIds.length > 0) {
-      console.log(`Detected ${cookieStoreIds.length} containers/cookieStores: ${cookieStoreIds.join(', ')}`);
-    }
-  }
   
   // Configurer un timer spécifique pour mettre à jour les timestamps fréquemment
   // Cela aide à maintenir à jour les timestamps, en particulier pour le timer d'une minute
@@ -114,87 +128,98 @@ async function recordAllCurrentTabs() {
   const now = Date.now();
   
   try {
-    // 1. Essayer d'obtenir tous les cookieStoreIds disponibles (conteneurs/workspaces)
-    let cookieStoreIds = ["firefox-default"]; // Toujours inclure le conteneur par défaut
+    // Requête principale pour obtenir TOUS les onglets dans TOUTES les fenêtres et TOUS les conteneurs
+    // C'est la méthode la plus fiable pour s'assurer que nous capturons tout
+    tabs = await browser.tabs.query({});
     
+    if (DEBUG_MODE) {
+      console.log(`Recorded ${tabs.length} tabs across all windows and containers`);
+      
+      // Vérifier la distribution par fenêtre
+      const windowIds = [...new Set(tabs.map(tab => tab.windowId))];
+      console.log(`Tabs distributed across ${windowIds.length} windows/workspaces`);
+      
+      // Vérifier la distribution par conteneur
+      const cookieStoreIds = [...new Set(tabs.map(tab => tab.cookieStoreId).filter(Boolean))];
+      if (cookieStoreIds.length > 0) {
+        console.log(`Tabs using ${cookieStoreIds.length} different containers`);
+      }
+    }
+    
+    // Vérification secondaire si besoin - utiliser l'API de conteneurs pour le reporting seulement
     if (browser.contextualIdentities) {
       try {
         const containers = await browser.contextualIdentities.query({});
-        // Ajouter tous les conteneurs personnalisés
-        cookieStoreIds = cookieStoreIds.concat(containers.map(container => container.cookieStoreId));
         
-        if (DEBUG_MODE) {
-          console.log(`Found ${containers.length} containers/workspaces to check for tabs`);
+        if (DEBUG_MODE && containers.length > 0) {
+          console.log(`Available containers: ${containers.length}`);
+          containers.forEach(container => {
+            // Compter les onglets dans ce conteneur spécifique
+            const containerTabs = tabs.filter(tab => tab.cookieStoreId === container.cookieStoreId);
+            console.log(` - ${container.name} (${container.cookieStoreId}): ${containerTabs.length} tabs`);
+          });
         }
       } catch (error) {
-        console.warn("Error querying contextualIdentities:", error);
-        // Continuer avec uniquement le conteneur par défaut
-      }
-    }
-    
-    // 2. Obtenir les onglets pour chaque cookieStoreId
-    if (cookieStoreIds.length > 1) {
-      // Si des conteneurs sont détectés, obtenir les onglets de chaque conteneur
-      for (const cookieStoreId of cookieStoreIds) {
-        try {
-          const containerTabs = await browser.tabs.query({ cookieStoreId });
-          if (DEBUG_MODE) {
-            console.log(`Found ${containerTabs.length} tabs in container/workspace ${cookieStoreId}`);
-          }
-          tabs = tabs.concat(containerTabs);
-        } catch (error) {
-          console.warn(`Error querying tabs for container ${cookieStoreId}:`, error);
-        }
-      }
-    }
-    
-    // 3. Fallback: Si aucun onglet n'a été trouvé via les conteneurs ou une erreur s'est produite
-    if (tabs.length === 0) {
-      if (DEBUG_MODE) {
-        console.log("No tabs found via containers, using standard tab query");
-      }
-      tabs = await browser.tabs.query({});
-    }
-    
-    // 4. Vérification de sécurité - si toujours pas d'onglets, essayer une dernière méthode
-    if (tabs.length === 0) {
-      if (DEBUG_MODE) {
-        console.log("Still no tabs found, trying to query by window");
-      }
-      
-      // Obtenir toutes les fenêtres
-      const windows = await browser.windows.getAll();
-      for (const window of windows) {
-        const windowTabs = await browser.tabs.query({ windowId: window.id });
-        tabs = tabs.concat(windowTabs);
+        console.warn("Error querying contextualIdentities for reporting:", error);
       }
     }
   } catch (error) {
-    console.error("Error in recordAllCurrentTabs:", error);
-    // En dernier recours, utilisez la requête la plus simple
+    console.error("Error in primary tab query:", error);
+    
+    // En cas d'échec, essayer une approche alternative par fenêtre
     try {
-      tabs = await browser.tabs.query({});
-    } catch (e) {
-      console.error("Critical error, couldn't get any tabs:", e);
+      console.log("Trying fallback approach - querying by window");
+      tabs = [];
+      
+      const windows = await browser.windows.getAll();
+      for (const window of windows) {
+        try {
+          const windowTabs = await browser.tabs.query({ windowId: window.id });
+          tabs = tabs.concat(windowTabs);
+          console.log(`Retrieved ${windowTabs.length} tabs from window ${window.id}`);
+        } catch (windowError) {
+          console.error(`Error retrieving tabs from window ${window.id}:`, windowError);
+        }
+      }
+    } catch (fallbackError) {
+      console.error("Fallback approach failed:", fallbackError);
       return; // Impossible de continuer
     }
   }
   
+  if (tabs.length === 0) {
+    console.error("Critical error: No tabs found with any method");
+    return; // Impossible de continuer sans onglets
+  }
+  
   // Grouper les onglets par fenêtre (workspaces) pour le débogage
   const windowsMap = new Map();
+  const containerMap = new Map();
+  
+  // Créer une entrée pour chaque fenêtre et conteneur
   tabs.forEach(tab => {
+    // Grouper par fenêtre
     if (!windowsMap.has(tab.windowId)) {
       windowsMap.set(tab.windowId, []);
     }
     windowsMap.get(tab.windowId).push(tab);
     
-    // Mettre à jour le timestamp de l'onglet
+    // Grouper par conteneur
+    const containerId = tab.cookieStoreId || 'firefox-default';
+    if (!containerMap.has(containerId)) {
+      containerMap.set(containerId, []);
+    }
+    containerMap.get(containerId).push(tab);
+    
+    // Mettre à jour le timestamp de l'onglet - IMPORTANT pour la fermeture
     tabTimestamps[tab.id] = tabTimestamps[tab.id] || now;
   });
   
   // Log des détails sur les espaces de travail en mode DEBUG
   if (DEBUG_MODE) {
-    console.log(`Recorded ${tabs.length} tabs across ${windowsMap.size} windows/workspaces`);
+    console.log(`Recorded details for ${tabs.length} tabs across ${windowsMap.size} windows/workspaces`);
+    
+    // Log par fenêtre
     windowsMap.forEach((windowTabs, windowId) => {
       console.log(`Workspace/Window ${windowId}: ${windowTabs.length} tabs`);
       
@@ -204,9 +229,21 @@ async function recordAllCurrentTabs() {
         console.log(`Window ${windowId} has tabs with cookie stores: ${cookieStoreIds.join(', ')}`);
       }
     });
+    
+    // Log par conteneur
+    if (containerMap.size > 1) {
+      console.log(`\nContainer breakdown:`);
+      containerMap.forEach((containerTabs, containerId) => {
+        console.log(`Container ${containerId}: ${containerTabs.length} tabs`);
+        
+        // Vérifier dans quelles fenêtres se trouvent ces onglets
+        const windowIds = [...new Set(containerTabs.map(tab => tab.windowId))];
+        console.log(`  Used in ${windowIds.length} windows: ${windowIds.join(', ')}`);
+      });
+    }
   }
   
-  // Save the updated timestamps
+  // Save the updated timestamps - CRUCIAL pour que les onglets soient fermés correctement
   await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
 }
 
@@ -294,52 +331,55 @@ async function forceUpdateAllTabTimestamps() {
   let tabs = [];
   
   try {
-    // 1. Essayer d'obtenir tous les cookieStoreIds disponibles (conteneurs/workspaces)
-    let cookieStoreIds = ["firefox-default"]; // Toujours inclure le conteneur par défaut
+    // Récupérer TOUS les onglets dans toutes les fenêtres et tous les conteneurs
+    // Cette méthode est la plus fiable pour obtenir tous les onglets
+    tabs = await browser.tabs.query({});
     
-    if (browser.contextualIdentities) {
-      try {
-        const containers = await browser.contextualIdentities.query({});
-        // Ajouter tous les conteneurs personnalisés
-        cookieStoreIds = cookieStoreIds.concat(containers.map(container => container.cookieStoreId));
-        
-        if (DEBUG_MODE) {
-          console.log(`Found ${containers.length} containers/workspaces to update timestamps`);
-        }
-      } catch (error) {
-        console.warn("Error querying contextualIdentities for timestamps:", error);
-        // Continuer avec uniquement le conteneur par défaut
+    if (DEBUG_MODE) {
+      console.log(`Found ${tabs.length} tabs to update timestamps`);
+      
+      // Analyser la distribution des onglets pour le débogage
+      const windowIds = [...new Set(tabs.map(tab => tab.windowId))];
+      console.log(`Tabs distributed across ${windowIds.length} windows/workspaces`);
+      
+      const cookieStoreIds = [...new Set(tabs.map(tab => tab.cookieStoreId).filter(Boolean))];
+      if (cookieStoreIds.length > 0) {
+        console.log(`Tabs using ${cookieStoreIds.length} different containers: ${cookieStoreIds.join(', ')}`);
       }
-    }
-    
-    // 2. Obtenir les onglets pour chaque cookieStoreId
-    if (cookieStoreIds.length > 1) {
-      // Si des conteneurs sont détectés, obtenir les onglets de chaque conteneur
-      for (const cookieStoreId of cookieStoreIds) {
-        try {
-          const containerTabs = await browser.tabs.query({ cookieStoreId });
-          tabs = tabs.concat(containerTabs);
-        } catch (error) {
-          console.warn(`Error querying tabs for container ${cookieStoreId}:`, error);
-        }
-      }
-    }
-    
-    // 3. Fallback: Si aucun onglet n'a été trouvé via les conteneurs
-    if (tabs.length === 0) {
-      tabs = await browser.tabs.query({});
     }
   } catch (error) {
-    console.error("Error collecting tabs in forceUpdateAllTabTimestamps:", error);
-    // En dernier recours, utilisez la requête la plus simple
-    tabs = await browser.tabs.query({});
+    console.error("Error retrieving tabs in forceUpdateAllTabTimestamps:", error);
+    return; // Ne pas continuer en cas d'erreur critique
+  }
+  
+  if (tabs.length === 0) {
+    console.error("No tabs found to update timestamps");
+    return; // Ne pas continuer sans onglets
   }
   
   const now = Date.now();
   
   // Mettre à jour uniquement les timestamps des onglets actifs dans chaque fenêtre
-  const activeTabs = await browser.tabs.query({ active: true });
+  let activeTabs = [];
+  try {
+    activeTabs = await browser.tabs.query({ active: true });
+  } catch (error) {
+    console.error("Error getting active tabs:", error);
+    // En cas d'erreur, initialiser comme tableau vide
+    activeTabs = [];
+  }
+  
   const activeTabIds = new Set(activeTabs.map(tab => tab.id));
+  
+  if (DEBUG_MODE) {
+    console.log(`Found ${activeTabs.length} active tabs across all windows`);
+    
+    // Log details about active tabs
+    activeTabs.forEach(tab => {
+      const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
+      console.log(`Active tab in window ${tab.windowId}${containerInfo}: ${tab.title}`);
+    });
+  }
   
   // Conserver les anciens timestamps des onglets non actifs
   tabs.forEach(tab => {
@@ -356,7 +396,7 @@ async function forceUpdateAllTabTimestamps() {
   await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
   
   if (DEBUG_MODE) {
-    console.log(`Updated timestamps for ${activeTabIds.size} active tabs across all workspaces`);
+    console.log(`Updated timestamps for ${activeTabIds.size} active tabs and ensured timestamps exist for all ${tabs.length} tabs`);
   }
 }
 
@@ -367,7 +407,20 @@ async function processTabs() {
   const timeLimit = settings.timeLimit;
   
   try {
-    // 1. Essayer d'obtenir tous les cookieStoreIds disponibles (conteneurs/workspaces)
+    // 1. Obtenir tous les onglets d'abord avec une requête globale
+    // Ceci garantit que nous attrapons tous les onglets dans tous les espaces de travail
+    tabs = await browser.tabs.query({});
+    
+    if (DEBUG_MODE) {
+      console.log(`Found ${tabs.length} tabs across all windows using global query`);
+      
+      // Analyser les fenêtres pour le débogage
+      const windowIds = [...new Set(tabs.map(tab => tab.windowId))];
+      console.log(`Tabs distributed across ${windowIds.length} windows/workspaces`);
+    }
+    
+    // 2. Ensuite essayer d'obtenir tous les cookieStoreIds disponibles (conteneurs/workspaces)
+    // C'est principalement pour le reporting et le débogage
     let cookieStoreIds = ["firefox-default"]; // Toujours inclure le conteneur par défaut
     
     if (browser.contextualIdentities) {
@@ -378,36 +431,15 @@ async function processTabs() {
         cookieStoreIds = cookieStoreIds.concat(customContainerIds);
         
         if (DEBUG_MODE) {
-          console.log(`Found ${containers.length} containers/workspaces to check for tabs`);
+          console.log(`Found ${containers.length} containers/workspaces`);
+          
+          // Analyser les conteneurs dans les onglets trouvés
+          const tabContainers = [...new Set(tabs.map(tab => tab.cookieStoreId).filter(Boolean))];
+          console.log(`Tabs using ${tabContainers.length} different containers: ${tabContainers.join(', ')}`);
         }
       } catch (error) {
         console.warn("Error querying contextualIdentities:", error);
-        // Continuer avec uniquement le conteneur par défaut
       }
-    }
-    
-    // 2. Obtenir les onglets pour chaque cookieStoreId
-    if (cookieStoreIds.length > 1) {
-      // Si des conteneurs sont détectés, obtenir les onglets de chaque conteneur
-      for (const cookieStoreId of cookieStoreIds) {
-        try {
-          const containerTabs = await browser.tabs.query({ cookieStoreId });
-          if (DEBUG_MODE) {
-            console.log(`Processing ${containerTabs.length} tabs in container/workspace ${cookieStoreId}`);
-          }
-          tabs = tabs.concat(containerTabs);
-        } catch (error) {
-          console.warn(`Error querying tabs for container ${cookieStoreId}:`, error);
-        }
-      }
-    }
-    
-    // 3. Fallback: Si aucun onglet n'a été trouvé via les conteneurs ou une erreur s'est produite
-    if (tabs.length === 0) {
-      if (DEBUG_MODE) {
-        console.log("No tabs found via containers, using standard tab query");
-      }
-      tabs = await browser.tabs.query({});
     }
     
     // 4. Vérification de sécurité - si toujours pas d'onglets, essayer une dernière méthode
@@ -442,6 +474,16 @@ async function processTabs() {
     console.error("Error getting active tabs:", error);
   }
   const activeTabIds = activeTabs.map(tab => tab.id);
+  
+  if (DEBUG_MODE) {
+    console.log(`Found ${activeTabs.length} active tabs across all windows/workspaces`);
+    
+    // Log the active tabs for debugging
+    activeTabs.forEach(tab => {
+      const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
+      console.log(`Active tab in window ${tab.windowId}${containerInfo}: ${tab.title}`);
+    });
+  }
   
   // Group tabs by window and container for better logging
   const windowsMap = new Map();
