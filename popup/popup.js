@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Traduire les éléments par ID
       const elementsToTranslate = {
         "extensionName": "extensionName",
+        "infoLink": "infoLinkText", // Ajout de la traduction du lien info
         "timeLimitLabel": "timeLimitLabel",
         "timeTest": "time1min",
         "time15min": "time15min",
