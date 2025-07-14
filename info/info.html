@@ -1,8 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <title>FFTabClose - About & Help</title>
   <style>
     :root {
@@ -191,8 +195,13 @@
     </section>
   </div>
   
+  <section id="changelog-section" style="display:none;">
+    <h2>Latest Changes</h2>
+    <!-- Changelog content will be populated by JavaScript -->
+  </section>
+
   <footer>
-    <p>FFTabClose v2.0.0 &copy; 2025 - <a href="https://github.com/nthnbch/FFTabClose" target="_blank">GitHub</a></p>
+    <p>FFTabClose v2.0.1 &copy; 2025 - <a href="https://github.com/nthnbch/FFTabClose" target="_blank">GitHub</a></p>
   </footer>
 
   <script src="../browser-polyfill.min.js"></script>

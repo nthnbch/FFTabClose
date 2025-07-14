@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <title>FFTabClose</title>
   <link rel="stylesheet" href="popup.css">
 </head>
@@ -10,7 +14,7 @@
   <div class="container">
     <div class="header-container">
       <h1 id="extensionName">FFTabClose</h1>
-      <a href="../info/info.html" id="infoLink" class="info-link" target="_blank">Info</a>
+      <a href="../info/info.html" id="infoLink" class="info-link" target="_blank" rel="noopener noreferrer">Info</a>
     </div>
 
     <div class="settings-section">

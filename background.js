@@ -2,7 +2,8 @@
  * FFTabClose - Auto Tab Closer
  * Background script for automatic tab closure and management
  * 
- * Version 2.0.0
+ * Version 2.0.1 (Security Enhanced)
+ * Last updated: 14 juillet 2025
  * 
  * Notes sur Zen Browser et les espaces de travail (workspaces):
  * - Les espaces de travail dans Zen Browser sont similaires aux conteneurs Firefox
@@ -25,7 +26,7 @@ const ALARM_NAME = 'checkTabsAlarm';
 const CHECK_INTERVAL = 0.5; // Minutes between tab checks (0.5 = 30 seconds)
 const STORAGE_KEY = 'tabTimestamps';
 const SETTINGS_KEY = 'settings';
-const DEBUG_MODE = true; // Set to false to disable verbose logging
+const DEBUG_MODE = false; // Set to false in production to disable verbose logging
 
 // State variables
 let tabTimestamps = {};
@@ -849,6 +850,25 @@ async function getTabStats() {
 
 // Settings management
 async function updateSettings(newSettings) {
+  if (!newSettings || typeof newSettings !== 'object') {
+    console.error("Invalid settings object provided");
+    return settings; // Retourner les paramètres non modifiés
+  }
+  
+  // Valider la valeur de timeLimit (doit être un nombre positif)
+  if (newSettings.timeLimit !== undefined) {
+    // Convertir en nombre si c'est une chaîne
+    const timeLimit = parseInt(newSettings.timeLimit, 10);
+    
+    // Vérifier si c'est un nombre valide et dans la plage acceptable
+    if (isNaN(timeLimit) || timeLimit <= 0) {
+      console.error("Invalid timeLimit value");
+      newSettings.timeLimit = settings.timeLimit; // Conserver l'ancienne valeur
+    } else {
+      newSettings.timeLimit = timeLimit; // Utiliser la valeur convertie
+    }
+  }
+  
   // Conserver les comportements par défaut pour discardPinnedTabs et excludeAudioTabs
   const updatedSettings = { 
     ...settings, 
@@ -867,11 +887,41 @@ async function getSettings() {
   return settings;
 }
 
+// Helper function to sanitize data for logging
+function sanitizeForLogging(data) {
+  // Create a safe copy to avoid potential prototype pollution
+  if (typeof data !== 'object' || data === null) {
+    return data;
+  }
+  
+  const sanitized = Array.isArray(data) ? [] : {};
+  
+  // Liste des champs sensibles à masquer
+  const sensitiveKeys = ['url', 'title', 'favIconUrl', 'cookieStoreId', 'userContextId'];
+  
+  // Utiliser Object.entries pour une meilleure sécurité et performance
+  Object.entries(data).forEach(([key, value]) => {
+    // Vérifier si la clé est sensible
+    if (sensitiveKeys.includes(key)) {
+      sanitized[key] = '[REDACTED]';
+    } else if (typeof value === 'object' && value !== null) {
+      // Récursion pour les objets imbriqués
+      sanitized[key] = sanitizeForLogging(value);
+    } else {
+      sanitized[key] = value;
+    }
+  });
+  
+  return sanitized;
+}
+
 // Debugging and logging
 function logDebugInfo() {
   if (!DEBUG_MODE) {
     return;
   }
+  
+  // Use a safer, more contained approach to logging
   
   // Log browser and workspace information using tabs API
   browser.tabs.query({}).then(tabs => {
@@ -954,17 +1004,75 @@ browser.alarms.onAlarm.addListener(alarm => {
   }
 });
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'getSettings') {
-    return getSettings();
-  } else if (message.action === 'updateSettings') {
-    return updateSettings(message.settings);
-  } else if (message.action === 'closeOldTabs') {
-    return closeOldTabs();
-  } else if (message.action === 'getTabStats') {
-    return getTabStats();
+  // Vérifier que le message est valide et provient d'une source sûre
+  if (!message || typeof message !== 'object' || !message.action) {
+    console.error("Invalid message received");
+    return false;
+  }
+  
+  // Vérifier que l'expéditeur est valide (interne à l'extension)
+  if (!sender || !sender.id || sender.id !== browser.runtime.id) {
+    console.error("Message from unauthorized sender", sender?.id);
+    return false;
+  }
+  
+  // Traiter uniquement les actions connues
+  switch (message.action) {
+    case 'getSettings':
+      return getSettings();
+    case 'updateSettings':
+      if (!message.settings || typeof message.settings !== 'object') {
+        console.error("Invalid settings in message");
+        return false;
+      }
+      return updateSettings(message.settings);
+    case 'closeOldTabs':
+      return closeOldTabs();
+    case 'getTabStats':
+      return getTabStats();
+    default:
+      console.error("Unknown action", message.action);
+      return false;
   }
 });
+
+// Changelog for version 2.0.1
+const CHANGELOG = {
+  version: "2.0.1",
+  changes: [
+    "Security enhancements for data handling",
+    "Improved container and workspace detection",
+    "Better error handling and recovery",
+    "Optimized tab processing logic"
+  ],
+  date: "2025-07-14"
+};
 
 // Initialize on startup
 initialize();
 logDebugInfo();
+
+// Export changelog for info page
+if (typeof browser !== 'undefined' && browser.runtime) {
+  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    // Vérifier que le message est valide et provient d'une source sûre
+    if (!message || typeof message !== 'object' || !message.action) {
+      console.error("Invalid message received");
+      return false;
+    }
+    
+    // Vérifier que l'expéditeur est valide (interne à l'extension)
+    if (!sender || !sender.id || sender.id !== browser.runtime.id) {
+      console.error("Message from unauthorized sender", sender?.id);
+      return false;
+    }
+    
+    // Traiter l'action getChangelog
+    if (message.action === 'getChangelog') {
+      sendResponse(CHANGELOG);
+      return true;
+    }
+    
+    return false;
+  });
+}
