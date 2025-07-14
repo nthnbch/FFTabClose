@@ -251,7 +251,7 @@ FFTabClose is fully committed to your privacy:
 <div align="center">
 Made with ❤️ for a cleaner browsing experience
 
-© 2025 - v2.0.1
+© 2025
 
 [nathan.swiss](https://nathan.swiss)
 </div>
