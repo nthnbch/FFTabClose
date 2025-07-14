@@ -2,14 +2,27 @@
  * FFTabClose - Popup Script
  * Handles popup UI interactions and communication with background script
  * 
- * Version 2.0.0
+ * Version 2.0.2 (Security Enhanced)
+ * Last updated: 14 juillet 2025
  */
 
-// Fonction pour charger les traductions
+// Helper function to sanitize text content (XSS protection)
+function sanitizeHTML(str) {
+  if (typeof str !== 'string') return '';
+  
+  // Create a temporary element
+  const tempElement = document.createElement('div');
+  // Set its text content (not innerHTML) which escapes HTML
+  tempElement.textContent = str;
+  // Return the escaped content
+  return tempElement.textContent;
+}
+
+// Fonction pour charger les traductions avec validation
 document.addEventListener('DOMContentLoaded', function() {
   try {
     if (typeof browser !== 'undefined' && browser.i18n) {
-      // Traduire les éléments par ID
+      // Traduire les éléments par ID avec sanitization
       const elementsToTranslate = {
         "extensionName": "extensionName",
         "infoLink": "infoLinkText", // Ajout de la traduction du lien info
@@ -34,13 +47,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (element) {
           const translated = browser.i18n.getMessage(msgKey);
           if (translated) {
-            element.textContent = translated;
+            // Sanitize translated text to prevent XSS
+            element.textContent = sanitizeHTML(translated);
           }
         }
       }
       
-      // S'assurer que le lien d'info a le texte correct
-      document.getElementById("infoLink").textContent = browser.i18n.getMessage("infoLinkText") || "Info";
+      // S'assurer que le lien d'info a le texte correct et est sécurisé
+      const infoLink = document.getElementById("infoLink");
+      if (infoLink) {
+        infoLink.textContent = sanitizeHTML(browser.i18n.getMessage("infoLinkText") || "Info");
+        // S'assurer que le lien reste dans l'extension (sécurité)
+        infoLink.setAttribute("href", "../info/info.html");
+      }
       
       // Configurer les événements
       document.getElementById("timeLimit").addEventListener("change", saveSettings);

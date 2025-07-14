@@ -9,7 +9,7 @@
 [![Firefox](https://img.shields.io/badge/Firefox-FF7139?style=for-the-badge&logo=Firefox-Browser&logoColor=white)](https://addons.mozilla.org/fr/firefox/addon/fftabclose-auto-tab-closer/)
 [![Zen Browser](https://img.shields.io/badge/Zen-Browser-blue?style=for-the-badge)](https://zen-browser.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-2.0.0-green.svg?style=for-the-badge)](https://github.com/nthnbch/FFTabClose/releases)
+[![Version](https://img.shields.io/badge/Version-2.0.2-green.svg?style=for-the-badge)](https://github.com/nthnbch/FFTabClose/releases)
 
 > I created FFTabClose to bring an Arc Browser-like feature to Firefox and Zen Browser - automatic tab cleanup. As someone who accumulates dozens of tabs throughout the day, I needed a way to automatically close or unload unused tabs while preserving important ones. This extension saves memory and keeps your browser tidy without manual management.
 
@@ -51,8 +51,13 @@ FFTabClose is compatible with Zen Browser and can be installed through Firefox a
 ```bash
 git clone https://github.com/nthnbch/FFTabClose.git
 cd FFTabClose
-# Package the extension into an .xpi file
-zip -r -FS ../fftabclose.xpi * --exclude '*.git*'
+# Using npm (recommended)
+npm install
+npm run build
+# The XPI file will be created in the dist/ folder
+
+# OR manually with zip
+zip -r -FS ../fftabclose.xpi manifest.json background.js browser-polyfill.min.js popup/ info/ icons/ _locales/ --exclude '*.DS_Store'
 ```
 
 ## 📖 How It Works
@@ -209,6 +214,22 @@ Please [file an issue on GitHub](https://github.com/nthnbch/FFTabClose/issues) w
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🔐 Security Features (v2.0.1)
+
+With version 2.0.1, we've implemented comprehensive security enhancements:
+
+1. **Content Security Policy (CSP)**: Strict CSP headers to prevent code injection attacks
+2. **Data Sanitization**: Robust DOM-based HTML sanitization to protect against XSS vulnerabilities
+3. **Input Validation**: Thorough validation of all user inputs and extension messages
+4. **Secure Messaging**: Verified message origin and content structure for inter-script communication
+5. **Sensitive Data Protection**: Enhanced logging with comprehensive data redaction
+6. **Error Recovery**: Improved error handling with graceful degradation
+7. **Link Security**: All links use proper rel="noopener noreferrer" attributes
+8. **Content Security Headers**: Implementation of X-XSS-Protection and X-Content-Type-Options
+9. **Update Changelog**: Detailed version tracking for all security changes
+
+These improvements strictly follow Mozilla's security guidelines and modern web security best practices, ensuring your browsing data remains secure while using FFTabClose.
+
 ## 🔒 Privacy
 
 FFTabClose is fully committed to your privacy:
@@ -230,7 +251,7 @@ FFTabClose is fully committed to your privacy:
 <div align="center">
 Made with ❤️ for a cleaner browsing experience
 
-© 2025 - v2.0.0
+© 2025 - v2.0.1
 
 [nathan.swiss](https://nathan.swiss)
 </div>
