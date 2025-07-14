@@ -57,15 +57,15 @@
 
     h1 {
       border-bottom: 2px solid var(--accent-color);
-      padding-bottom: 0.5rem;
-      margin-bottom: 1.25rem;
-      font-size: 1.8rem;
+      padding-bottom: 0.4rem;
+      margin-bottom: 1rem;
+      font-size: 1.6rem;
     }
 
     h2 {
       margin-top: 0;
-      margin-bottom: 0.75rem;
-      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
     }
 
     a {
@@ -91,8 +91,8 @@
       background-color: var(--section-bg);
       border: 1px solid var(--border-color);
       border-radius: 6px;
-      padding: 1.25rem;
-      margin-bottom: 1rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
       box-shadow: var(--box-shadow);
       transition: box-shadow var(--transition-speed), transform var(--transition-speed);
     }
@@ -174,12 +174,17 @@
     </section>
 
     <section>
+      <h2 id="infoDiscardHeading">Understanding Tab Discarding</h2>
+      <p id="infoDiscardDescription">Discarding unloads tab content from memory but keeps the tab visible. Tabs reload automatically when you click on them.</p>
+    </section>
+
+    <section>
       <h2 id="infoPrivacy">Privacy & Permissions</h2>
       <p id="infoPrivacyDescription">FFTabClose requires the following permissions:</p>
-      <ul>
-        <li><code>tabs</code> - To monitor and manage tabs across all windows</li>
-        <li><code>storage</code> - To save your preferences and tab timers</li>
-        <li><code>alarms</code> - To schedule periodic tab checks</li>
+      <ul id="permissions-list">
+        <li><code>tabs</code> - <span id="permTabs">To monitor and manage tabs across all windows</span></li>
+        <li><code>storage</code> - <span id="permStorage">To save your preferences and tab timers</span></li>
+        <li><code>alarms</code> - <span id="permAlarms">To schedule periodic tab checks</span></li>
       </ul>
     </section>
   </div>

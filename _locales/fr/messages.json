@@ -150,5 +150,21 @@
   "infoPrivacyDescription": {
     "message": "FFTabClose nécessite les permissions suivantes :",
     "description": "Introduction à la section des permissions."
+  },
+  "permTabsDescription": {
+    "message": "Pour surveiller et gérer les onglets dans toutes les fenêtres",
+    "description": "Description de la permission tabs."
+  },
+  "permStorageDescription": {
+    "message": "Pour enregistrer vos préférences et les minuteries des onglets",
+    "description": "Description de la permission storage."
+  },
+  "permAlarmsDescription": {
+    "message": "Pour programmer les vérifications périodiques des onglets",
+    "description": "Description de la permission alarms."
+  },
+  "infoDiscardDescription": {
+    "message": "Le déchargement d'un onglet libère sa mémoire tout en le gardant visible. L'onglet se recharge automatiquement lorsque vous cliquez dessus.",
+    "description": "Description du fonctionnement du déchargement d'onglets."
   }
 }

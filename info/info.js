@@ -19,7 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
         "infoExclusionsHeading": "infoExclusionsHeading",
         "infoExclusionsDescription": "infoExclusionsDescription",
         "infoPrivacy": "infoPrivacy",
-        "infoPrivacyDescription": "infoPrivacyDescription"
+        "infoPrivacyDescription": "infoPrivacyDescription",
+        "permTabs": "permTabsDescription",
+        "permStorage": "permStorageDescription",
+        "permAlarms": "permAlarmsDescription"
       };
       
       for (const [id, msgKey] of Object.entries(elementsToTranslate)) {

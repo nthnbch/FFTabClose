@@ -65,9 +65,11 @@ body {
 
 .header-container {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  gap: 8px;
 }
 
 h1 {
@@ -77,21 +79,27 @@ h1 {
   color: var(--heading-color);
   word-break: break-word;
   line-height: 1.2;
+  flex: 1;
+  min-width: 200px;
 }
 
 .info-link {
-  color: var(--highlight-color);
+  color: var(--button-bg);
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   margin-left: 10px;
   transition: color var(--transition-speed);
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 3px 8px;
+  border-radius: 4px;
 }
 
 .info-link:hover {
   text-decoration: underline;
-  color: var(--button-bg);
+  color: var(--button-text);
+  background-color: var(--button-bg);
 }
 
 .settings-section {
@@ -166,15 +174,23 @@ h1 {
 .stat-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(var(--border-color), 0.3);
+}
+
+.stat-item:last-child {
+  border-bottom: none;
 }
 
 .stat-label {
   font-weight: 500;
   flex: 1 1 auto;
   word-break: break-word;
+  min-width: 150px;
+  max-width: 100%;
 }
 
 .stat-value {
@@ -182,6 +198,7 @@ h1 {
   font-variant-numeric: tabular-nums;
   text-align: right;
   min-width: 40px;
+  white-space: nowrap;
 }
 
 /* Focus state for accessibility */

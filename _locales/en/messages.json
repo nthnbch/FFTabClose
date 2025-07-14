@@ -154,5 +154,21 @@
   "infoPrivacyDescription": {
     "message": "FFTabClose requires the following permissions:",
     "description": "Introduction to the permissions section."
+  },
+  "permTabsDescription": {
+    "message": "To monitor and manage tabs across all windows",
+    "description": "Description of the tabs permission."
+  },
+  "permStorageDescription": {
+    "message": "To save your preferences and tab timers",
+    "description": "Description of the storage permission."
+  },
+  "permAlarmsDescription": {
+    "message": "To schedule periodic tab checks",
+    "description": "Description of the alarms permission."
+  },
+  "infoDiscardDescription": {
+    "message": "Discarding unloads tab content from memory but keeps the tab visible. Tabs reload automatically when you click on them.",
+    "description": "Description of how tab discarding works."
   }
 }
