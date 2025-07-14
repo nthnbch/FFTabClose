@@ -6,7 +6,7 @@
 
 **Automatically close or discard idle tabs after a configurable time period**
 
-[![Firefox](https://img.shields.io/badge/Firefox-FF7139?style=for-the-badge&logo=Firefox-Browser&logoColor=white)](https://addons.mozilla.org/firefox/addon/fftabclose/)
+[![Firefox](https://img.shields.io/badge/Firefox-FF7139?style=for-the-badge&logo=Firefox-Browser&logoColor=white)](https://addons.mozilla.org/fr/firefox/addon/fftabclose-auto-tab-closer/)
 [![Zen Browser](https://img.shields.io/badge/Zen-Browser-blue?style=for-the-badge)](https://zen-browser.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/Version-2.0.0-green.svg?style=for-the-badge)](https://github.com/nthnbch/FFTabClose/releases)
@@ -30,7 +30,7 @@
 ## 🚀 Installation
 
 ### Firefox Add-ons Store (Recommended)
-1. Go to the [FFTabClose Firefox Add-on page](https://addons.mozilla.org/firefox/addon/fftabclose/)
+1. Go to the [FFTabClose Firefox Add-on page](https://addons.mozilla.org/fr/firefox/addon/fftabclose-auto-tab-closer/)
 2. Click "Add to Firefox"
 3. Follow the prompts to complete installation
 
@@ -229,4 +229,6 @@ FFTabClose is fully committed to your privacy:
 Made with ❤️ for a cleaner browsing experience
 
 © 2025 - v2.0.0
+
+[nathan.swiss](https://nathan.swiss)
 </div>
