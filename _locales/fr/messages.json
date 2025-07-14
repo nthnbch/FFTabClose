@@ -99,6 +99,14 @@
     "message": "h",
     "description": "Abbreviation for hours."
   },
+  "permContextualIdentitiesDescription": {
+    "message": "Pour supporter les conteneurs Firefox et les espaces de travail",
+    "description": "Description of contextualIdentities permission"
+  },
+  "permCookiesDescription": {
+    "message": "Requis pour l'intégration des conteneurs",
+    "description": "Description of cookies permission"
+  },
   "timeDays": {
     "message": "jours",
     "description": "Word for days."

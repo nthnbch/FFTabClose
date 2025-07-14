@@ -99,6 +99,14 @@
     "message": "hr",
     "description": "Abbreviation for hours."
   },
+  "permContextualIdentitiesDescription": {
+    "message": "To support Firefox containers and workspaces",
+    "description": "Description of contextualIdentities permission"
+  },
+  "permCookiesDescription": {
+    "message": "Required for container integration",
+    "description": "Description of cookies permission"
+  },
   "timeDays": {
     "message": "days",
     "description": "Word for days."

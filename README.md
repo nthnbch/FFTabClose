@@ -11,6 +11,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/Version-2.0.0-green.svg?style=for-the-badge)](https://github.com/nthnbch/FFTabClose/releases)
 
+> I created FFTabClose to bring an Arc Browser-like feature to Firefox and Zen Browser - automatic tab cleanup. As someone who accumulates dozens of tabs throughout the day, I needed a way to automatically close or unload unused tabs while preserving important ones. This extension saves memory and keeps your browser tidy without manual management.
+
 </div>
 
 ## 🌟 Features
@@ -115,7 +117,7 @@ Choose how long tabs should remain open when inactive:
 - `storage` - Save user preferences and tab timestamps
 - `alarms` - Schedule periodic tab checks
 - `contextualIdentities` - Support for Firefox containers
-- `cookies` - Used for container integration
+- `cookies` - Required for container integration (to access tabs in different containers)
 
 ### Browser Compatibility
 - **Firefox**: 109.0+

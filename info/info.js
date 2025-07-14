@@ -22,13 +22,15 @@ document.addEventListener('DOMContentLoaded', function() {
         "infoTimerDescription": "infoTimerDescription",
         "infoExclusionsHeading": "infoExclusionsHeading",
         "infoExclusionsDescription": "infoExclusionsDescription",
-        "infoDiscardHeading": "infoDiscardHeading", // Ajout de cette entrée manquante
-        "infoDiscardDescription": "infoDiscardDescription", // Ajout de cette entrée manquante
+        "infoDiscardHeading": "infoDiscardHeading",
+        "infoDiscardDescription": "infoDiscardDescription",
         "infoPrivacy": "infoPrivacy",
         "infoPrivacyDescription": "infoPrivacyDescription",
         "permTabs": "permTabsDescription",
         "permStorage": "permStorageDescription",
-        "permAlarms": "permAlarmsDescription"
+        "permAlarms": "permAlarmsDescription",
+        "permContextualIdentities": "permContextualIdentitiesDescription",
+        "permCookies": "permCookiesDescription"
       };
       
       // Appliquer toutes les traductions
