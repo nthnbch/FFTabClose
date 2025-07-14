@@ -1,0 +1,233 @@
+/* FFTabClose Popup Styles */
+
+:root {
+  /* Light theme colors */
+  --bg-color: #f9f9fa;
+  --text-color: #0c0c0d;
+  --border-color: #d7d7db;
+  --highlight-color: #0060df;
+  --button-bg: #0060df;
+  --button-text: #ffffff;
+  --hover-bg: #e7e7e7;
+  --separator-color: #d7d7db;
+  --setting-bg: #ffffff;
+  --stats-bg: rgba(0, 0, 0, 0.05);
+  --info-icon-bg: #f0f0f4;
+  --info-icon-text: #0060df;
+  --heading-color: #2a4365;
+  --transition-speed: 0.2s;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark theme colors */
+    --bg-color: #2a2a2e;
+    --text-color: #f9f9fa;
+    --border-color: #4a4a4f;
+    --highlight-color: #0a84ff;
+    --button-bg: #0a84ff;
+    --button-text: #ffffff;
+    --hover-bg: #38383d;
+    --separator-color: #4a4a4f;
+    --setting-bg: #38383d;
+    --stats-bg: rgba(255, 255, 255, 0.1);
+    --info-icon-bg: #38383d;
+    --info-icon-text: #0a84ff;
+    --heading-color: #63b3ed;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  width: 320px;
+  max-height: 380px; /* Reduced height to avoid scrolling */
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.container {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--heading-color);
+  word-break: break-word;
+  line-height: 1.2;
+  flex: 1;
+  min-width: 200px;
+}
+
+.info-link {
+  color: var(--button-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: 10px;
+  transition: background-color var(--transition-speed);
+  background-color: var(--button-bg);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.info-link:hover {
+  text-decoration: underline;
+  background-color: var(--highlight-color);
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setting-group label {
+  font-weight: 500;
+  word-break: break-word;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.setting-control {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--setting-bg);
+  color: var(--text-color);
+  font-size: 13px;
+  transition: border-color var(--transition-speed);
+}
+
+.setting-control:focus {
+  border-color: var(--highlight-color);
+  outline: none;
+}
+
+.action-button {
+  width: 100%;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: filter var(--transition-speed), background-color var(--transition-speed);
+  white-space: normal;
+  line-height: 1.2;
+}
+
+.action-button:hover {
+  filter: brightness(1.1);
+}
+
+.action-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background-color: var(--stats-bg);
+  border-radius: 4px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(var(--border-color), 0.3);
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  font-weight: 500;
+  flex: 1 1 auto;
+  word-break: break-word;
+  min-width: 150px;
+  max-width: 100%;
+}
+
+.stat-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 40px;
+  white-space: nowrap;
+}
+
+/* Focus state for accessibility */
+button:focus,
+select:focus,
+input:focus {
+  outline: 2px solid var(--highlight-color);
+  outline-offset: 2px;
+}
+
+/* Adjustments for very long text */
+@media (max-width: 320px) {
+  body {
+    font-size: 13px;
+  }
+  
+  h1 {
+    font-size: 16px;
+  }
+  
+  .container {
+    padding: 12px;
+  }
+  
+  .stat-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .stat-value {
+    text-align: left;
+  }
+}

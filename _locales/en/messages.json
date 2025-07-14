@@ -1,130 +1,182 @@
 {
   "extensionName": {
     "message": "FFTabClose - Auto Tab Closer",
-    "description": "Name of the extension"
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Automatically close non-pinned tabs after a configurable time period. Perfect for productivity and memory management.",
-    "description": "Description of the extension"
+    "message": "Automatically close old tabs after a configurable time period to keep your browser fast and organized.",
+    "description": "Description of the extension."
   },
-  "popupTitle": {
+  "browserActionTitle": {
     "message": "FFTabClose",
-    "description": "Title shown in popup"
+    "description": "Title shown when hovering over the browser action button."
   },
-  "closeTabsAfter": {
-    "message": "Close tabs after:",
-    "description": "Label for time selection"
+  "timeLimitLabel": {
+    "message": "Close tabs older than:",
+    "description": "Label for time limit setting."
   },
-  "minutes15": {
+  "time1min": {
+    "message": "1 minute (test)",
+    "description": "1 minute time limit option."
+  },
+  "time15min": {
     "message": "15 minutes",
-    "description": "15 minutes option"
+    "description": "15 minute time limit option."
   },
-  "minutes30": {
+  "time30min": {
     "message": "30 minutes",
-    "description": "30 minutes option"
+    "description": "30 minute time limit option."
   },
-  "hour1": {
+  "time1hour": {
     "message": "1 hour",
-    "description": "1 hour option"
+    "description": "1 hour time limit option."
   },
-  "hours2": {
+  "time2hours": {
     "message": "2 hours",
-    "description": "2 hours option"
+    "description": "2 hour time limit option."
   },
-  "hours4": {
+  "time4hours": {
     "message": "4 hours",
-    "description": "4 hours option"
+    "description": "4 hour time limit option."
   },
-  "hours8": {
+  "time8hours": {
     "message": "8 hours",
-    "description": "8 hours option"
+    "description": "8 hour time limit option."
   },
-  "hours12": {
+  "time12hours": {
     "message": "12 hours",
-    "description": "12 hours option"
+    "description": "12 hour time limit option."
   },
-  "hours24": {
+  "time24hours": {
     "message": "24 hours",
-    "description": "24 hours option"
+    "description": "24 hour time limit option."
   },
-  "hours48": {
+  "time48hours": {
     "message": "48 hours",
-    "description": "48 hours option"
+    "description": "48 hour time limit option."
   },
-  "extensionActive": {
-    "message": "Extension active",
-    "description": "Status message when extension is active"
+  "discardPinnedLabel": {
+    "message": "Discard pinned tabs",
+    "description": "Label for discard pinned tabs setting."
   },
-  "pinnedTabsInfo": {
-    "message": "ℹ️ Pinned tabs can be discarded (unloaded) or excluded. Discarded tabs save memory but stay open. The timer resets when you interact with a tab.",
-    "description": "Information about pinned tabs behavior"
+  "discardPinnedTooltip": {
+    "message": "Discarding unloads tab content from memory but keeps the tab visible. Tabs reload when clicked.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "activeTabsWillNotBeClosed": {
-    "message": "Active tabs will not be closed automatically",
-    "description": "Info about active tabs"
+  "excludeAudioLabel": {
+    "message": "Exclude tabs playing audio",
+    "description": "Label for exclude audio tabs setting."
   },
-  "enableExtension": {
-    "message": "Enable Extension",
-    "description": "Toggle to enable/disable extension"
+  "closeTabsButton": {
+    "message": "Close Old Tabs Now",
+    "description": "Text for the button that closes old tabs."
   },
-  "exceptions": {
-    "message": "Exceptions",
-    "description": "Label for exception settings"
+  "closingTabsProgress": {
+    "message": "Closing...",
+    "description": "Text shown while tabs are being closed."
   },
-  "excludePinnedTabs": {
-    "message": "Exclude pinned tabs",
-    "description": "Checkbox label for excluding pinned tabs"
+  "totalTabsLabel": {
+    "message": "Total tabs:",
+    "description": "Label for total tabs count."
   },
-  "excludeAudibleTabs": {
-    "message": "Exclude tabs with sound",
-    "description": "Checkbox label for excluding audible tabs"
+  "eligibleTabsLabel": {
+    "message": "Eligible for closing:",
+    "description": "Label for eligible tabs count."
   },
-  "discardPinnedTabs": {
-    "message": "Discard pinned tabs (instead of closing)",
-    "description": "Checkbox label for discarding pinned tabs instead of closing them"
+  "oldestTabLabel": {
+    "message": "Oldest tab:",
+    "description": "Label for oldest tab age."
   },
-  "totalTabs": {
-    "message": "Total tabs",
-    "description": "Label for total tabs count"
+  "footerText": {
+    "message": "FFTabClose v2.0 - Manage your tabs automatically",
+    "description": "Text shown in the footer."
   },
-  "normalTabs": {
-    "message": "Normal tabs",
-    "description": "Label for normal (non-pinned) tabs count"
+  "timeMin": {
+    "message": "min",
+    "description": "Abbreviation for minutes."
   },
-  "eligibleTabs": {
-    "message": "Can be closed",
-    "description": "Label for tabs that can be closed"
+  "timeHours": {
+    "message": "hr",
+    "description": "Abbreviation for hours."
   },
-  "totalPinnedTabs": {
-    "message": "Pinned tabs",
-    "description": "Label for total pinned tabs count"
+  "permContextualIdentitiesDescription": {
+    "message": "To support Firefox containers and workspaces",
+    "description": "Description of contextualIdentities permission"
   },
-  "pinnedTabsToDiscard": {
-    "message": "Pinned tabs to discard",
-    "description": "Label for pinned tabs that will be discarded"
+  "permCookiesDescription": {
+    "message": "Required for container integration",
+    "description": "Description of cookies permission"
   },
-  "oldestTabAge": {
-    "message": "Oldest tab",
-    "description": "Label for oldest tab age"
+  "timeDays": {
+    "message": "days",
+    "description": "Word for days."
   },
-  "closeOldTabsNow": {
-    "message": "Close old tabs now",
-    "description": "Button text to close old tabs immediately"
+  "infoPageTitle": {
+    "message": "FFTabClose - About & Help",
+    "description": "Title of the info page."
   },
-  "closingTabs": {
-    "message": "Closing tabs...",
-    "description": "Text shown while closing tabs"
+  "infoHeading": {
+    "message": "About FFTabClose",
+    "description": "Heading for the info page."
   },
-  "tabsClosedSuccess": {
-    "message": "Tabs closed successfully!",
-    "description": "Success message after closing tabs"
+  "infoDescription": {
+    "message": "FFTabClose helps you keep your browser organized by automatically closing tabs you haven't used in a while, across all browser windows and workspaces.",
+    "description": "Description on the info page."
   },
-  "settingsSaved": {
-    "message": "Settings saved",
-    "description": "Message shown when settings are saved"
+  "infoFeatures": {
+    "message": "Features",
+    "description": "Features section heading."
   },
-  "settingsError": {
-    "message": "❌ Failed to save settings",
-    "description": "Error message when settings fail to save"
+  "infoTimerHeading": {
+    "message": "How the Timer Works",
+    "description": "Timer section heading."
+  },
+  "infoExclusionsHeading": {
+    "message": "Tab Exclusions",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "Understanding Tab Discarding",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Privacy & Permissions",
+    "description": "Privacy section heading."
+  },
+  "infoLinkText": {
+    "message": "Learn more about FFTabClose",
+    "description": "Text for the link to the informational page."
+  },
+  "timeTest": {
+    "message": "1 minute (test)",
+    "description": "1 minute time limit option for testing."
+  },
+  "infoTimerDescription": {
+    "message": "Each tab has its own timer that starts when it's opened or activated. Tabs are closed or discarded automatically once they exceed your specified time limit. Your settings persist even when restarting the browser.",
+    "description": "Description of how the timer system works."
+  },
+  "infoExclusionsDescription": {
+    "message": "Tabs that are playing audio are never closed or discarded. Pinned tabs are not closed but can be unloaded to save memory. Currently active tabs in any window are never closed.",
+    "description": "Description of which tabs are protected from closing."
+  },
+  "infoPrivacyDescription": {
+    "message": "FFTabClose requires the following permissions:",
+    "description": "Introduction to the permissions section."
+  },
+  "permTabsDescription": {
+    "message": "To monitor and manage tabs across all windows",
+    "description": "Description of the tabs permission."
+  },
+  "permStorageDescription": {
+    "message": "To save your preferences and tab timers",
+    "description": "Description of the storage permission."
+  },
+  "permAlarmsDescription": {
+    "message": "To schedule periodic tab checks",
+    "description": "Description of the alarms permission."
+  },
+  "infoDiscardDescription": {
+    "message": "Discarding unloads tab content from memory but keeps the tab visible. Tabs reload automatically when you click on them.",
+    "description": "Description of how tab discarding works."
   }
 }

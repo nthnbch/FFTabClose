@@ -1,130 +1,142 @@
 {
   "extensionName": {
-    "message": "FFTabClose - Cierre Auto de Pestañas",
-    "description": "Nombre de la extensión"
+    "message": "FFTabClose - Cierre Automático de Pestañas",
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Cierra automáticamente las pestañas no fijadas después de un período configurable. Perfecto para productividad y gestión de memoria.",
-    "description": "Descripción de la extensión"
+    "message": "Cierra automáticamente las pestañas antiguas después de un período configurable para mantener tu navegador rápido y organizado.",
+    "description": "Description of the extension."
   },
-  "popupTitle": {
+  "browserActionTitle": {
     "message": "FFTabClose",
-    "description": "Título mostrado en el popup"
+    "description": "Title shown when hovering over the browser action button."
   },
-  "closeTabsAfter": {
-    "message": "Cerrar pestañas después de:",
-    "description": "Etiqueta para selección de tiempo"
+  "timeLimitLabel": {
+    "message": "Cerrar pestañas más antiguas que:",
+    "description": "Label for time limit setting."
   },
-  "minutes15": {
+  "time1min": {
+    "message": "1 minuto",
+    "description": "Opción de límite de tiempo de 1 minuto."
+  },
+  "time15min": {
     "message": "15 minutos",
-    "description": "Opción 15 minutos"
+    "description": "15 minute time limit option."
   },
-  "minutes30": {
+  "time30min": {
     "message": "30 minutos",
-    "description": "Opción 30 minutos"
+    "description": "30 minute time limit option."
   },
-  "hour1": {
+  "time1hour": {
     "message": "1 hora",
-    "description": "Opción 1 hora"
+    "description": "1 hour time limit option."
   },
-  "hours2": {
+  "time2hours": {
     "message": "2 horas",
-    "description": "Opción 2 horas"
+    "description": "2 hour time limit option."
   },
-  "hours4": {
+  "time4hours": {
     "message": "4 horas",
-    "description": "Opción 4 horas"
+    "description": "4 hour time limit option."
   },
-  "hours8": {
+  "time8hours": {
     "message": "8 horas",
-    "description": "Opción 8 horas"
+    "description": "8 hour time limit option."
   },
-  "hours12": {
+  "time12hours": {
     "message": "12 horas",
-    "description": "Opción 12 horas"
+    "description": "12 hour time limit option."
   },
-  "hours24": {
+  "time24hours": {
     "message": "24 horas",
-    "description": "Opción 24 horas"
+    "description": "24 hour time limit option."
   },
-  "hours48": {
+  "time48hours": {
     "message": "48 horas",
-    "description": "Opción 48 horas"
+    "description": "48 hour time limit option."
   },
-  "extensionActive": {
-    "message": "Extensión activa",
-    "description": "Mensaje de estado cuando la extensión está activa"
+  "discardPinnedLabel": {
+    "message": "Descargar pestañas fijadas",
+    "description": "Label for discard pinned tabs setting."
   },
-  "pinnedTabsInfo": {
-    "message": "ℹ️ Las pestañas fijadas pueden ser descargadas (liberadas de memoria) o excluidas. Las pestañas descargadas ahorran memoria pero permanecen abiertas. El temporizador se reinicia cuando interactúas con una pestaña.",
-    "description": "Información sobre el comportamiento de las pestañas fijadas"
+  "discardPinnedTooltip": {
+    "message": "Descargar una pestaña libera su contenido de la memoria pero mantiene la pestaña visible. Las pestañas se recargan al hacer clic.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "activeTabsWillNotBeClosed": {
-    "message": "Las pestañas activas no se cerrarán automáticamente",
-    "description": "Info sobre pestañas activas"
+  "excludeAudioLabel": {
+    "message": "Excluir pestañas reproduciendo audio",
+    "description": "Label for exclude audio tabs setting."
   },
-  "enableExtension": {
-    "message": "Activar extensión",
-    "description": "Interruptor para activar/desactivar extensión"
+  "closeTabsButton": {
+    "message": "Cerrar Pestañas Antiguas Ahora",
+    "description": "Text for the button that closes old tabs."
   },
-  "exceptions": {
-    "message": "Excepciones",
-    "description": "Etiqueta para configuración de excepciones"
+  "closingTabsProgress": {
+    "message": "Cerrando...",
+    "description": "Text shown while tabs are being closed."
   },
-  "excludePinnedTabs": {
-    "message": "Excluir pestañas fijadas",
-    "description": "Etiqueta de casilla para excluir pestañas fijadas"
+  "totalTabsLabel": {
+    "message": "Total de pestañas:",
+    "description": "Label for total tabs count."
   },
-  "excludeAudibleTabs": {
-    "message": "Excluir pestañas con sonido",
-    "description": "Etiqueta de casilla para excluir pestañas audibles"
+  "eligibleTabsLabel": {
+    "message": "Elegibles para cerrar:",
+    "description": "Label for eligible tabs count."
   },
-  "discardPinnedTabs": {
-    "message": "Descargar pestañas fijadas (en lugar de cerrarlas)",
-    "description": "Etiqueta de casilla para descargar pestañas fijadas en lugar de cerrarlas"
+  "oldestTabLabel": {
+    "message": "Pestaña más antigua:",
+    "description": "Label for oldest tab age."
   },
-  "totalTabs": {
-    "message": "Total pestañas",
-    "description": "Etiqueta para el recuento total de pestañas"
+  "footerText": {
+    "message": "FFTabClose v2.0 - Gestiona tus pestañas automáticamente",
+    "description": "Text shown in the footer."
   },
-  "normalTabs": {
-    "message": "Pestañas normales",
-    "description": "Etiqueta para el número de pestañas normales (no fijadas)"
+  "timeMin": {
+    "message": "min",
+    "description": "Abbreviation for minutes."
   },
-  "eligibleTabs": {
-    "message": "Pueden cerrarse",
-    "description": "Etiqueta para pestañas que pueden cerrarse"
+  "timeHours": {
+    "message": "h",
+    "description": "Abbreviation for hours."
   },
-  "totalPinnedTabs": {
-    "message": "Pestañas fijadas",
-    "description": "Etiqueta para el número total de pestañas fijadas"
+  "timeDays": {
+    "message": "días",
+    "description": "Word for days."
   },
-  "pinnedTabsToDiscard": {
-    "message": "Pestañas fijadas a descargar",
-    "description": "Etiqueta para pestañas fijadas que serán descargadas"
+  "infoPageTitle": {
+    "message": "FFTabClose - Acerca de & Ayuda",
+    "description": "Title of the info page."
   },
-  "oldestTabAge": {
-    "message": "Pestaña más antigua",
-    "description": "Etiqueta para la edad de la pestaña más antigua"
+  "infoHeading": {
+    "message": "Acerca de FFTabClose",
+    "description": "Heading for the info page."
   },
-  "closeOldTabsNow": {
-    "message": "Cerrar pestañas antiguas ahora",
-    "description": "Texto del botón para cerrar inmediatamente pestañas antiguas"
+  "infoDescription": {
+    "message": "FFTabClose te ayuda a mantener tu navegador organizado cerrando automáticamente las pestañas que no has usado en un tiempo.",
+    "description": "Description on the info page."
   },
-  "closingTabs": {
-    "message": "Cerrando pestañas...",
-    "description": "Texto mostrado mientras se cierran pestañas"
+  "infoFeatures": {
+    "message": "Características",
+    "description": "Features section heading."
   },
-  "tabsClosedSuccess": {
-    "message": "¡Pestañas cerradas con éxito!",
-    "description": "Mensaje de éxito después de cerrar pestañas"
+  "infoTimerHeading": {
+    "message": "Cómo Funciona el Temporizador",
+    "description": "Timer section heading."
   },
-  "settingsSaved": {
-    "message": "Configuración guardada",
-    "description": "Mensaje mostrado cuando se guarda la configuración"
+  "infoExclusionsHeading": {
+    "message": "Exclusiones de Pestañas",
+    "description": "Exclusions section heading."
   },
-  "settingsError": {
-    "message": "❌ Error al guardar configuración",
-    "description": "Mensaje de error cuando falla el guardado"
+  "infoDiscardHeading": {
+    "message": "Entendiendo la Descarga de Pestañas",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Privacidad & Permisos",
+    "description": "Privacy section heading."
+  },
+  "infoLinkText": {
+    "message": "Más información sobre FFTabClose",
+    "description": "Texto para el enlace a la página informativa."
   }
 }

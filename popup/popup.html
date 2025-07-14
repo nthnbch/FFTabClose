@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FFTabClose</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header-container">
+      <h1 id="extensionName">FFTabClose</h1>
+      <a href="../info/info.html" id="infoLink" class="info-link" target="_blank">Info</a>
+    </div>
+
+    <div class="settings-section">
+      <div class="setting-group">
+        <label id="timeLimitLabel" for="timeLimit">Close tabs older than:</label>
+        <select id="timeLimit" class="setting-control">
+          <option value="60000" id="timeTest">1 minute (test)</option>
+          <option value="900000" id="time15min">15 minutes</option>
+          <option value="1800000" id="time30min">30 minutes</option>
+          <option value="3600000" id="time1hour">1 hour</option>
+          <option value="7200000" id="time2hours">2 hours</option>
+          <option value="14400000" id="time4hours">4 hours</option>
+          <option value="28800000" id="time8hours">8 hours</option>
+          <option value="43200000" id="time12hours">12 hours</option>
+          <option value="86400000" id="time24hours">24 hours</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="closeTabsButton" class="action-button">Close Old Tabs Now</button>
+
+    <div class="stats-section">
+      <div class="stat-item">
+        <span id="totalTabsLabel" class="stat-label">Total tabs:</span> 
+        <span id="totalTabs" class="stat-value">0</span>
+      </div>
+      <div class="stat-item">
+        <span id="eligibleTabsLabel" class="stat-label">Eligible for closing:</span> 
+        <span id="eligibleTabs" class="stat-value">0</span>
+      </div>
+      <div class="stat-item">
+        <span id="oldestTabLabel" class="stat-label">Oldest tab:</span> 
+        <span id="oldestTab" class="stat-value">0</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="../browser-polyfill.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

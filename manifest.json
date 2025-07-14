@@ -1,36 +1,15 @@
 {
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
+  "author": "bubu",
   
-  "developer": {
-    "name": "bubu",
-    "url": "https://nathan.swiss"
-  },
-  
-  "homepage_url": "https://github.com/nthnbch/FFTabClose",
-  
-  "permissions": [
-    "tabs",
-    "storage",
-    "alarms"
-  ],
-  
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
-  },
-  
-  "browser_action": {
-    "default_popup": "popup.html",
-    "default_title": "__MSG_popupTitle__",
-    "default_icon": {
-      "16": "icons/icon-16.svg",
-      "32": "icons/icon-32.svg",
-      "48": "icons/icon-48.svg",
-      "128": "icons/icon-128.svg"
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "fftabclose@nathan.swiss",
+      "strict_min_version": "109.0"
     }
   },
   
@@ -41,10 +20,36 @@
     "128": "icons/icon-128.svg"
   },
   
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "fftabclose@nathan.swiss",
-      "strict_min_version": "109.0"
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms",
+    "contextualIdentities",
+    "cookies"
+  ],
+  
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  
+  "browser_action": {
+    "default_title": "__MSG_browserActionTitle__",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.svg",
+      "32": "icons/icon-32.svg",
+      "48": "icons/icon-48.svg"
+    }
+  },
+  
+  "commands": {
+    "close-old-tabs": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "Command+Shift+O"
+      },
+      "description": "Close old tabs based on timeout settings"
     }
   }
 }

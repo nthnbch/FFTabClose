@@ -1,114 +1,134 @@
 {
   "extensionName": {
     "message": "FFTabClose - Fechamento Automático de Abas",
-    "description": "Nome da extensão"
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Fecha automaticamente abas inativas após um período configurável para liberar memória e manter o navegador organizado.",
-    "description": "Descrição da extensão"
+    "message": "Fecha automaticamente abas antigas após um período configurável para manter seu navegador rápido e organizado.",
+    "description": "Description of the extension."
   },
-  "popupTitle": {
+  "browserActionTitle": {
     "message": "FFTabClose",
-    "description": "Título do popup"
+    "description": "Title shown when hovering over the browser action button."
   },
-  "enableExtension": {
-    "message": "Ativar extensão",
-    "description": "Rótulo para ativar a extensão"
+  "timeLimitLabel": {
+    "message": "Fechar abas mais antigas que:",
+    "description": "Label for time limit setting."
   },
-  "closeTabsAfter": {
-    "message": "Fechar abas após:",
-    "description": "Rótulo para o seletor de tempo"
-  },
-  "minutes15": {
+  "time15min": {
     "message": "15 minutos",
-    "description": "Opção de 15 minutos"
+    "description": "15 minute time limit option."
   },
-  "minutes30": {
+  "time30min": {
     "message": "30 minutos",
-    "description": "Opção de 30 minutos"
+    "description": "30 minute time limit option."
   },
-  "hour1": {
+  "time1hour": {
     "message": "1 hora",
-    "description": "Opção de 1 hora"
+    "description": "1 hour time limit option."
   },
-  "hours2": {
+  "time2hours": {
     "message": "2 horas",
-    "description": "Opção de 2 horas"
+    "description": "2 hour time limit option."
   },
-  "hours4": {
+  "time4hours": {
     "message": "4 horas",
-    "description": "Opção de 4 horas"
+    "description": "4 hour time limit option."
   },
-  "hours8": {
+  "time8hours": {
     "message": "8 horas",
-    "description": "Opção de 8 horas"
+    "description": "8 hour time limit option."
   },
-  "hours12": {
+  "time12hours": {
     "message": "12 horas",
-    "description": "Opção de 12 horas"
+    "description": "12 hour time limit option."
   },
-  "hours24": {
+  "time24hours": {
     "message": "24 horas",
-    "description": "Opção de 24 horas"
+    "description": "24 hour time limit option."
   },
-  "hours48": {
+  "time48hours": {
     "message": "48 horas",
-    "description": "Opção de 48 horas"
+    "description": "48 hour time limit option."
   },
-  "exceptions": {
-    "message": "Exceções:",
-    "description": "Rótulo para exceções"
+  "discardPinnedLabel": {
+    "message": "Descarregar abas fixadas",
+    "description": "Label for discard pinned tabs setting."
   },
-  "excludePinnedTabs": {
-    "message": "Excluir abas fixadas",
-    "description": "Opção para excluir abas fixadas"
+  "discardPinnedTooltip": {
+    "message": "Descarregar remove o conteúdo de uma aba da memória, mantendo-a visível. As abas são recarregadas quando clicadas.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "excludeAudibleTabs": {
-    "message": "Excluir abas com áudio",
-    "description": "Opção para excluir abas com áudio"
+  "excludeAudioLabel": {
+    "message": "Excluir abas reproduzindo áudio",
+    "description": "Label for exclude audio tabs setting."
   },
-  "discardPinnedTabs": {
-    "message": "Descarregar abas fixadas em vez de fechar",
-    "description": "Opção para descarregar abas fixadas"
+  "closeTabsButton": {
+    "message": "Fechar Abas Antigas Agora",
+    "description": "Text for the button that closes old tabs."
   },
-  "statistics": {
-    "message": "Estatísticas",
-    "description": "Seção de estatísticas"
+  "closingTabsProgress": {
+    "message": "Fechando...",
+    "description": "Text shown while tabs are being closed."
   },
-  "totalTabs": {
-    "message": "Total de abas",
-    "description": "Número total de abas"
+  "totalTabsLabel": {
+    "message": "Total de abas:",
+    "description": "Label for total tabs count."
   },
-  "normalTabs": {
-    "message": "Abas normais",
-    "description": "Número de abas normais (não fixadas)"
+  "eligibleTabsLabel": {
+    "message": "Elegíveis para fechar:",
+    "description": "Label for eligible tabs count."
   },
-  "eligibleTabs": {
-    "message": "Podem ser fechadas",
-    "description": "Abas que podem ser fechadas"
+  "oldestTabLabel": {
+    "message": "Aba mais antiga:",
+    "description": "Label for oldest tab age."
   },
-  "totalPinnedTabs": {
-    "message": "Abas fixadas",
-    "description": "Número total de abas fixadas"
+  "footerText": {
+    "message": "FFTabClose v2.0 - Gerencie suas abas automaticamente",
+    "description": "Text shown in the footer."
   },
-  "pinnedTabsToDiscard": {
-    "message": "Abas fixadas para descarregar",
-    "description": "Abas fixadas que podem ser descarregadas"
+  "timeMin": {
+    "message": "min",
+    "description": "Abbreviation for minutes."
   },
-  "oldestTabAge": {
-    "message": "Aba mais antiga",
-    "description": "Idade da aba mais antiga"
+  "timeHours": {
+    "message": "h",
+    "description": "Abbreviation for hours."
   },
-  "closeOldTabsNow": {
-    "message": "Fechar abas antigas agora",
-    "description": "Botão para fechar manualmente as abas"
+  "timeDays": {
+    "message": "dias",
+    "description": "Word for days."
   },
-  "settingsSaved": {
-    "message": "Configurações salvas",
-    "description": "Mensagem de confirmação"
+  "infoPageTitle": {
+    "message": "FFTabClose - Sobre & Ajuda",
+    "description": "Title of the info page."
   },
-  "pinnedTabsInfo": {
-    "message": "ℹ️ Abas fixadas nunca serão fechadas automaticamente. O cronômetro é reiniciado quando você interage com uma aba.",
-    "description": "Informações sobre abas fixadas"
+  "infoHeading": {
+    "message": "Sobre o FFTabClose",
+    "description": "Heading for the info page."
+  },
+  "infoDescription": {
+    "message": "FFTabClose ajuda a manter seu navegador organizado fechando automaticamente abas que você não usou por um tempo.",
+    "description": "Description on the info page."
+  },
+  "infoFeatures": {
+    "message": "Funcionalidades",
+    "description": "Features section heading."
+  },
+  "infoTimerHeading": {
+    "message": "Como Funciona o Temporizador",
+    "description": "Timer section heading."
+  },
+  "infoExclusionsHeading": {
+    "message": "Exclusões de Abas",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "Entendendo o Descarregamento de Abas",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Privacidade & Permissões",
+    "description": "Privacy section heading."
   }
 }

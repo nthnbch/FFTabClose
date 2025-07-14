@@ -1,95 +1,134 @@
 {
   "extensionName": {
-    "message": "FFTabClose - Automatisch Tabbladen Sluiten"
+    "message": "FFTabClose - Automatische Tablsluiter",
+    "description": "Name of the extension."
   },
   "extensionDescription": {
-    "message": "Sluit of ontlaadt automatisch inactieve tabbladen na een configureerbare tijd om geheugen te besparen en prestaties te verbeteren."
+    "message": "Sluit oude tabbladen automatisch na een instelbare tijdsperiode om uw browser snel en georganiseerd te houden.",
+    "description": "Description of the extension."
   },
-  "autoCloseTime": {
-    "message": "Automatische sluitingstijd (uren)"
+  "browserActionTitle": {
+    "message": "FFTabClose",
+    "description": "Title shown when hovering over the browser action button."
   },
-  "enabled": {
-    "message": "Ingeschakeld"
+  "timeLimitLabel": {
+    "message": "Sluit tabbladen ouder dan:",
+    "description": "Label for time limit setting."
   },
-  "excludePinned": {
-    "message": "Vastgezette tabbladen uitsluiten"
+  "time15min": {
+    "message": "15 minuten",
+    "description": "15 minute time limit option."
   },
-  "excludeAudible": {
-    "message": "Hoorbare tabbladen uitsluiten"
+  "time30min": {
+    "message": "30 minuten",
+    "description": "30 minute time limit option."
   },
-  "discardPinned": {
-    "message": "Vastgezette tabbladen ontladen"
+  "time1hour": {
+    "message": "1 uur",
+    "description": "1 hour time limit option."
   },
-  "discardPinnedHelp": {
-    "message": "Wanneer ingeschakeld worden vastgezette tabbladen ontladen (geheugen vrijgemaakt) in plaats van gesloten"
+  "time2hours": {
+    "message": "2 uur",
+    "description": "2 hour time limit option."
   },
-  "save": {
-    "message": "Opslaan"
+  "time4hours": {
+    "message": "4 uur",
+    "description": "4 hour time limit option."
   },
-  "checkNow": {
-    "message": "Nu controleren"
+  "time8hours": {
+    "message": "8 uur",
+    "description": "8 hour time limit option."
   },
-  "testMode": {
-    "message": "Testmodus"
+  "time12hours": {
+    "message": "12 uur",
+    "description": "12 hour time limit option."
   },
-  "debugInfo": {
-    "message": "Debug-informatie"
+  "time24hours": {
+    "message": "24 uur",
+    "description": "24 hour time limit option."
   },
-  "resetStats": {
-    "message": "Statistieken resetten"
+  "time48hours": {
+    "message": "48 uur",
+    "description": "48 hour time limit option."
   },
-  "totalTabs": {
-    "message": "Totaal tabbladen"
+  "discardPinnedLabel": {
+    "message": "Vastgezette tabbladen ontladen",
+    "description": "Label for discard pinned tabs setting."
   },
-  "eligibleTabs": {
-    "message": "Tabbladen om te sluiten"
+  "discardPinnedTooltip": {
+    "message": "Ontladen verwijdert de inhoud van een tabblad uit het geheugen, maar houdt het tabblad zichtbaar. Tabbladen worden opnieuw geladen bij klikken.",
+    "description": "Tooltip explaining what discarding tabs means."
   },
-  "pinnedTabsToDiscard": {
-    "message": "Vastgezette tabbladen om te ontladen"
+  "excludeAudioLabel": {
+    "message": "Tabbladen met geluid uitsluiten",
+    "description": "Label for exclude audio tabs setting."
   },
-  "oldestTabAge": {
-    "message": "Leeftijd oudste tabblad (minuten)"
+  "closeTabsButton": {
+    "message": "Sluit Oude Tabbladen Nu",
+    "description": "Text for the button that closes old tabs."
   },
-  "status": {
-    "message": "Status"
+  "closingTabsProgress": {
+    "message": "Sluiten...",
+    "description": "Text shown while tabs are being closed."
   },
-  "timeout": {
-    "message": "Time-out"
+  "totalTabsLabel": {
+    "message": "Totaal tabbladen:",
+    "description": "Label for total tabs count."
   },
-  "hours": {
-    "message": "uren"
+  "eligibleTabsLabel": {
+    "message": "In aanmerking voor sluiting:",
+    "description": "Label for eligible tabs count."
   },
-  "minutes": {
-    "message": "minuten"
+  "oldestTabLabel": {
+    "message": "Oudste tabblad:",
+    "description": "Label for oldest tab age."
   },
-  "configSaved": {
-    "message": "Configuratie opgeslagen"
+  "footerText": {
+    "message": "FFTabClose v2.0 - Beheer uw tabbladen automatisch",
+    "description": "Text shown in the footer."
   },
-  "checkComplete": {
-    "message": "Controle voltooid"
+  "timeMin": {
+    "message": "min",
+    "description": "Abbreviation for minutes."
   },
-  "testModeActivated": {
-    "message": "Testmodus geactiveerd"
+  "timeHours": {
+    "message": "uur",
+    "description": "Abbreviation for hours."
   },
-  "statsReset": {
-    "message": "Statistieken gereset"
+  "timeDays": {
+    "message": "dagen",
+    "description": "Word for days."
   },
-  "error": {
-    "message": "Fout"
+  "infoPageTitle": {
+    "message": "FFTabClose - Over & Hulp",
+    "description": "Title of the info page."
   },
-  "infoTitle": {
-    "message": "Over de extensie"
+  "infoHeading": {
+    "message": "Over FFTabClose",
+    "description": "Heading for the info page."
   },
   "infoDescription": {
-    "message": "FFTabClose beheert automatisch browsertabbladen door inactieve tabbladen na een bepaalde tijd te sluiten. Vastgezette tabbladen kunnen worden ontladen in plaats van gesloten om toegankelijkheid te behouden."
+    "message": "FFTabClose helpt u uw browser georganiseerd te houden door automatisch tabbladen te sluiten die u al een tijdje niet gebruikt heeft.",
+    "description": "Description on the info page."
   },
-  "optionsTitle": {
-    "message": "Opties"
+  "infoFeatures": {
+    "message": "Functies",
+    "description": "Features section heading."
   },
-  "statisticsTitle": {
-    "message": "Statistieken"
+  "infoTimerHeading": {
+    "message": "Hoe de Timer Werkt",
+    "description": "Timer section heading."
   },
-  "actionsTitle": {
-    "message": "Acties"
+  "infoExclusionsHeading": {
+    "message": "Tabblad Uitsluitingen",
+    "description": "Exclusions section heading."
+  },
+  "infoDiscardHeading": {
+    "message": "Uitleg over Tabblad Ontladen",
+    "description": "Discarding section heading."
+  },
+  "infoPrivacy": {
+    "message": "Privacy & Toestemmingen",
+    "description": "Privacy section heading."
   }
 }

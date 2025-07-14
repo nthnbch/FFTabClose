@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FFTabClose - About & Help</title>
+  <style>
+    :root {
+      --text-color: #333;
+      --bg-color: #fff;
+      --heading-color: #2a4365;
+      --link-color: #3182ce;
+      --border-color: #e2e8f0;
+      --accent-color: #4299e1;
+      --code-bg: #f7fafc;
+      --transition-speed: 0.2s;
+      --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --section-bg: #fafafa;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-color: #e2e8f0;
+        --bg-color: #1a202c;
+        --heading-color: #63b3ed;
+        --link-color: #4299e1;
+        --border-color: #2d3748;
+        --accent-color: #3182ce;
+        --code-bg: #2d3748;
+        --section-bg: #2a2a30;
+        --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      line-height: 1.5;
+      color: var(--text-color);
+      background-color: var(--bg-color);
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem;
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+
+    h1, h2 {
+      color: var(--heading-color);
+      line-height: 1.2;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--accent-color);
+      padding-bottom: 0.3rem;
+      margin-bottom: 0.8rem;
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 0.4rem;
+      font-size: 1.1rem;
+    }
+
+    a {
+      color: var(--link-color);
+      text-decoration: none;
+      transition: color var(--transition-speed);
+    }
+
+    a:hover {
+      text-decoration: underline;
+      color: var(--accent-color);
+    }
+
+    p {
+      margin-bottom: 0.5rem;
+    }
+
+    .container {
+      margin-bottom: 1rem;
+    }
+
+    section {
+      background-color: var(--section-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+      box-shadow: var(--box-shadow);
+      transition: box-shadow var(--transition-speed), transform var(--transition-speed);
+    }
+
+    section:hover {
+      box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
+    }
+
+    code {
+      background-color: var(--code-bg);
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.9em;
+    }
+
+    ul {
+      padding-left: 1.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0;
+    }
+
+    li {
+      margin-bottom: 0.25rem;
+    }
+
+    li:last-child {
+      margin-bottom: 0;
+    }
+
+    footer {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      text-align: center;
+      border-top: 1px solid var(--border-color);
+      padding-top: 0.75rem;
+      color: rgba(var(--text-color), 0.8);
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 1rem 0.75rem;
+      }
+      
+      h1 {
+        font-size: 1.6rem;
+      }
+      
+      h2 {
+        font-size: 1.2rem;
+      }
+      
+      section {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 id="infoHeading">About FFTabClose</h1>
+    </header>
+
+    <section>
+      <h2 id="infoFeatures">Features</h2>
+      <p id="infoDescription">FFTabClose helps you keep your browser organized by automatically closing tabs you haven't used in a while, across all browser windows and workspaces.</p>
+    </section>
+
+    <section>
+      <h2 id="infoTimerHeading">How the Timer Works</h2>
+      <p id="infoTimerDescription">Each tab has its own timer that starts when it's opened or activated. Tabs are closed or discarded automatically once they exceed your specified time limit. Your settings persist even when restarting the browser.</p>
+    </section>
+
+    <section>
+      <h2 id="infoExclusionsHeading">Tab Exclusions</h2>
+      <p id="infoExclusionsDescription">Tabs that are playing audio are never closed or discarded. Pinned tabs are not closed but can be unloaded to save memory. Currently active tabs in any window are never closed.</p>
+    </section>
+
+    <section>
+      <h2 id="infoDiscardHeading">Understanding Tab Discarding</h2>
+      <p id="infoDiscardDescription">Discarding frees up memory while keeping the tab visible. Tabs automatically reload when you click on them.</p>
+    </section>
+
+    <section>
+      <h2 id="infoPrivacy">Privacy & Permissions</h2>
+      <p id="infoPrivacyDescription">FFTabClose requires the following permissions:</p>
+      <ul id="permissions-list">
+        <li><code>tabs</code> - <span id="permTabs">To monitor and manage tabs across all windows</span></li>
+        <li><code>storage</code> - <span id="permStorage">To save your preferences and tab timers</span></li>
+        <li><code>alarms</code> - <span id="permAlarms">To schedule periodic tab checks</span></li>
+        <li><code>contextualIdentities</code> - <span id="permContextualIdentities">To support Firefox containers and workspaces</span></li>
+        <li><code>cookies</code> - <span id="permCookies">Required for container integration</span></li>
+      </ul>
+    </section>
+  </div>
+  
+  <footer>
+    <p>FFTabClose v2.0.0 &copy; 2025 - <a href="https://github.com/nthnbch/FFTabClose" target="_blank">GitHub</a></p>
+  </footer>
+
+  <script src="../browser-polyfill.min.js"></script>
+  <script src="info.js"></script>
+</body>
+</html>
