@@ -1,4 +1,4 @@
-# FFTabClose v2.0.1 Security Update
+# FFTabClose v2.0.2 Security Update
 
 ## Summary
 This update focuses on security enhancements and best practices for Firefox extensions, while maintaining full backward compatibility. The extension has been audited and improved following Mozilla's security recommendations for Firefox extensions.
@@ -49,5 +49,5 @@ These changes align the extension with Mozilla's Security Guidelines for Extensi
 - Special attention was given to container support and workspace integration
 
 ## Version
-- Updated to v2.0.1
+- Updated to v2.0.2
 - Last updated: July 14, 2025

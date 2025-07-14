@@ -1,8 +1,8 @@
-# Firefox Add-on Submission Notes for FFTabClose v2.0.1
+# Firefox Add-on Submission Notes for FFTabClose v2.0.2
 
 ## Security Update Summary
 
-This update (v2.0.1) focuses on enhancing security while maintaining full backward compatibility with previous versions. The extension has been thoroughly audited against current web security standards and Firefox extension best practices.
+This update (v2.0.2) focuses on enhancing security while maintaining full backward compatibility with previous versions. The extension has been thoroughly audited against current web security standards and Firefox extension best practices.
 
 ## Technical Changes
 

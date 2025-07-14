@@ -2,7 +2,7 @@
  * FFTabClose - Info Page Script
  * Handles internationalization for the info page
  * 
- * Version 2.0.1 (Security Enhanced)
+ * Version 2.0.2 (Security Enhanced)
  * Last updated: 14 juillet 2025
  */
 

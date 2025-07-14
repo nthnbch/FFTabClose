@@ -9,7 +9,7 @@
 [![Firefox](https://img.shields.io/badge/Firefox-FF7139?style=for-the-badge&logo=Firefox-Browser&logoColor=white)](https://addons.mozilla.org/fr/firefox/addon/fftabclose-auto-tab-closer/)
 [![Zen Browser](https://img.shields.io/badge/Zen-Browser-blue?style=for-the-badge)](https://zen-browser.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-2.0.1-green.svg?style=for-the-badge)](https://github.com/nthnbch/FFTabClose/releases)
+[![Version](https://img.shields.io/badge/Version-2.0.2-green.svg?style=for-the-badge)](https://github.com/nthnbch/FFTabClose/releases)
 
 > I created FFTabClose to bring an Arc Browser-like feature to Firefox and Zen Browser - automatic tab cleanup. As someone who accumulates dozens of tabs throughout the day, I needed a way to automatically close or unload unused tabs while preserving important ones. This extension saves memory and keeps your browser tidy without manual management.
 

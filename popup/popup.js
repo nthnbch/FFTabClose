@@ -2,7 +2,7 @@
  * FFTabClose - Popup Script
  * Handles popup UI interactions and communication with background script
  * 
- * Version 2.0.1 (Security Enhanced)
+ * Version 2.0.2 (Security Enhanced)
  * Last updated: 14 juillet 2025
  */
 

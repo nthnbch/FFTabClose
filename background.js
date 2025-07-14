@@ -2,7 +2,7 @@
  * FFTabClose - Auto Tab Closer
  * Background script for automatic tab closure and management
  * 
- * Version 2.0.1 (Security Enhanced)
+ * Version 2.0.2 (Security Enhanced)
  * Last updated: 14 juillet 2025
  * 
  * Notes sur Zen Browser et les espaces de travail (workspaces):
