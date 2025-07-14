@@ -43,7 +43,7 @@
     }
   },
   
-  "content_security_policy": "script-src 'self'; object-src 'none';",
+  "content_security_policy": "script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline';",
   
   "commands": {
     "close-old-tabs": {
