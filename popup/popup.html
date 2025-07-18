@@ -14,7 +14,7 @@
   <div class="container">
     <div class="header-container">
       <h1 id="extensionName">FFTabClose</h1>
-      <a href="../info/info.html" id="infoLink" class="info-link" target="_blank" rel="noopener noreferrer">Info</a>
+      <a href="../info/info.html" id="infoLink" class="info-link" target="_blank" rel="noopener noreferrer" aria-label="Information and help page">Info</a>
     </div>
 
     <div class="settings-section">
@@ -30,7 +30,18 @@
           <option value="28800000" id="time8hours">8 hours</option>
           <option value="43200000" id="time12hours">12 hours</option>
           <option value="86400000" id="time24hours">24 hours</option>
+          <option value="172800000" id="time48hours">48 hours</option>
         </select>
+      </div>
+      
+      <div class="setting-group">
+        <label id="domainRulesLabel" for="domainRules">Domain exceptions:</label>
+        <div class="domain-rules-container">
+          <select id="domainRules" class="setting-control domain-select">
+            <option value="" id="noDomainRules">None configured</option>
+          </select>
+          <button id="addDomainRule" class="mini-button" title="Add domain exception">+</button>
+        </div>
       </div>
     </div>
 
@@ -53,6 +64,6 @@
   </div>
 
   <script src="../browser-polyfill.min.js"></script>
-  <script src="popup.js"></script>
+  <script src="popup.js" type="module"></script>
 </body>
 </html>

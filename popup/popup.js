@@ -18,9 +18,29 @@ function sanitizeHTML(str) {
   return tempElement.textContent;
 }
 
+// Import domain rules UI functions
+import { addDomainRule, loadDomainRules } from './domain-rules-ui.js';
+
+// Apply reduced motion preferences
+function applyReducedMotion() {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
+  if (prefersReducedMotion) {
+    document.documentElement.setAttribute('data-reduced-motion', 'true');
+  } else {
+    document.documentElement.removeAttribute('data-reduced-motion');
+  }
+}
+
 // Fonction pour charger les traductions avec validation
 document.addEventListener('DOMContentLoaded', function() {
   try {
+    // Apply reduced motion settings
+    applyReducedMotion();
+    
+    // Listen for changes in reduced motion preference
+    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', applyReducedMotion);
+    
     if (typeof browser !== 'undefined' && browser.i18n) {
       // Traduire les éléments par ID avec sanitization
       const elementsToTranslate = {
@@ -36,6 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
         "time8hours": "time8hours",
         "time12hours": "time12hours",
         "time24hours": "time24hours",
+        "time48hours": "time48hours",
+        "domainRulesLabel": "domainRulesLabel",
+        "noDomainRules": "noDomainRulesText",
         "closeTabsButton": "closeTabsButton",
         "totalTabsLabel": "totalTabsLabel",
         "eligibleTabsLabel": "eligibleTabsLabel",
@@ -64,9 +87,13 @@ document.addEventListener('DOMContentLoaded', function() {
       // Configurer les événements
       document.getElementById("timeLimit").addEventListener("change", saveSettings);
       document.getElementById("closeTabsButton").addEventListener("click", closeOldTabs);
+      document.getElementById("addDomainRule").addEventListener("click", addDomainRule);
       
       // Charger les paramètres au démarrage
       loadSettings();
+      
+      // Charger les règles de domaine
+      loadDomainRules();
     }
   } catch (error) {
     console.error("Error loading translations:", error);

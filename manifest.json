@@ -1,7 +1,7 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "author": "nthnbch",
@@ -30,10 +30,10 @@
   
   "background": {
     "scripts": ["browser-polyfill.min.js", "background.js"],
-    "persistent": false
+    "type": "module"
   },
   
-  "browser_action": {
+  "action": {
     "default_title": "__MSG_browserActionTitle__",
     "default_popup": "popup/popup.html",
     "default_icon": {

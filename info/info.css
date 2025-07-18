@@ -31,6 +31,16 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-speed: 0s;
+  }
+  
+  section:hover {
+    transform: none;
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

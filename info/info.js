@@ -24,6 +24,19 @@ function logWithLocale(message, ...args) {
   console.log(`[${locale}] ${message}`, ...args);
 }
 
+// Helper function to detect and apply reduced motion preferences
+function applyReducedMotion() {
+  // Check for OS-level reduced motion setting
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
+  if (prefersReducedMotion) {
+    document.documentElement.setAttribute('data-reduced-motion', 'true');
+    logWithLocale("Reduced motion preference detected and applied");
+  } else {
+    document.documentElement.removeAttribute('data-reduced-motion');
+  }
+}
+
 // Load and display changelog information
 function displayChangelog() {
   try {
@@ -79,6 +92,12 @@ function displayChangelog() {
 
 document.addEventListener('DOMContentLoaded', function() {
   try {
+    // Apply reduced motion settings first
+    applyReducedMotion();
+    
+    // Listen for changes in reduced motion preference
+    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', applyReducedMotion);
+    
     if (typeof browser !== 'undefined' && browser.i18n) {
       // Définir la langue du document selon la locale courante
       const locale = browser.i18n.getUILanguage();
