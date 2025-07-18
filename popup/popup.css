@@ -58,21 +58,21 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.4;
   color: var(--text-color);
   background-color: var(--bg-color);
   width: 320px;
-  max-height: 380px; /* Reduced height to avoid scrolling */
+  max-height: 360px; /* Reduced height to avoid scrolling */
   overflow-x: hidden;
   overflow-y: auto;
   transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
 .container {
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .header-container {
@@ -220,9 +220,9 @@ h1 {
 .stats-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px;
-  margin-top: 8px;
+  gap: 2px;
+  padding: 6px 8px;
+  margin-top: 6px;
   background-color: var(--stats-bg);
   border-radius: 6px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -231,10 +231,10 @@ h1 {
 .stat-item {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
+  align-items: center;
+  flex-wrap: nowrap;
   gap: 8px;
-  padding: 5px 0;
+  padding: 2px 0;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -250,9 +250,10 @@ h1 {
 .stat-label {
   font-weight: 500;
   flex: 1 1 auto;
-  word-break: break-word;
-  min-width: 150px;
-  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
 }
 
 .stat-value {
@@ -262,6 +263,7 @@ h1 {
   min-width: 40px;
   white-space: nowrap;
   color: var(--highlight-color);
+  font-size: 12px;
 }
 
 /* Focus state for accessibility */
@@ -286,12 +288,7 @@ input:focus {
     padding: 12px;
   }
   
-  .stat-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
   .stat-value {
-    text-align: left;
+    text-align: right;
   }
 }
