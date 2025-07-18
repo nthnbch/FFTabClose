@@ -169,6 +169,8 @@ FFTabClose/
 ├── background.js           # Main background script
 ├── domain-rules.js         # Domain rules management
 ├── browser-polyfill.min.js # Browser compatibility layer
+├── package.json            # Project metadata and build scripts
+├── build.sh                # Build script for creating XPI package
 ├── popup/                  # User interface
 │   ├── popup.html          # Popup HTML
 │   ├── popup.js            # Popup logic
@@ -184,7 +186,12 @@ FFTabClose/
 │   ├── icon-16.svg
 │   ├── icon-32.svg
 │   ├── icon-48.svg
-│   └── icon-128.svg
+│   ├── icon-128.svg
+│   └── png/                # PNG versions of icons
+│       ├── icon-16.png
+│       ├── icon-32.png
+│       ├── icon-48.png
+│       └── icon-128.png
 └── _locales/               # Internationalization
     ├── en/messages.json    # English (default)
     ├── fr/messages.json    # French
@@ -198,6 +205,7 @@ FFTabClose/
     ├── nl/messages.json    # Dutch
     ├── pl/messages.json    # Polish
     ├── ar/messages.json    # Arabic
+    └── tr/messages.json    # Turkish
     └── tr/messages.json    # Turkish
 ```
 
