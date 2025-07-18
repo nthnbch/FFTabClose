@@ -77,22 +77,28 @@ body {
 
 .header-container {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 12px;
   gap: 8px;
 }
 
+.info-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 h1 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   margin: 0;
   color: var(--heading-color);
   word-break: break-word;
   line-height: 1.2;
-  flex: 1;
-  min-width: 200px;
+  text-align: center;
+  width: 100%;
 }
 
 .info-link {
@@ -101,16 +107,19 @@ h1 {
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
-  margin-left: 10px;
-  transition: background-color var(--transition-speed);
+  transition: all var(--transition-speed);
   background-color: var(--button-bg);
-  padding: 3px 8px;
+  padding: 6px 16px;
   border-radius: 4px;
+  display: inline-block;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .info-link:hover {
-  text-decoration: underline;
+  text-decoration: none;
   background-color: var(--highlight-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
 
 .settings-section {
@@ -211,10 +220,12 @@ h1 {
 .stats-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 12px;
+  margin-top: 8px;
   background-color: var(--stats-bg);
-  border-radius: 4px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .stat-item {
@@ -223,12 +234,17 @@ h1 {
   align-items: baseline;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 3px 0;
-  border-bottom: 1px solid rgba(var(--border-color), 0.3);
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .stat-item:last-child {
   border-bottom: none;
+  padding-bottom: 0;
+}
+
+.stat-item:first-child {
+  padding-top: 0;
 }
 
 .stat-label {
@@ -245,6 +261,7 @@ h1 {
   text-align: right;
   min-width: 40px;
   white-space: nowrap;
+  color: var(--highlight-color);
 }
 
 /* Focus state for accessibility */

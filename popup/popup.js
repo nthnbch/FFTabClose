@@ -86,7 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Set up event listeners
       document.getElementById("timeLimit").addEventListener("change", saveSettings);
-      document.getElementById("closeTabsButton").addEventListener("click", closeOldTabs);
       document.getElementById("addDomainRule").addEventListener("click", addDomainRule);
       
       // Load settings on startup
@@ -155,5 +154,15 @@ async function loadSettings() {
     updateStats();
   } catch (error) {
     console.error("Error loading settings:", error);
+  }
+}
+
+// Function to close old tabs (not used directly by UI anymore)
+async function closeOldTabs() {
+  try {
+    await browser.runtime.sendMessage({action: 'closeOldTabs'});
+    updateStats();
+  } catch (error) {
+    console.error("Error closing tabs:", error);
   }
 }

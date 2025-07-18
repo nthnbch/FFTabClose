@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "FFTabClose - Auto Tab Closer",
+    "message": "FFTabClose",
     "description": "Name of the extension."
   },
   "extensionDescription": {
@@ -98,6 +98,14 @@
   "timeHours": {
     "message": "hr",
     "description": "Abbreviation for hours."
+  },
+  "domainRulesLabel": {
+    "message": "Domain exceptions:",
+    "description": "Label for domain rules setting."
+  },
+  "noDomainRulesText": {
+    "message": "None configured",
+    "description": "Text shown when no domain rules are configured."
   },
   "permContextualIdentitiesDescription": {
     "message": "To support Firefox containers and workspaces",

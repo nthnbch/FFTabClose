@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "FFTabClose - Fermeture Automatique d'Onglets",
+    "message": "FFTabClose",
     "description": "Name of the extension."
   },
   "extensionDescription": {
@@ -146,6 +146,14 @@
   "infoLinkText": {
     "message": "En savoir plus sur FFTabClose",
     "description": "Texte pour le lien vers la page d'information."
+  },
+  "domainRulesLabel": {
+    "message": "Exceptions de domaines :",
+    "description": "Étiquette pour les règles de domaine."
+  },
+  "noDomainRulesText": {
+    "message": "Aucune configurée",
+    "description": "Texte affiché quand aucune règle de domaine n'est configurée."
   },
   "infoTimerDescription": {
     "message": "Chaque onglet possède sa propre minuterie qui démarre lorsqu'il est ouvert ou activé. Les onglets sont fermés ou déchargés automatiquement une fois qu'ils dépassent votre limite de temps spécifiée. Vos paramètres sont conservés même après le redémarrage du navigateur.",
