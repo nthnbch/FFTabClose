@@ -3,7 +3,7 @@
  * Handles domain-specific tab closure rules
  * 
  * Version 3.0.0
- * Last updated: 17 juillet 2025
+ * Last updated: 18 July 2025
  */
 
 // Domain rule structure

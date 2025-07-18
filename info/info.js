@@ -2,8 +2,8 @@
  * FFTabClose - Info Page Script
  * Handles internationalization for the info page
  * 
- * Version 2.0.2 (Security Enhanced)
- * Last updated: 14 juillet 2025
+ * Version 3.0.0
+ * Last updated: 18 July 2025
  */
 
 // Helper function to sanitize text content (XSS protection)
@@ -99,12 +99,12 @@ document.addEventListener('DOMContentLoaded', function() {
     window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', applyReducedMotion);
     
     if (typeof browser !== 'undefined' && browser.i18n) {
-      // Définir la langue du document selon la locale courante
+      // Set the document language based on the current locale
       const locale = browser.i18n.getUILanguage();
       document.documentElement.lang = locale;
       logWithLocale(`Setting document language to: ${locale}`);
       
-      // Définir le titre de la page
+      // Set the page title
       const pageTitle = browser.i18n.getMessage("infoPageTitle");
       if (pageTitle) {
         document.title = pageTitle;
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         logWithLocale("Using fallback page title");
       }
       
-      // Traduire les éléments par ID
+      // Translate elements by ID
       const elementsToTranslate = {
         "infoHeading": "infoHeading",
         "infoFeatures": "infoFeatures",
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
         "permCookies": "permCookiesDescription"
       };
       
-      // Appliquer toutes les traductions
+      // Apply all translations
       let translationsApplied = 0;
       let missingTranslations = 0;
       

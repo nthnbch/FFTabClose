@@ -3,7 +3,7 @@
  * Manages domain rules in the popup UI
  * 
  * Version 3.0.0
- * Last updated: 17 juillet 2025
+ * Last updated: 18 July 2025
  */
 
 // Handle adding a new domain rule

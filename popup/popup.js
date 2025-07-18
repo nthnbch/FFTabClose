@@ -2,8 +2,8 @@
  * FFTabClose - Popup Script
  * Handles popup UI interactions and communication with background script
  * 
- * Version 2.0.2 (Security Enhanced)
- * Last updated: 14 juillet 2025
+ * Version 3.0.0
+ * Last updated: 18 July 2025
  */
 
 // Helper function to sanitize text content (XSS protection)
@@ -32,7 +32,7 @@ function applyReducedMotion() {
   }
 }
 
-// Fonction pour charger les traductions avec validation
+// Load translations and initialize the UI
 document.addEventListener('DOMContentLoaded', function() {
   try {
     // Apply reduced motion settings
@@ -42,10 +42,10 @@ document.addEventListener('DOMContentLoaded', function() {
     window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', applyReducedMotion);
     
     if (typeof browser !== 'undefined' && browser.i18n) {
-      // Traduire les éléments par ID avec sanitization
+      // Translate UI elements by ID with sanitization
       const elementsToTranslate = {
         "extensionName": "extensionName",
-        "infoLink": "infoLinkText", // Ajout de la traduction du lien info
+        "infoLink": "infoLinkText", // Add translation for info link
         "timeLimitLabel": "timeLimitLabel",
         "timeTest": "time1min",
         "time15min": "time15min",
@@ -76,23 +76,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       
-      // S'assurer que le lien d'info a le texte correct et est sécurisé
+      // Ensure info link has correct text and is secure
       const infoLink = document.getElementById("infoLink");
       if (infoLink) {
         infoLink.textContent = sanitizeHTML(browser.i18n.getMessage("infoLinkText") || "Info");
-        // S'assurer que le lien reste dans l'extension (sécurité)
+        // Ensure link stays within the extension (security best practice)
         infoLink.setAttribute("href", "../info/info.html");
       }
       
-      // Configurer les événements
+      // Set up event listeners
       document.getElementById("timeLimit").addEventListener("change", saveSettings);
       document.getElementById("closeTabsButton").addEventListener("click", closeOldTabs);
       document.getElementById("addDomainRule").addEventListener("click", addDomainRule);
       
-      // Charger les paramètres au démarrage
+      // Load settings on startup
       loadSettings();
       
-      // Charger les règles de domaine
+      // Load domain rules
       loadDomainRules();
     }
   } catch (error) {
@@ -100,21 +100,21 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Fonction pour mettre à jour les statistiques
+// Update tab statistics in the popup
 async function updateStats() {
   try {
     const stats = await browser.runtime.sendMessage({action: 'getTabStats'});
     document.getElementById("totalTabs").textContent = stats.totalTabs;
     document.getElementById("eligibleTabs").textContent = stats.eligibleTabs;
     
-    // Formater l'âge de l'onglet le plus ancien
+    // Format the age of the oldest tab
     document.getElementById("oldestTab").textContent = formatTimeForDisplay(stats.oldestTabAge || 0);
   } catch (error) {
     console.error("Error updating stats:", error);
   }
 }
 
-// Formater le temps pour l'affichage
+// Format time duration for display (minutes to human-readable format)
 function formatTimeForDisplay(minutes) {
   if (minutes < 60) {
     return `${minutes} ${browser.i18n.getMessage('timeMin')}`;
@@ -129,7 +129,7 @@ function formatTimeForDisplay(minutes) {
   }
 }
 
-// Fonction pour sauvegarder les paramètres
+// Save user preferences to storage
 async function saveSettings() {
   try {
     const timeLimit = document.getElementById("timeLimit").value;
@@ -145,28 +145,7 @@ async function saveSettings() {
   }
 }
 
-// Fonction pour fermer les onglets anciens
-async function closeOldTabs() {
-  try {
-    document.getElementById("closeTabsButton").textContent = browser.i18n.getMessage("closingTabsProgress") || "Closing...";
-    document.getElementById("closeTabsButton").disabled = true;
-    
-    await browser.runtime.sendMessage({action: 'closeOldTabs'});
-    
-    // Petit délai pour permettre l'actualisation des statistiques
-    setTimeout(() => {
-      updateStats();
-      document.getElementById("closeTabsButton").textContent = browser.i18n.getMessage("closeTabsButton") || "Close Old Tabs Now";
-      document.getElementById("closeTabsButton").disabled = false;
-    }, 1000);
-  } catch (error) {
-    console.error("Error closing tabs:", error);
-    document.getElementById("closeTabsButton").textContent = browser.i18n.getMessage("closeTabsButton") || "Close Old Tabs Now";
-    document.getElementById("closeTabsButton").disabled = false;
-  }
-}
-
-// Charger les paramètres actuels
+// Load current settings from storage
 async function loadSettings() {
   try {
     const settings = await browser.runtime.sendMessage({action: 'getSettings'});

@@ -3,7 +3,7 @@
  * Handles the domain rule dialog UI interactions
  * 
  * Version 3.0.0
- * Last updated: 17 juillet 2025
+ * Last updated: 18 July 2025
  */
 
 // Helper function to sanitize text content (XSS protection)
