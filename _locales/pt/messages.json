@@ -15,6 +15,10 @@
     "message": "Fechar abas mais antigas que:",
     "description": "Label for time limit setting."
   },
+  "time1min": {
+    "message": "1 minuto (teste)",
+    "description": "1 minute time limit option."
+  },
   "time15min": {
     "message": "15 minutos",
     "description": "15 minute time limit option."

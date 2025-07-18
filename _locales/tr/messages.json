@@ -15,6 +15,10 @@
     "message": "Şundan eski sekmeleri kapat:",
     "description": "Label for time limit setting."
   },
+  "time1min": {
+    "message": "1 dakika (test)",
+    "description": "1 minute time limit option."
+  },
   "time15min": {
     "message": "15 dakika",
     "description": "15 minute time limit option."

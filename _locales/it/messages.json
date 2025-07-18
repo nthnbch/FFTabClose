@@ -16,7 +16,7 @@
     "description": "Label for time limit setting."
   },
   "time1min": {
-    "message": "1 minuto",
+    "message": "1 minuto (test)",
     "description": "Opzione di limite di tempo di 1 minuto."
   },
   "time15min": {
@@ -138,5 +138,45 @@
   "infoLinkText": {
     "message": "Scopri di più su FFTabClose",
     "description": "Testo per il link alla pagina informativa."
+  },
+  "timeTest": {
+    "message": "1 minuto (test)",
+    "description": "1 minute time limit option for testing."
+  },
+  "domainRulesLabel": {
+    "message": "Eccezioni di dominio:",
+    "description": "Label for domain rules setting."
+  },
+  "noDomainRulesText": {
+    "message": "Nessuna configurata",
+    "description": "Text shown when no domain rules are configured."
+  },
+  "infoTimerDescription": {
+    "message": "Ogni scheda ha il proprio timer che inizia quando viene aperta o attivata. Le schede vengono chiuse o scaricate automaticamente una volta superato il limite di tempo specificato. Le tue impostazioni persistono anche al riavvio del browser.",
+    "description": "Description of how the timer system works."
+  },
+  "infoExclusionsDescription": {
+    "message": "Le schede che stanno riproducendo audio non vengono mai chiuse o scaricate. Le schede appuntate non vengono chiuse ma possono essere scaricate per risparmiare memoria. Le schede attualmente attive in qualsiasi finestra non vengono mai chiuse.",
+    "description": "Description of which tabs are protected from closing."
+  },
+  "infoPrivacyDescription": {
+    "message": "FFTabClose richiede i seguenti permessi:",
+    "description": "Introduction to the permissions section."
+  },
+  "permTabsDescription": {
+    "message": "Per monitorare e gestire le schede in tutte le finestre",
+    "description": "Description of the tabs permission."
+  },
+  "permStorageDescription": {
+    "message": "Per salvare le tue preferenze e i timer delle schede",
+    "description": "Description of the storage permission."
+  },
+  "permAlarmsDescription": {
+    "message": "Per programmare controlli periodici delle schede",
+    "description": "Description of the alarms permission."
+  },
+  "infoDiscardDescription": {
+    "message": "Lo scaricamento rimuove il contenuto della scheda dalla memoria ma mantiene la scheda visibile. Le schede si ricaricano automaticamente quando ci si clicca sopra.",
+    "description": "Description of how tab discarding works."
   }
 }

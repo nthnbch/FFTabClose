@@ -16,7 +16,7 @@
     "description": "Label for time limit setting."
   },
   "time1min": {
-    "message": "1 Minute",
+    "message": "1 Minute (Test)",
     "description": "Option für Zeitlimit von 1 Minute."
   },
   "time15min": {
@@ -138,5 +138,45 @@
   "infoLinkText": {
     "message": "Erfahren Sie mehr über FFTabClose",
     "description": "Text für den Link zur Informationsseite."
+  },
+  "timeTest": {
+    "message": "1 Minute (Test)",
+    "description": "1 minute time limit option for testing."
+  },
+  "domainRulesLabel": {
+    "message": "Domain-Ausnahmen:",
+    "description": "Label for domain rules setting."
+  },
+  "noDomainRulesText": {
+    "message": "Keine konfiguriert",
+    "description": "Text shown when no domain rules are configured."
+  },
+  "infoTimerDescription": {
+    "message": "Jeder Tab hat seinen eigenen Timer, der startet, wenn er geöffnet oder aktiviert wird. Tabs werden automatisch geschlossen oder entladen, sobald sie Ihr angegebenes Zeitlimit überschreiten. Ihre Einstellungen bleiben auch beim Neustart des Browsers erhalten.",
+    "description": "Description of how the timer system works."
+  },
+  "infoExclusionsDescription": {
+    "message": "Tabs, die Audio abspielen, werden nie geschlossen oder entladen. Angeheftete Tabs werden nicht geschlossen, können aber entladen werden, um Speicher zu sparen. Aktuell aktive Tabs in jedem Fenster werden nie geschlossen.",
+    "description": "Description of which tabs are protected from closing."
+  },
+  "infoPrivacyDescription": {
+    "message": "FFTabClose benötigt die folgenden Berechtigungen:",
+    "description": "Introduction to the permissions section."
+  },
+  "permTabsDescription": {
+    "message": "Um Tabs in allen Fenstern zu überwachen und zu verwalten",
+    "description": "Description of the tabs permission."
+  },
+  "permStorageDescription": {
+    "message": "Um Ihre Einstellungen und Tab-Timer zu speichern",
+    "description": "Description of the storage permission."
+  },
+  "permAlarmsDescription": {
+    "message": "Um regelmäßige Tab-Überprüfungen zu planen",
+    "description": "Description of the alarms permission."
+  },
+  "infoDiscardDescription": {
+    "message": "Entladen entfernt den Tab-Inhalt aus dem Speicher, lässt den Tab aber sichtbar. Tabs werden automatisch neu geladen, wenn Sie darauf klicken.",
+    "description": "Description of how tab discarding works."
   }
 }

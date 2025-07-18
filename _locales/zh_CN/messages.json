@@ -15,6 +15,10 @@
     "message": "关闭超过以下时间的标签页：",
     "description": "Label for time limit setting."
   },
+  "time1min": {
+    "message": "1分钟 (测试)",
+    "description": "1 minute time limit option."
+  },
   "time15min": {
     "message": "15分钟",
     "description": "15 minute time limit option."

@@ -15,6 +15,10 @@
     "message": "Sluit tabbladen ouder dan:",
     "description": "Label for time limit setting."
   },
+  "time1min": {
+    "message": "1 minuut (test)",
+    "description": "1 minute time limit option."
+  },
   "time15min": {
     "message": "15 minuten",
     "description": "15 minute time limit option."

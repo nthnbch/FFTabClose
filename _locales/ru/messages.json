@@ -15,6 +15,10 @@
     "message": "Закрывать вкладки старше:",
     "description": "Label for time limit setting."
   },
+  "time1min": {
+    "message": "1 минута (тест)",
+    "description": "1 minute time limit option."
+  },
   "time15min": {
     "message": "15 минут",
     "description": "15 minute time limit option."

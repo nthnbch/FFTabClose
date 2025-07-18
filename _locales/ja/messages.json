@@ -130,5 +130,53 @@
   "infoPrivacy": {
     "message": "プライバシー & 権限",
     "description": "Privacy section heading."
+  },
+  "time1min": {
+    "message": "1分 (テスト)",
+    "description": "1 minute time limit option."
+  },
+  "timeTest": {
+    "message": "1分（テスト）",
+    "description": "1 minute time limit option for testing."
+  },
+  "domainRulesLabel": {
+    "message": "ドメイン例外：",
+    "description": "Label for domain rules setting."
+  },
+  "noDomainRulesText": {
+    "message": "設定なし",
+    "description": "Text shown when no domain rules are configured."
+  },
+  "infoTimerDescription": {
+    "message": "各タブには、開いたり選択したりしたときに開始する独自のタイマーがあります。タブは指定した時間制限を超えると自動的に閉じられるか破棄されます。設定はブラウザを再起動しても保持されます。",
+    "description": "Description of how the timer system works."
+  },
+  "infoExclusionsDescription": {
+    "message": "音声を再生しているタブは閉じられたり破棄されたりすることはありません。ピン留めされたタブは閉じられませんが、メモリを節約するために破棄することができます。どのウィンドウでも現在アクティブなタブは閉じられません。",
+    "description": "Description of which tabs are protected from closing."
+  },
+  "infoPrivacyDescription": {
+    "message": "FFTabCloseは以下の権限を必要とします：",
+    "description": "Introduction to the permissions section."
+  },
+  "permTabsDescription": {
+    "message": "すべてのウィンドウでタブを監視および管理するため",
+    "description": "Description of the tabs permission."
+  },
+  "permStorageDescription": {
+    "message": "設定とタブタイマーを保存するため",
+    "description": "Description of the storage permission."
+  },
+  "permAlarmsDescription": {
+    "message": "定期的なタブチェックをスケジュールするため",
+    "description": "Description of the alarms permission."
+  },
+  "infoDiscardDescription": {
+    "message": "破棄するとタブの内容をメモリから解放しますが、タブは表示されたままです。タブをクリックすると自動的に再読み込みされます。",
+    "description": "Description of how tab discarding works."
+  },
+  "infoLinkText": {
+    "message": "FFTabCloseについてもっと知る",
+    "description": "Text for the link to the informational page."
   }
 }

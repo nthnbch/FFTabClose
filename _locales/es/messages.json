@@ -16,7 +16,7 @@
     "description": "Label for time limit setting."
   },
   "time1min": {
-    "message": "1 minuto",
+    "message": "1 minuto (prueba)",
     "description": "Opción de límite de tiempo de 1 minuto."
   },
   "time15min": {
@@ -138,5 +138,45 @@
   "infoLinkText": {
     "message": "Más información sobre FFTabClose",
     "description": "Texto para el enlace a la página informativa."
+  },
+  "timeTest": {
+    "message": "1 minuto (prueba)",
+    "description": "1 minute time limit option for testing."
+  },
+  "domainRulesLabel": {
+    "message": "Excepciones de dominio:",
+    "description": "Label for domain rules setting."
+  },
+  "noDomainRulesText": {
+    "message": "Ninguna configurada",
+    "description": "Text shown when no domain rules are configured."
+  },
+  "infoTimerDescription": {
+    "message": "Cada pestaña tiene su propio temporizador que comienza cuando se abre o activa. Las pestañas se cierran o descargan automáticamente una vez que exceden el límite de tiempo especificado. Tus configuraciones se mantienen incluso al reiniciar el navegador.",
+    "description": "Description of how the timer system works."
+  },
+  "infoExclusionsDescription": {
+    "message": "Las pestañas que reproducen audio nunca se cierran o descargan. Las pestañas fijadas no se cierran pero pueden descargarse para ahorrar memoria. Las pestañas activas en cualquier ventana nunca se cierran.",
+    "description": "Description of which tabs are protected from closing."
+  },
+  "infoPrivacyDescription": {
+    "message": "FFTabClose requiere los siguientes permisos:",
+    "description": "Introduction to the permissions section."
+  },
+  "permTabsDescription": {
+    "message": "Para monitorear y gestionar pestañas en todas las ventanas",
+    "description": "Description of the tabs permission."
+  },
+  "permStorageDescription": {
+    "message": "Para guardar tus preferencias y temporizadores de pestañas",
+    "description": "Description of the storage permission."
+  },
+  "permAlarmsDescription": {
+    "message": "Para programar verificaciones periódicas de pestañas",
+    "description": "Description of the alarms permission."
+  },
+  "infoDiscardDescription": {
+    "message": "La descarga elimina el contenido de una pestaña de la memoria pero mantiene la pestaña visible. Las pestañas se recargan automáticamente cuando haces clic en ellas.",
+    "description": "Description of how tab discarding works."
   }
 }
