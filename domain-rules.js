@@ -2,8 +2,8 @@
  * FFTabClose - Domain Rules Manager
  * Handles domain-specific tab closure rules
  * 
- * Version 3.0.0
- * Last updated: 18 July 2025
+ * Version 3.0.1
+ * Last updated: 16 September 2025
  */
 
 // Domain rule structure
@@ -92,6 +92,16 @@ class DomainRuleManager {
   // Check if URL matches any rule
   getMatchingRule(url) {
     try {
+      // Verify url is a valid string
+      if (!url || typeof url !== 'string') {
+        return null;
+      }
+      
+      // Skip non-HTTP URLs (like chrome://, about:, etc.)
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return null;
+      }
+      
       const hostname = new URL(url).hostname;
       
       // Try exact hostname match first
@@ -124,30 +134,36 @@ class DomainRuleManager {
 
   // Should tab be closed based on rules
   shouldProcessTab(tab, defaultTimeout) {
-    // If no URL, use default processing
-    if (!tab.url) {
-      return { shouldProcess: true, timeout: defaultTimeout };
-    }
-    
-    const rule = this.getMatchingRule(tab.url);
-    
-    // If no rule matches, use default processing
-    if (!rule) {
-      return { shouldProcess: true, timeout: defaultTimeout };
-    }
-    
-    switch(rule.action) {
-      case 'never-close':
-        return { shouldProcess: false, timeout: null };
-      
-      case 'always-close':
-        return { shouldProcess: true, timeout: 0 }; // 0 means close immediately
-      
-      case 'custom-timeout':
-        return { shouldProcess: true, timeout: rule.timeout };
-      
-      default:
+    try {
+      // If no URL, use default processing
+      if (!tab || !tab.url) {
         return { shouldProcess: true, timeout: defaultTimeout };
+      }
+      
+      const rule = this.getMatchingRule(tab.url);
+      
+      // If no rule matches, use default processing
+      if (!rule) {
+        return { shouldProcess: true, timeout: defaultTimeout };
+      }
+      
+      switch(rule.action) {
+        case 'never-close':
+          return { shouldProcess: false, timeout: null };
+        
+        case 'always-close':
+          return { shouldProcess: true, timeout: 0 }; // 0 means close immediately
+        
+        case 'custom-timeout':
+          return { shouldProcess: true, timeout: rule.timeout };
+        
+        default:
+          return { shouldProcess: true, timeout: defaultTimeout };
+      }
+    } catch (error) {
+      console.error("Error in shouldProcessTab:", error);
+      // En cas d'erreur, utiliser le comportement par défaut
+      return { shouldProcess: true, timeout: defaultTimeout };
     }
   }
 }

@@ -2,8 +2,8 @@
  * FFTabClose - Auto Tab Closer
  * Background script for automatic tab closure and management
  * 
- * Version 3.0.0
- * Last updated: 18 July 2025
+ * Version 3.0.4
+ * Last updated: 02 October 2023
  * 
  * Notes on Zen Browser and workspaces:
  * - Workspaces in Zen Browser are similar to Firefox containers
@@ -13,8 +13,12 @@
  *   without specifying a particular window or container
  */
 
-// Import domain rules manager
-import DomainRuleManager from './domain-rules.js';
+// Import domain rules manager - Using dynamic import instead of static import
+let DomainRuleManager;
+let domainRulesLoaded = false;
+
+// Import Zen utility functions
+import { isZenWorkspace, isTabInZenWorkspace, getAllTabsAcrossWorkspaces, getAllActiveTabsAcrossWorkspaces } from './zen-utils.js';
 
 // Constants
 const DEFAULT_SETTINGS = {
@@ -34,10 +38,26 @@ const DEBUG_MODE = false; // Set to false in production to disable verbose loggi
 // State variables
 let tabTimestamps = {};
 let settings = {};
-const domainRules = new DomainRuleManager();
+let domainRules = null;
 
 // Initialize
 async function initialize() {
+  // Initialiser DomainRuleManager de manière dynamique
+  try {
+    // Utiliser import dynamique pour charger le module
+    const module = await import('./domain-rules.js');
+    DomainRuleManager = module.default;
+    domainRules = new DomainRuleManager();
+    domainRulesLoaded = true;
+    console.log("Domain rules manager loaded successfully");
+  } catch (error) {
+    console.error("Failed to load domain rules manager:", error);
+    // Créer un gestionnaire de règles de domaine factice pour éviter les erreurs
+    domainRules = {
+      loadRules: async () => [],
+      shouldProcessTab: () => ({ shouldProcess: true, timeout: null })
+    };
+  }
   // Log browser environment information for debugging
   try {
     const browserInfo = await browser.runtime.getBrowserInfo();
@@ -58,18 +78,73 @@ async function initialize() {
   settings = { ...DEFAULT_SETTINGS, ...(storedSettings[SETTINGS_KEY] || {}) };
   
   // Load tab timestamps
-  const storedTimestamps = await browser.storage.local.get(STORAGE_KEY);
-  tabTimestamps = storedTimestamps[STORAGE_KEY] || {};
+  try {
+    const storedTimestamps = await browser.storage.local.get(STORAGE_KEY);
+    if (storedTimestamps && storedTimestamps[STORAGE_KEY]) {
+      tabTimestamps = storedTimestamps[STORAGE_KEY];
+      if (DEBUG_MODE) {
+        console.log(`Loaded ${Object.keys(tabTimestamps).length} timestamps from storage`);
+      }
+    } else {
+      tabTimestamps = {};
+      if (DEBUG_MODE) {
+        console.log("No stored timestamps found, starting fresh");
+      }
+    }
+  } catch (error) {
+    console.error("Error loading timestamps:", error);
+    tabTimestamps = {};
+  }
   
   // Load domain rules
-  await domainRules.loadRules();
+  if (domainRulesLoaded) {
+    await domainRules.loadRules();
+  }
   
   // Set up alarm for periodic tab checks
   browser.alarms.create(ALARM_NAME, { periodInMinutes: CHECK_INTERVAL });
   
   // First get all tabs in all windows
   // This is the most reliable method to detect all workspaces
-  const allTabs = await browser.tabs.query({});
+  let allTabs = [];
+  
+  try {
+    // Méthode 1: Requête globale sans filtres pour maximiser la détection de tous les onglets
+    allTabs = await browser.tabs.query({});
+    
+    if (DEBUG_MODE) {
+      console.log(`Method 1: Detected ${allTabs.length} tabs with global query`);
+    }
+    
+    // Si aucun onglet n'est trouvé (très improbable), essayer d'autres méthodes
+    if (allTabs.length === 0) {
+      // Méthode 2: Requête explicite par fenêtre
+      const allWindows = await browser.windows.getAll();
+      for (const window of allWindows) {
+        try {
+          const windowTabs = await browser.tabs.query({ windowId: window.id });
+          allTabs = allTabs.concat(windowTabs);
+        } catch (windowError) {
+          console.error(`Error getting tabs for window ${window.id}:`, windowError);
+        }
+      }
+      
+      if (DEBUG_MODE) {
+        console.log(`Method 2: Detected ${allTabs.length} tabs with window-specific queries`);
+      }
+    }
+    
+    // Dernier recours: si toujours aucun onglet, réessayer avec un délai
+    if (allTabs.length === 0) {
+      console.warn("No tabs detected with standard methods, will retry later");
+      // Programmer une récupération différée des onglets
+      setTimeout(recordAllCurrentTabs, 5000);
+    }
+  } catch (error) {
+    console.error("Error detecting tabs:", error);
+    allTabs = []; // Initialiser comme tableau vide en cas d'erreur
+  }
+  
   const uniqueWindowIds = [...new Set(allTabs.map(tab => tab.windowId))];
   
   if (DEBUG_MODE) {
@@ -84,15 +159,32 @@ async function initialize() {
   
   // Check for contextualIdentities feature (containers)
   let containersSupported = false;
+  let zenWorkspacesDetected = false;
   try {
     if (browser.contextualIdentities) {
       const containers = await browser.contextualIdentities.query({});
       containersSupported = true;
+      
+      // Détection spécifique des espaces Zen Browser
+      const zenContainers = containers.filter(container => 
+        container.name.includes('zen') || 
+        container.name.includes('Zen') || 
+        container.cookieStoreId.includes('zen')
+      );
+      
+      zenWorkspacesDetected = zenContainers.length > 0;
+      
       if (DEBUG_MODE && containers.length > 0) {
         console.log(`Detected ${containers.length} containers:`);
         containers.forEach(container => {
-          console.log(` - ${container.name} (${container.cookieStoreId})`);
+          const isZenWorkspace = zenContainers.some(zc => zc.cookieStoreId === container.cookieStoreId);
+          const zenLabel = isZenWorkspace ? ' (Zen Workspace)' : '';
+          console.log(` - ${container.name}${zenLabel} (${container.cookieStoreId})`);
         });
+        
+        if (zenWorkspacesDetected) {
+          console.log(`Detected ${zenContainers.length} Zen workspaces`);
+        }
         
         // Check available cookieStoreIds (containers) in tabs
         const cookieStoreIds = [...new Set(allTabs.map(tab => tab.cookieStoreId).filter(Boolean))];
@@ -102,7 +194,9 @@ async function initialize() {
           // Analyze tab distribution by container
           cookieStoreIds.forEach(containerId => {
             const containerTabs = allTabs.filter(tab => tab.cookieStoreId === containerId);
-            console.log(`Container ${containerId}: ${containerTabs.length} tabs`);
+            const isZenWorkspace = zenContainers.some(zc => zc.cookieStoreId === containerId);
+            const zenLabel = isZenWorkspace ? ' (Zen Workspace)' : '';
+            console.log(`Container ${containerId}${zenLabel}: ${containerTabs.length} tabs`);
           });
         }
       }
@@ -132,146 +226,149 @@ async function initialize() {
 
 // Tab event listeners
 async function recordAllCurrentTabs() {
-  let tabs = [];
   const now = Date.now();
   
   try {
-    // Main query to get ALL tabs in ALL windows and ALL containers
-    // This is the most reliable method to ensure we capture everything
-    tabs = await browser.tabs.query({});
+    // Utiliser notre fonction utilitaire pour récupérer tous les onglets
+    // dans tous les espaces, y compris les espaces Zen
+    const tabs = await getAllTabsAcrossWorkspaces();
     
     if (DEBUG_MODE) {
-      console.log(`Recorded ${tabs.length} tabs across all windows and containers`);
+      console.log(`Recorded ${tabs.length} tabs across all windows and workspaces`);
       
-      // Check distribution by window
+      // Analyze windows for debugging
       const windowIds = [...new Set(tabs.map(tab => tab.windowId))];
       console.log(`Tabs distributed across ${windowIds.length} windows/workspaces`);
       
-      // Check distribution by container
-      const cookieStoreIds = [...new Set(tabs.map(tab => tab.cookieStoreId).filter(Boolean))];
-      if (cookieStoreIds.length > 0) {
-        console.log(`Tabs using ${cookieStoreIds.length} different containers`);
-      }
-    }
-    
-    // Secondary verification if needed - use containers API for reporting only
-    if (browser.contextualIdentities) {
-      try {
-        const containers = await browser.contextualIdentities.query({});
+      // Analyze containers for debugging
+      const containerIds = [...new Set(tabs.map(tab => tab.cookieStoreId).filter(Boolean))];
+      if (containerIds.length > 0) {
+        console.log(`Tabs distributed across ${containerIds.length} containers/workspaces`);
         
-        if (DEBUG_MODE && containers.length > 0) {
-          console.log(`Available containers: ${containers.length}`);
-          containers.forEach(container => {
-            // Count tabs in this specific container
-            const containerTabs = tabs.filter(tab => tab.cookieStoreId === container.cookieStoreId);
-            console.log(` - ${container.name} (${container.cookieStoreId}): ${containerTabs.length} tabs`);
-          });
-        }
-      } catch (error) {
-        console.warn("Error querying contextualIdentities for reporting:", error);
-      }
-    }
-  } catch (error) {
-    console.error("Error in primary tab query:", error);
-    
-    // In case of failure, try an alternative approach by window
-    try {
-      console.log("Trying fallback approach - querying by window");
-      tabs = [];
-      
-      const windows = await browser.windows.getAll();
-      for (const window of windows) {
-        try {
-          const windowTabs = await browser.tabs.query({ windowId: window.id });
-          tabs = tabs.concat(windowTabs);
-          console.log(`Retrieved ${windowTabs.length} tabs from window ${window.id}`);
-        } catch (windowError) {
-          console.error(`Error retrieving tabs from window ${window.id}:`, windowError);
+        // Check for Zen workspaces
+        const zenContainers = containerIds.filter(id => id.includes('zen') || id.includes('container'));
+        if (zenContainers.length > 0) {
+          console.log(`Detected ${zenContainers.length} potential Zen workspaces: ${zenContainers.join(', ')}`);
         }
       }
-    } catch (fallbackError) {
-      console.error("Fallback approach failed:", fallbackError);
-      return; // Cannot continue
     }
-  }
-  
-  if (tabs.length === 0) {
-    console.error("Critical error: No tabs found with any method");
-    return; // Cannot continue without tabs
-  }
-  
-  // Group tabs by window (workspaces) for debugging
-  const windowsMap = new Map();
-  const containerMap = new Map();
-  
-  // Create an entry for each window and container
-  tabs.forEach(tab => {
-    // Group by window
-    if (!windowsMap.has(tab.windowId)) {
-      windowsMap.set(tab.windowId, []);
-    }
-    windowsMap.get(tab.windowId).push(tab);
     
-    // Group by container
-    const containerId = tab.cookieStoreId || 'firefox-default';
-    if (!containerMap.has(containerId)) {
-      containerMap.set(containerId, []);
-    }
-    containerMap.get(containerId).push(tab);
+    // Group tabs by window (workspaces) for debugging
+    const windowsMap = new Map();
+    const containerMap = new Map();
     
-    // Update the tab timestamp - IMPORTANT for closing
-    tabTimestamps[tab.id] = tabTimestamps[tab.id] || now;
-  });
-  
-  // Log workspace details in DEBUG mode
-  if (DEBUG_MODE) {
-    console.log(`Recorded details for ${tabs.length} tabs across ${windowsMap.size} windows/workspaces`);
-    
-    // Log by window
-    windowsMap.forEach((windowTabs, windowId) => {
-      console.log(`Workspace/Window ${windowId}: ${windowTabs.length} tabs`);
-      
-      // Check if some tabs have different cookieStoreIds (containers)
-      const cookieStoreIds = [...new Set(windowTabs.map(tab => tab.cookieStoreId).filter(Boolean))];
-      if (cookieStoreIds.length > 0) {
-        console.log(`Window ${windowId} has tabs with cookie stores: ${cookieStoreIds.join(', ')}`);
+    // Create an entry for each window and container
+    tabs.forEach(tab => {
+      // Group by window
+      if (!windowsMap.has(tab.windowId)) {
+        windowsMap.set(tab.windowId, []);
       }
+      windowsMap.get(tab.windowId).push(tab);
+      
+      // Group by container
+      const containerId = tab.cookieStoreId || 'firefox-default';
+      if (!containerMap.has(containerId)) {
+        containerMap.set(containerId, []);
+      }
+      containerMap.get(containerId).push(tab);
+      
+      // Update the tab timestamp - IMPORTANT for closing
+      tabTimestamps[tab.id] = tabTimestamps[tab.id] || now;
     });
     
-    // Log by container
-    if (containerMap.size > 1) {
-      console.log(`\nContainer breakdown:`);
-      containerMap.forEach((containerTabs, containerId) => {
-        console.log(`Container ${containerId}: ${containerTabs.length} tabs`);
+    // Log workspace details in DEBUG mode
+    if (DEBUG_MODE) {
+      console.log(`Recorded details for ${tabs.length} tabs across ${windowsMap.size} windows/workspaces`);
+      
+      // Collect Zen workspaces information if containers are supported
+      let zenWorkspaces = [];
+      if (browser.contextualIdentities) {
+        try {
+          const containers = await browser.contextualIdentities.query({});
+          zenWorkspaces = containers.filter(container => isZenWorkspace(container));
+        } catch (error) {
+          console.warn("Error querying contextualIdentities for Zen workspaces:", error);
+        }
+      }
+      
+      // Log by window
+      windowsMap.forEach((windowTabs, windowId) => {
+        console.log(`Workspace/Window ${windowId}: ${windowTabs.length} tabs`);
         
-        // Check which windows contain these tabs
-        const windowIds = [...new Set(containerTabs.map(tab => tab.windowId))];
-        console.log(`  Used in ${windowIds.length} windows: ${windowIds.join(', ')}`);
+        // Check if some tabs have different cookieStoreIds (containers)
+        const cookieStoreIds = [...new Set(windowTabs.map(tab => tab.cookieStoreId).filter(Boolean))];
+        if (cookieStoreIds.length > 0) {
+          // Identify Zen workspaces
+          const zenCookieStores = cookieStoreIds.filter(id => 
+            zenWorkspaces.some(zw => zw.cookieStoreId === id) ||
+            id.includes('zen') ||
+            id.includes('container')
+          );
+          
+          if (zenCookieStores.length > 0) {
+            console.log(`Window ${windowId} has Zen workspaces: ${zenCookieStores.join(', ')}`);
+          }
+          
+          console.log(`Window ${windowId} has tabs with cookie stores: ${cookieStoreIds.join(', ')}`);
+        }
       });
+      
+      // Log by container
+      if (containerMap.size > 1) {
+        console.log(`\nContainer breakdown:`);
+        containerMap.forEach((containerTabs, containerId) => {
+          // Check if this is a Zen workspace
+          const isZen = zenWorkspaces.some(zw => zw.cookieStoreId === containerId) || 
+                        containerId.includes('zen') ||
+                        containerId.includes('container');
+          const zenLabel = isZen ? ' (Zen Workspace)' : '';
+          
+          console.log(`Container ${containerId}${zenLabel}: ${containerTabs.length} tabs`);
+          
+          // Check which windows contain these tabs
+          const windowIds = [...new Set(containerTabs.map(tab => tab.windowId))];
+          console.log(`  Used in ${windowIds.length} windows: ${windowIds.join(', ')}`);
+        });
+      }
     }
+    
+    // Save the updated timestamps - CRUCIAL for tabs to be closed correctly
+    await saveTabTimestamps();
+  } catch (error) {
+    console.error("Error in recordAllCurrentTabs:", error);
   }
-  
-  // Save the updated timestamps - CRUCIAL for tabs to be closed correctly
-  await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
+}
+
+async function saveTabTimestamps() {
+  try {
+    await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
+    if (DEBUG_MODE) {
+      console.log(`Saved ${Object.keys(tabTimestamps).length} timestamps to storage`);
+    }
+    return true;
+  } catch (error) {
+    console.error("Error saving timestamps:", error);
+    return false;
+  }
 }
 
 async function handleTabCreated(tab) {
   // Set timestamp for new tab
   tabTimestamps[tab.id] = Date.now();
-  await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
+  await saveTabTimestamps();
 }
 
 async function handleTabActivated(activeInfo) {
   // Update timestamp when tab is activated
   tabTimestamps[activeInfo.tabId] = Date.now();
-  await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
+  await saveTabTimestamps();
 }
 
 async function handleTabRemoved(tabId) {
   // Remove timestamp for closed tab
   if (tabTimestamps[tabId]) {
     delete tabTimestamps[tabId];
-    await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
+    await saveTabTimestamps();
   }
 }
 
@@ -279,7 +376,7 @@ async function handleTabUpdated(tabId, changeInfo) {
   // Update timestamp when tab is reloaded or URL changes
   if (changeInfo.status === 'complete' || changeInfo.url) {
     tabTimestamps[tabId] = Date.now();
-    await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
+    await saveTabTimestamps();
   }
 }
 
@@ -315,7 +412,7 @@ async function handleWindowFocusChanged(windowId) {
     if (activeTab) {
       // Update the timestamp of the active tab
       tabTimestamps[activeTab.id] = Date.now();
-      await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
+      await saveTabTimestamps();
       
       if (DEBUG_MODE) {
         console.log(`Updated timestamp for active tab ${activeTab.id} in workspace ${windowId}`);
@@ -336,12 +433,14 @@ async function forceUpdateAllTabTimestamps() {
     console.log("Force updating all tab timestamps");
   }
   
-  let tabs = [];
-  
   try {
-    // Retrieve ALL tabs in all windows and all containers
-    // This method is the most reliable to get all tabs
-    tabs = await browser.tabs.query({});
+    // Utiliser notre fonction utilitaire pour récupérer tous les onglets
+    // dans tous les espaces, y compris les espaces Zen
+    const tabs = await getAllTabsAcrossWorkspaces();
+    
+    // Utiliser notre fonction utilitaire pour récupérer tous les onglets actifs
+    // dans tous les espaces, y compris les espaces Zen
+    const activeTabs = await getAllActiveTabsAcrossWorkspaces();
     
     if (DEBUG_MODE) {
       console.log(`Found ${tabs.length} tabs to update timestamps`);
@@ -353,354 +452,269 @@ async function forceUpdateAllTabTimestamps() {
       const cookieStoreIds = [...new Set(tabs.map(tab => tab.cookieStoreId).filter(Boolean))];
       if (cookieStoreIds.length > 0) {
         console.log(`Tabs using ${cookieStoreIds.length} different containers: ${cookieStoreIds.join(', ')}`);
+        
+        // Check for Zen workspaces
+        const zenContainers = cookieStoreIds.filter(id => id.includes('zen') || id.includes('container'));
+        if (zenContainers.length > 0) {
+          console.log(`Detected ${zenContainers.length} potential Zen workspaces: ${zenContainers.join(', ')}`);
+        }
       }
+      
+      console.log(`Found ${activeTabs.length} active tabs across all windows`);
+      
+      // Log details about active tabs
+      activeTabs.forEach(tab => {
+        const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
+        const zenInfo = isTabInZenWorkspace(tab) ? ' [ZEN]' : '';
+        console.log(`Active tab in window ${tab.windowId}${containerInfo}${zenInfo}: ${tab.title}`);
+      });
     }
-  } catch (error) {
-    console.error("Error retrieving tabs in forceUpdateAllTabTimestamps:", error);
-    return; // Do not continue in case of critical error
-  }
-  
-  if (tabs.length === 0) {
-    console.error("No tabs found to update timestamps");
-    return; // Do not continue without tabs
-  }
-  
-  const now = Date.now();
-  
-  // Update only the timestamps of active tabs in each window
-  let activeTabs = [];
-  try {
-    activeTabs = await browser.tabs.query({ active: true });
-  } catch (error) {
-    console.error("Error getting active tabs:", error);
-    // En cas d'erreur, initialiser comme tableau vide
-    activeTabs = [];
-  }
-  
-  const activeTabIds = new Set(activeTabs.map(tab => tab.id));
-  
-  if (DEBUG_MODE) {
-    console.log(`Found ${activeTabs.length} active tabs across all windows`);
     
-    // Log details about active tabs
-    activeTabs.forEach(tab => {
-      const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
-      console.log(`Active tab in window ${tab.windowId}${containerInfo}: ${tab.title}`);
+    const now = Date.now();
+    const activeTabIds = new Set(activeTabs.map(tab => tab.id));
+    
+    // Preserve existing timestamps for inactive tabs
+    tabs.forEach(tab => {
+      if (activeTabIds.has(tab.id)) {
+        // Update active tabs
+        tabTimestamps[tab.id] = now;
+      } else if (!tabTimestamps[tab.id]) {
+        // Initialize tabs without timestamp
+        tabTimestamps[tab.id] = now;
+      }
+      // Other tabs keep their existing timestamp
     });
-  }
-  
-  // Preserve existing timestamps for inactive tabs
-  tabs.forEach(tab => {
-    if (activeTabIds.has(tab.id)) {
-      // Update active tabs
-      tabTimestamps[tab.id] = now;
-    } else if (!tabTimestamps[tab.id]) {
-      // Initialize tabs without timestamp
-      tabTimestamps[tab.id] = now;
+    
+    await saveTabTimestamps();
+    
+    if (DEBUG_MODE) {
+      console.log(`Updated timestamps for ${activeTabIds.size} active tabs and ensured timestamps exist for all ${tabs.length} tabs`);
     }
-    // Other tabs keep their existing timestamp
-  });
-  
-  await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
-  
-  if (DEBUG_MODE) {
-    console.log(`Updated timestamps for ${activeTabIds.size} active tabs and ensured timestamps exist for all ${tabs.length} tabs`);
+  } catch (error) {
+    console.error("Error in forceUpdateAllTabTimestamps:", error);
   }
 }
 
 // Main tab processing function
 async function processTabs() {
-  let tabs = [];
   const now = Date.now();
   const timeLimit = settings.timeLimit;
   
   try {
-    // 1. Get all tabs first with a global query
-    // This ensures we capture all tabs in all workspaces
-    tabs = await browser.tabs.query({});
+    // Utiliser notre fonction utilitaire pour récupérer tous les onglets
+    // dans tous les espaces, y compris les espaces Zen
+    const tabs = await getAllTabsAcrossWorkspaces();
     
     if (DEBUG_MODE) {
-      console.log(`Found ${tabs.length} tabs across all windows using global query`);
+      console.log(`Found ${tabs.length} tabs across all windows and workspaces`);
       
       // Analyze windows for debugging
       const windowIds = [...new Set(tabs.map(tab => tab.windowId))];
       console.log(`Tabs distributed across ${windowIds.length} windows/workspaces`);
-    }
-    
-    // 2. Then try to get all available cookieStoreIds (containers/workspaces)
-    // This is mainly for reporting and debugging
-    let cookieStoreIds = ["firefox-default"]; // Always include the default container
-    
-    if (browser.contextualIdentities) {
-      try {
-        const containers = await browser.contextualIdentities.query({});
-        // Add all custom containers
-        const customContainerIds = containers.map(container => container.cookieStoreId);
-        cookieStoreIds = cookieStoreIds.concat(customContainerIds);
-        
-        if (DEBUG_MODE) {
-          console.log(`Found ${containers.length} containers/workspaces`);
-          
-          // Analyze containers in the found tabs
-          const tabContainers = [...new Set(tabs.map(tab => tab.cookieStoreId).filter(Boolean))];
-          console.log(`Tabs using ${tabContainers.length} different containers: ${tabContainers.join(', ')}`);
-        }
-      } catch (error) {
-        console.warn("Error querying contextualIdentities:", error);
-      }
-    }
-    
-    // 4. Safety check - if still no tabs, try one last method
-    if (tabs.length === 0) {
-      if (DEBUG_MODE) {
-        console.log("Still no tabs found, trying to query by window");
-      }
       
-      // Get all windows
-      const windows = await browser.windows.getAll();
-      for (const window of windows) {
-        const windowTabs = await browser.tabs.query({ windowId: window.id });
-        tabs = tabs.concat(windowTabs);
+      // Analyze containers for debugging
+      const containerIds = [...new Set(tabs.map(tab => tab.cookieStoreId).filter(Boolean))];
+      if (containerIds.length > 0) {
+        console.log(`Tabs distributed across ${containerIds.length} containers/workspaces`);
+        
+        // Check for Zen workspaces
+        const zenContainers = containerIds.filter(id => id.includes('zen') || id.includes('container'));
+        if (zenContainers.length > 0) {
+          console.log(`Detected ${zenContainers.length} potential Zen workspaces: ${zenContainers.join(', ')}`);
+        }
       }
     }
-  } catch (error) {
-    console.error("Error collecting tabs in processTabs:", error);
-    // As a last resort, use the simplest query
-    try {
-      tabs = await browser.tabs.query({});
-    } catch (e) {
-      console.error("Critical error, couldn't get any tabs:", e);
-      return; // Cannot continue
-    }
-  }
-  
-  // Get all active tabs (one per window/container)
-  // This is a critical step to avoid closing tabs currently in use
-  let activeTabs = [];
-  try {
-    // Explicitly retrieve active tabs in all windows
-    const allWindows = await browser.windows.getAll();
+    
+    // Obtenir tous les onglets actifs dans tous les espaces
+    const activeTabs = await getAllActiveTabsAcrossWorkspaces();
+    
+    // Use a Set to avoid potential duplicates
+    const activeTabIds = new Set(activeTabs.map(tab => tab.id));
     
     if (DEBUG_MODE) {
-      console.log(`Found ${allWindows.length} windows/workspaces to check for active tabs`);
-    }
-    
-    // For each window, find the active tab
-    for (const window of allWindows) {
-      try {
-        const windowActiveTabs = await browser.tabs.query({ 
-          windowId: window.id,
-          active: true 
-        });
-        
-        if (windowActiveTabs.length > 0) {
-          activeTabs = activeTabs.concat(windowActiveTabs);
-        }
-      } catch (windowError) {
-        console.error(`Error getting active tab for window ${window.id}:`, windowError);
-      }
-    }
-    
-    // Double check with a global query as fallback
-    if (activeTabs.length === 0) {
-      console.warn("No active tabs found via window-specific queries, falling back to global query");
-      activeTabs = await browser.tabs.query({ active: true });
-    }
-  } catch (error) {
-    console.error("Error getting windows or active tabs:", error);
-    // Ultimate fallback - simple global query
-    try {
-      activeTabs = await browser.tabs.query({ active: true });
-    } catch (fallbackError) {
-      console.error("Critical error getting active tabs:", fallbackError);
-    }
-  }
-  
-  // Use a Set to avoid potential duplicates
-  const activeTabIds = new Set(activeTabs.map(tab => tab.id));
-  
-  if (DEBUG_MODE) {
-    console.log(`Found ${activeTabs.length} active tabs across all windows/workspaces`);
-    console.log(`Active tab IDs: ${Array.from(activeTabIds).join(', ')}`);
-    
-    // Log the active tabs for debugging
-    activeTabs.forEach(tab => {
-      const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
-      console.log(`Active tab in window ${tab.windowId}${containerInfo}: "${tab.title}" (ID: ${tab.id})`);
-    });
-    
-    // Check if there are tabs without a window (rare case but possible)
-    const tabsWithoutWindow = activeTabs.filter(tab => !tab.windowId);
-    if (tabsWithoutWindow.length > 0) {
-      console.warn(`Found ${tabsWithoutWindow.length} active tabs without window ID`);
-    }
-  }
-  
-  // Group tabs by window and container for better logging
-  const windowsMap = new Map();
-  const containerMap = new Map();
-  
-  tabs.forEach(tab => {
-    // Group by window
-    if (!windowsMap.has(tab.windowId)) {
-      windowsMap.set(tab.windowId, []);
-    }
-    windowsMap.get(tab.windowId).push(tab);
-    
-    // Group by container
-    const containerId = tab.cookieStoreId || 'firefox-default';
-    if (!containerMap.has(containerId)) {
-      containerMap.set(containerId, []);
-    }
-    containerMap.get(containerId).push(tab);
-    
-    // Ensure each tab has a timestamp
-    if (!tabTimestamps[tab.id]) {
-      tabTimestamps[tab.id] = now;
-    }
-  });
-  
-  if (DEBUG_MODE) {
-    console.log(`Processing ${tabs.length} tabs across ${windowsMap.size} windows`);
-    console.log(`Processing ${tabs.length} tabs across ${containerMap.size} containers/workspaces`);
-    console.log(`Active tabs: ${activeTabIds.length} (one per window/workspace)`);
-    
-    // Log container info
-    containerMap.forEach((containerTabs, containerId) => {
-      console.log(`Container ${containerId}: ${containerTabs.length} tabs`);
-    });
-  }
-  
-  // Counter for actions performed
-  let closedCount = 0;
-  let discardedCount = 0;
-  let skippedCount = 0;
-  
-  // Debug log to better understand tab processing
-  if (DEBUG_MODE) {
-    console.log(`Starting processing of ${tabs.length} tabs with time limit of ${timeLimit/60000} minutes`);
-    console.log(`Active tab IDs (${activeTabIds.length}): ${JSON.stringify(Array.from(activeTabIds))}`);
-    
-    // Analyze tabs by window for debugging
-    const tabsByWindow = {};
-    tabs.forEach(t => {
-      if (!tabsByWindow[t.windowId]) tabsByWindow[t.windowId] = [];
-      tabsByWindow[t.windowId].push({id: t.id, active: t.active, title: t.title});
-    });
-    console.log(`Tabs by window: ${JSON.stringify(tabsByWindow)}`);
-  }
-
-  // Process each tab
-  for (const tab of tabs) {
-    // Check domain rules
-    const { shouldProcess, timeout } = domainRules.shouldProcessTab(tab, timeLimit);
-    
-    // If the domain is configured to never be closed, move to the next tab
-    if (!shouldProcess) {
-      if (DEBUG_MODE) {
-        console.log(`Tab ${tab.id}: "${tab.title}" is protected by domain rule - skipping`);
-      }
-      continue;
-    }
-    
-    // Check the tab age (using the domain-specific timeout if defined)
-    const tabAge = now - (tabTimestamps[tab.id] || now);
-    const tabTimeout = timeout !== null ? timeout : timeLimit;
-    const isOldEnough = tabAge >= tabTimeout;
-    
-    // Detailed log for debugging
-    if (DEBUG_MODE && isOldEnough) {
-      const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
-      const domainInfo = timeout !== null ? ` (custom timeout: ${Math.floor(timeout/60000)} min)` : '';
-      console.log(`Tab ${tab.id}: "${tab.title}" in window ${tab.windowId}${containerInfo}${domainInfo}`);
-      console.log(`  Age: ${Math.floor(tabAge/60000)} minutes, Active: ${tab.active}, Pinned: ${tab.pinned}, Audible: ${tab.audible}`);
-      console.log(`  In activeTabIds: ${activeTabIds.has(tab.id)}`);
-    }
-    
-    // Skip processing if:
-    // - Tab is active in any window (currently in use)
-    // - Tab doesn't have a timestamp that exceeds the limit
-    if (
-      activeTabIds.has(tab.id) ||
-      !isOldEnough
-    ) {
-      skippedCount++;
-      if (DEBUG_MODE && isOldEnough) {
-        console.log(`  Skipped: active tab or not old enough`);
-      }
-      continue;
-    }
-
-    // Handle audio tabs - always exclude them according to specifications
-    if (tab.audible) {
-      skippedCount++;
-      if (DEBUG_MODE) {
-        console.log(`  Skipped: tab is playing audio`);
-      }
-      continue;
-    }
-    
-    // Handle pinned tabs - always discard them but don't close them
-    if (tab.pinned) {
-      // Only discard if not already discarded
-      if (!tab.discarded) {
-        try {
-          await browser.tabs.discard(tab.id);
-          discardedCount++;
-          if (DEBUG_MODE) {
-            const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
-            console.log(`Discarded pinned tab ${tab.id}: ${tab.title} in window ${tab.windowId}${containerInfo}`);
-          }
-        } catch (error) {
-          console.error(`Error discarding pinned tab ${tab.id}:`, error);
-        }
-      } else {
-        skippedCount++; // Already discarded
-        if (DEBUG_MODE) {
-          console.log(`  Skipped: pinned tab already discarded`);
-        }
-      }
-      continue;
-    }
-    
-    // Close regular tabs that exceed the time limit
-    try {
-      if (DEBUG_MODE) {
+      console.log(`Found ${activeTabs.length} active tabs across all windows/workspaces`);
+      console.log(`Active tab IDs: ${Array.from(activeTabIds).join(', ')}`);
+      
+      // Log the active tabs for debugging
+      activeTabs.forEach(tab => {
         const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
-        console.log(`Closing tab ${tab.id}: "${tab.title}" in window ${tab.windowId}${containerInfo}`);
-        console.log(`  Tab age: ${Math.floor((now - (tabTimestamps[tab.id] || now))/60000)} minutes (limit: ${timeLimit/60000} minutes)`);
+        const zenInfo = isTabInZenWorkspace(tab) ? ' [ZEN]' : '';
+        console.log(`Active tab in window ${tab.windowId}${containerInfo}${zenInfo}: "${tab.title}" (ID: ${tab.id})`);
+      });
+    }
+    
+    // Group tabs by window and container for better logging
+    const windowsMap = new Map();
+    const containerMap = new Map();
+    
+    tabs.forEach(tab => {
+      // Ensure each tab has a timestamp
+      if (!tabTimestamps[tab.id]) {
+        tabTimestamps[tab.id] = now;
       }
       
-      // Check one last time if the tab is active
-      // This is an additional precaution to avoid closing the active tab
-      const isStillActive = activeTabIds.has(tab.id);
-      if (isStillActive) {
-        if (DEBUG_MODE) {
-          console.log(`  SAFETY CHECK: Tab ${tab.id} is now active, skipping close operation`);
+      // Group by window
+      if (!windowsMap.has(tab.windowId)) {
+        windowsMap.set(tab.windowId, []);
+      }
+      windowsMap.get(tab.windowId).push(tab);
+      
+      // Group by container
+      const containerId = tab.cookieStoreId || 'firefox-default';
+      if (!containerMap.has(containerId)) {
+        containerMap.set(containerId, []);
+      }
+      containerMap.get(containerId).push(tab);
+    });
+    
+    if (DEBUG_MODE) {
+      console.log(`Processing ${tabs.length} tabs across ${windowsMap.size} windows`);
+      console.log(`Processing ${tabs.length} tabs across ${containerMap.size} containers/workspaces`);
+      
+      // Log container info
+      containerMap.forEach((containerTabs, containerId) => {
+        const isZen = containerId.includes('zen') || containerId.includes('container');
+        const zenLabel = isZen ? ' [ZEN]' : '';
+        console.log(`Container ${containerId}${zenLabel}: ${containerTabs.length} tabs`);
+      });
+    }
+    
+    // Counter for actions performed
+    let closedCount = 0;
+    let discardedCount = 0;
+    let skippedCount = 0;
+    
+    // Process each tab
+    for (const tab of tabs) {
+      // Check domain rules if the domain rules manager is loaded
+      let shouldProcess = true;
+      let timeout = timeLimit;
+      
+      if (domainRulesLoaded && domainRules) {
+        try {
+          const result = domainRules.shouldProcessTab(tab, timeLimit);
+          shouldProcess = result.shouldProcess;
+          timeout = result.timeout !== null ? result.timeout : timeLimit;
+        } catch (error) {
+          console.error(`Error checking domain rules for tab ${tab.id}:`, error);
+          // Continue with default behavior in case of error
+          shouldProcess = true;
+          timeout = timeLimit;
         }
-        skippedCount++;
+      }
+      
+      // If the domain is configured to never be closed, move to the next tab
+      if (!shouldProcess) {
+        if (DEBUG_MODE) {
+          console.log(`Tab ${tab.id}: "${tab.title}" is protected by domain rule - skipping`);
+        }
         continue;
       }
       
-      await browser.tabs.remove(tab.id);
-      delete tabTimestamps[tab.id];
-      closedCount++;
+      // Check the tab age (using the domain-specific timeout if defined)
+      const tabAge = now - (tabTimestamps[tab.id] || now);
+      const tabTimeout = timeout !== null ? timeout : timeLimit;
+      const isOldEnough = tabAge >= tabTimeout;
       
-      if (DEBUG_MODE) {
-        console.log(`  ✓ Successfully closed tab ${tab.id}`);
+      // Detailed log for debugging
+      if (DEBUG_MODE && isOldEnough) {
+        const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
+        const domainInfo = timeout !== null ? ` (custom timeout: ${Math.floor(timeout/60000)} min)` : '';
+        const zenInfo = isTabInZenWorkspace(tab) ? ' [ZEN]' : '';
+        console.log(`Tab ${tab.id}: "${tab.title}" in window ${tab.windowId}${containerInfo}${domainInfo}${zenInfo}`);
+        console.log(`  Age: ${Math.floor(tabAge/60000)} minutes, Active: ${tab.active}, Pinned: ${tab.pinned}, Audible: ${tab.audible}`);
+        console.log(`  In activeTabIds: ${activeTabIds.has(tab.id)}`);
       }
-    } catch (error) {
-      console.error(`Error closing tab ${tab.id}:`, error);
-      console.error(`  Error details: ${error.message}`);
+      
+      // Skip processing if:
+      // - Tab is active in any window (currently in use)
+      // - Tab doesn't have a timestamp that exceeds the limit
+      if (
+        activeTabIds.has(tab.id) ||
+        !isOldEnough
+      ) {
+        skippedCount++;
+        if (DEBUG_MODE && isOldEnough) {
+          console.log(`  Skipped: active tab or not old enough`);
+        }
+        continue;
+      }
+
+      // Handle audio tabs - always exclude them according to specifications
+      if (tab.audible) {
+        skippedCount++;
+        if (DEBUG_MODE) {
+          console.log(`  Skipped: tab is playing audio`);
+        }
+        continue;
+      }
+      
+      // Handle pinned tabs - always discard them but don't close them
+      if (tab.pinned) {
+        // Only discard if not already discarded
+        if (!tab.discarded) {
+          try {
+            await browser.tabs.discard(tab.id);
+            discardedCount++;
+            if (DEBUG_MODE) {
+              const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
+              const zenInfo = isTabInZenWorkspace(tab) ? ' [ZEN]' : '';
+              console.log(`Discarded pinned tab ${tab.id}: ${tab.title} in window ${tab.windowId}${containerInfo}${zenInfo}`);
+            }
+          } catch (error) {
+            console.error(`Error discarding pinned tab ${tab.id}:`, error);
+          }
+        } else {
+          skippedCount++; // Already discarded
+          if (DEBUG_MODE) {
+            console.log(`  Skipped: pinned tab already discarded`);
+          }
+        }
+        continue;
+      }
+      
+      // Close regular tabs that exceed the time limit
+      try {
+        if (DEBUG_MODE) {
+          const containerInfo = tab.cookieStoreId ? ` (container: ${tab.cookieStoreId})` : '';
+          const zenInfo = isTabInZenWorkspace(tab) ? ' [ZEN]' : '';
+          console.log(`Closing tab ${tab.id}: "${tab.title}" in window ${tab.windowId}${containerInfo}${zenInfo}`);
+          console.log(`  Tab age: ${Math.floor((now - (tabTimestamps[tab.id] || now))/60000)} minutes (limit: ${timeLimit/60000} minutes)`);
+        }
+        
+        // Check one last time if the tab is active
+        // This is an additional precaution to avoid closing the active tab
+        const isStillActive = activeTabIds.has(tab.id);
+        if (isStillActive) {
+          if (DEBUG_MODE) {
+            console.log(`  SAFETY CHECK: Tab ${tab.id} is now active, skipping close operation`);
+          }
+          skippedCount++;
+          continue;
+        }
+        
+        await browser.tabs.remove(tab.id);
+        delete tabTimestamps[tab.id];
+        closedCount++;
+        
+        if (DEBUG_MODE) {
+          console.log(`  ✓ Successfully closed tab ${tab.id}`);
+        }
+      } catch (error) {
+        console.error(`Error closing tab ${tab.id}:`, error);
+        console.error(`  Error details: ${error.message}`);
+      }
     }
+    
+    if (DEBUG_MODE) {
+      console.log(`Tabs processed: ${closedCount} closed, ${discardedCount} discarded, ${skippedCount} skipped`);
+    }
+    
+    // Save the updated timestamps after processing
+    await saveTabTimestamps();
+  } catch (error) {
+    console.error("Error in processTabs:", error);
   }
-  
-  if (DEBUG_MODE) {
-    console.log(`Tabs processed: ${closedCount} closed, ${discardedCount} discarded, ${skippedCount} skipped`);
-  }
-  
-  // Save the updated timestamps after processing
-  await browser.storage.local.set({ [STORAGE_KEY]: tabTimestamps });
 }
 
 // Manual close action triggered from popup
