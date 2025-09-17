@@ -2,26 +2,14 @@
  * FFTabClose - Domain Rule Dialog Script
  * Handles the domain rule dialog UI interactions
  * 
- * Version 3.0.0
- * Last updated: 18 July 2025
+ * Version 3.1.0
  */
 
-// Helper function to sanitize text content (XSS protection)
-function sanitizeHTML(str) {
-  if (typeof str !== 'string') return '';
-  
-  const tempElement = document.createElement('div');
-  tempElement.textContent = str;
-  return tempElement.textContent;
-}
+import { sanitizeHTML, getUrlParameter } from '../common/utils.js';
 
-// Helper function to get URL parameters
-function getUrlParameter(name) {
-  const params = new URLSearchParams(window.location.search);
-  return params.get(name);
-}
+// Toggle timeout container visibility based on radio selection
 
-// Handle radio button changes for custom timeout
+// Toggle timeout container visibility based on radio selection
 function toggleTimeoutContainer() {
   const customTimeoutRadio = document.getElementById('customTimeout');
   const timeoutContainer = document.getElementById('timeoutContainer');

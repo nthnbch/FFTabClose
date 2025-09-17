@@ -2,9 +2,10 @@
  * FFTabClose - Domain Rules Popup Handler
  * Manages domain rules in the popup UI
  * 
- * Version 3.0.0
- * Last updated: 18 July 2025
+ * Version 3.1.0
  */
+
+import { sanitizeHTML } from '../common/utils.js';
 
 // Handle adding a new domain rule
 async function addDomainRule() {

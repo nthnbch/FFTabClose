@@ -2,9 +2,11 @@
  * FFTabClose - Popup Script
  * Handles popup UI interactions and communication with background script
  * 
- * Version 3.0.0
- * Last updated: 18 July 2025
+ * Version 3.1.0
  */
+
+// Import domain rules UI functions
+import { addDomainRule, loadDomainRules } from './domain-rules-ui.js';
 
 // Helper function to sanitize text content (XSS protection)
 function sanitizeHTML(str) {
@@ -18,9 +20,6 @@ function sanitizeHTML(str) {
   return tempElement.textContent;
 }
 
-// Import domain rules UI functions
-import { addDomainRule, loadDomainRules } from './domain-rules-ui.js';
-
 // Apply reduced motion preferences
 function applyReducedMotion() {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -32,8 +31,15 @@ function applyReducedMotion() {
   }
 }
 
-// Load translations and initialize the UI
-document.addEventListener('DOMContentLoaded', function() {
+// State tracking
+let popupInitialized = false;
+
+// Initialize the popup UI
+async function initializePopup() {
+  if (popupInitialized) {
+    return;
+  }
+  
   try {
     // Apply reduced motion settings
     applyReducedMotion();
@@ -89,22 +95,24 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById("addDomainRule").addEventListener("click", addDomainRule);
       
       // Load settings on startup
-      loadSettings();
+      await loadSettings();
       
       // Load domain rules
-      loadDomainRules();
+      await loadDomainRules();
+      
+      popupInitialized = true;
     }
   } catch (error) {
-    console.error("Error loading translations:", error);
+    console.error("Error initializing popup:", error);
   }
-});
+}
 
 // Update tab statistics in the popup
 async function updateStats() {
   try {
     const stats = await browser.runtime.sendMessage({action: 'getTabStats'});
     document.getElementById("totalTabs").textContent = stats.totalTabs;
-    document.getElementById("eligibleTabs").textContent = stats.eligibleTabs;
+    document.getElementById("eligibleTabs").textContent = stats.oldTabs || 0;
     
     // Format the age of the oldest tab
     document.getElementById("oldestTab").textContent = formatTimeForDisplay(stats.oldestTabAge || 0);
@@ -113,18 +121,25 @@ async function updateStats() {
   }
 }
 
-// Format time duration for display (minutes to human-readable format)
-function formatTimeForDisplay(minutes) {
-  if (minutes < 60) {
-    return `${minutes} ${browser.i18n.getMessage('timeMin')}`;
-  } else if (minutes < 1440) { // Less than 24 hours
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours} ${browser.i18n.getMessage('timeHours')}${mins > 0 ? ` ${mins} ${browser.i18n.getMessage('timeMin')}` : ''}`;
+// Format time duration for display (milliseconds to human-readable format)
+function formatTimeForDisplay(milliseconds) {
+  if (milliseconds < 60000) {
+    return `${Math.floor(milliseconds / 1000)} ${browser.i18n.getMessage('timeSec') || 'sec'}`;
+  } else if (milliseconds < 3600000) { // Less than 1 hour
+    const minutes = Math.floor(milliseconds / 60000);
+    return `${minutes} ${browser.i18n.getMessage('timeMin') || 'min'}`;
+  } else if (milliseconds < 86400000) { // Less than 24 hours
+    const hours = Math.floor(milliseconds / 3600000);
+    const minutes = Math.floor((milliseconds % 3600000) / 60000);
+    const hoursText = browser.i18n.getMessage('timeHours') || 'hrs';
+    const minsText = browser.i18n.getMessage('timeMin') || 'min';
+    return `${hours} ${hoursText}${minutes > 0 ? ` ${minutes} ${minsText}` : ''}`;
   } else {
-    const days = Math.floor(minutes / 1440);
-    const hours = Math.floor((minutes % 1440) / 60);
-    return `${days} ${browser.i18n.getMessage('timeDays')}${hours > 0 ? ` ${hours} ${browser.i18n.getMessage('timeHours')}` : ''}`;
+    const days = Math.floor(milliseconds / 86400000);
+    const hours = Math.floor((milliseconds % 86400000) / 3600000);
+    const daysText = browser.i18n.getMessage('timeDays') || 'days';
+    const hoursText = browser.i18n.getMessage('timeHours') || 'hrs';
+    return `${days} ${daysText}${hours > 0 ? ` ${hours} ${hoursText}` : ''}`;
   }
 }
 
@@ -157,12 +172,28 @@ async function loadSettings() {
   }
 }
 
-// Function to close old tabs (not used directly by UI anymore)
-async function closeOldTabs() {
+// Process tabs according to settings
+async function processTabs(dryRun = false) {
   try {
-    await browser.runtime.sendMessage({action: 'closeOldTabs'});
+    const stats = await browser.runtime.sendMessage({
+      action: 'processTabs',
+      dryRun
+    });
     updateStats();
+    return stats;
   } catch (error) {
-    console.error("Error closing tabs:", error);
+    console.error("Error processing tabs:", error);
+    return null;
   }
 }
+
+// Initialize popup when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializePopup);
+
+// Export functions for other modules
+export {
+  updateStats,
+  saveSettings,
+  loadSettings,
+  processTabs
+};

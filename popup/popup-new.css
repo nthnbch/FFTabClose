@@ -1,0 +1,342 @@
+/* FFTabClose - Popup CSS
+ * Styles pour la popup de l'extension
+ * 
+ * Version 3.1.0
+ * Last updated: 2025-09-17
+ */
+
+:root {
+  --primary-color: #0060df;
+  --primary-dark: #0250bb;
+  --secondary-color: #30c9c9;
+  --success-color: #12bc00;
+  --warning-color: #ffa436;
+  --danger-color: #d70022;
+  --text-color: #0c0c0d;
+  --text-secondary: #737373;
+  --background-color: #f9f9fa;
+  --border-color: #ededf0;
+  --box-shadow: 0 2px 8px rgba(12, 12, 13, 0.1);
+  --border-radius: 4px;
+  --workspace-default-color: #cccccc;
+  --zen-workspace-color: #45a1ff;
+  --container-workspace-color: #b98eff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  min-width: 350px;
+  max-width: 600px;
+}
+
+.popup-container {
+  padding: 16px;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.popup-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.popup-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.stats-overview {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 8px;
+  border-radius: var(--border-radius);
+  background-color: var(--background-color);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.workspaces-container {
+  margin-top: 16px;
+}
+
+.workspace-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.workspace-section-title span {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--text-secondary);
+}
+
+.workspace-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workspace-card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
+.workspace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.workspace-title {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.workspace-title .icon {
+  margin-right: 8px;
+}
+
+.workspace-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.25);
+  margin-left: 8px;
+}
+
+.workspace-tabs {
+  padding: 12px 16px;
+}
+
+.workspace-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.workspace-stat {
+  text-align: center;
+  padding: 8px;
+  background-color: var(--background-color);
+  border-radius: var(--border-radius);
+}
+
+.workspace-stat-value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.workspace-stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.workspace-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.button-secondary {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.button-secondary:hover {
+  background-color: var(--border-color);
+}
+
+.button-danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.button-small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.button .icon {
+  margin-right: 6px;
+}
+
+.progress-bar {
+  height: 4px;
+  width: 100%;
+  background-color: var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.progress-value {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-link {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 12px;
+  margin-top: 16px;
+}
+
+.settings-link:hover {
+  color: var(--primary-color);
+}
+
+.settings-link .icon {
+  margin-right: 4px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* Couleurs pour les espaces de travail */
+.workspace-default .workspace-header {
+  background-color: var(--workspace-default-color);
+}
+
+.workspace-zen .workspace-header {
+  background-color: var(--zen-workspace-color);
+}
+
+.workspace-container .workspace-header {
+  background-color: var(--container-workspace-color);
+}
+
+/* Animation de chargement */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 96, 223, 0.1);
+  border-left-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
