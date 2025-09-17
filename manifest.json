@@ -1,59 +1,37 @@
 {
-  "manifest_version": 3,
-  "name": "__MSG_extensionName__",
-  "version": "3.1.0",
-  "description": "__MSG_extensionDescription__",
-  "default_locale": "en",
+  "manifest_version": 2,
+  "name": "Tab Auto Closer",
+  "version": "1.0.0",
+  "description": "Automatically closes tabs that have been open for more than 12 hours, regardless of which workspace they're in",
   "author": "nthnbch",
-  
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "fftabclose@nathan.swiss",
-      "strict_min_version": "109.0"
-    }
-  },
-  
+  "default_locale": "en",
   "icons": {
-    "16": "icons/png/icon-16.png",
-    "32": "icons/png/icon-32.png",
-    "48": "icons/png/icon-48.png",
-    "128": "icons/png/icon-128.png"
+    "16": "icons/icon-16.svg",
+    "48": "icons/icon-48.svg",
+    "128": "icons/icon-128.svg"
   },
-  
   "permissions": [
     "tabs",
     "storage",
     "alarms",
     "contextualIdentities",
-    "cookies"
+    "<all_urls>"
   ],
-  
   "background": {
-    "scripts": ["browser-polyfill.min.js", "background.js"],
-    "type": "module"
+    "scripts": ["browser-polyfill.min.js", "background/background.js"],
+    "persistent": false
   },
-  
-  "action": {
-    "default_title": "__MSG_browserActionTitle__",
-    "default_popup": "popup/popup.html",
+  "browser_action": {
     "default_icon": {
-      "16": "icons/png/icon-16.png",
-      "32": "icons/png/icon-32.png",
-      "48": "icons/png/icon-48.png"
-    }
+      "16": "icons/icon-16.svg",
+      "48": "icons/icon-48.svg"
+    },
+    "default_title": "Tab Auto Closer",
+    "default_popup": "popup/popup.html"
   },
-  
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline';"
-  },
-  
-  "commands": {
-    "close-old-tabs": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+O",
-        "mac": "Command+Shift+O"
-      },
-      "description": "Close old tabs based on timeout settings"
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "tabautocloser@nthnbch.com"
     }
   }
 }

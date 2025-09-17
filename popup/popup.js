@@ -1,199 +1,105 @@
 /**
- * FFTabClose - Popup Script
- * Handles popup UI interactions and communication with background script
+ * Tab Auto Closer - Popup Script
  * 
- * Version 3.1.0
+ * This script handles the popup UI for configuring the extension settings.
  */
 
-// Import domain rules UI functions
-import { addDomainRule, loadDomainRules } from './domain-rules-ui.js';
+// Default settings
+const DEFAULT_SETTINGS = {
+  enabled: true,
+  closeAfterHours: 12,
+  excludePinnedTabs: true
+};
 
-// Helper function to sanitize text content (XSS protection)
-function sanitizeHTML(str) {
-  if (typeof str !== 'string') return '';
+// DOM elements
+const elements = {
+  settingsTitle: document.getElementById('settings-title'),
+  enabled: document.getElementById('enabled'),
+  autoCloseEnabledLabel: document.getElementById('auto-close-enabled-label'),
+  closeAfterHours: document.getElementById('closeAfterHours'),
+  closeAfterHoursLabel: document.getElementById('close-after-hours-label'),
+  excludePinnedTabs: document.getElementById('excludePinnedTabs'),
+  excludePinnedTabsLabel: document.getElementById('exclude-pinned-tabs-label'),
+  saveButton: document.getElementById('save-button'),
+  status: document.getElementById('status')
+};
+
+// Initialize the popup
+function initPopup() {
+  // Set localized text
+  setLocalizedText();
   
-  // Create a temporary element
-  const tempElement = document.createElement('div');
-  // Set its text content (not innerHTML) which escapes HTML
-  tempElement.textContent = str;
-  // Return the escaped content
-  return tempElement.textContent;
-}
-
-// Apply reduced motion preferences
-function applyReducedMotion() {
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Load and display current settings
+  loadSettings();
   
-  if (prefersReducedMotion) {
-    document.documentElement.setAttribute('data-reduced-motion', 'true');
-  } else {
-    document.documentElement.removeAttribute('data-reduced-motion');
-  }
+  // Set up event listeners
+  elements.saveButton.addEventListener('click', saveSettings);
 }
 
-// State tracking
-let popupInitialized = false;
-
-// Initialize the popup UI
-async function initializePopup() {
-  if (popupInitialized) {
-    return;
-  }
-  
-  try {
-    // Apply reduced motion settings
-    applyReducedMotion();
-    
-    // Listen for changes in reduced motion preference
-    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', applyReducedMotion);
-    
-    if (typeof browser !== 'undefined' && browser.i18n) {
-      // Translate UI elements by ID with sanitization
-      const elementsToTranslate = {
-        "extensionName": "extensionName",
-        "infoLink": "infoLinkText", // Add translation for info link
-        "timeLimitLabel": "timeLimitLabel",
-        "timeTest": "time1min",
-        "time15min": "time15min",
-        "time30min": "time30min",
-        "time1hour": "time1hour",
-        "time2hours": "time2hours",
-        "time4hours": "time4hours",
-        "time8hours": "time8hours",
-        "time12hours": "time12hours",
-        "time24hours": "time24hours",
-        "time48hours": "time48hours",
-        "domainRulesLabel": "domainRulesLabel",
-        "noDomainRules": "noDomainRulesText",
-        "closeTabsButton": "closeTabsButton",
-        "totalTabsLabel": "totalTabsLabel",
-        "eligibleTabsLabel": "eligibleTabsLabel",
-        "oldestTabLabel": "oldestTabLabel"
-      };
-      
-      for (const [id, msgKey] of Object.entries(elementsToTranslate)) {
-        const element = document.getElementById(id);
-        if (element) {
-          const translated = browser.i18n.getMessage(msgKey);
-          if (translated) {
-            // Sanitize translated text to prevent XSS
-            element.textContent = sanitizeHTML(translated);
-          }
-        }
-      }
-      
-      // Ensure info link has correct text and is secure
-      const infoLink = document.getElementById("infoLink");
-      if (infoLink) {
-        infoLink.textContent = sanitizeHTML(browser.i18n.getMessage("infoLinkText") || "Info");
-        // Ensure link stays within the extension (security best practice)
-        infoLink.setAttribute("href", "../info/info.html");
-      }
-      
-      // Set up event listeners
-      document.getElementById("timeLimit").addEventListener("change", saveSettings);
-      document.getElementById("addDomainRule").addEventListener("click", addDomainRule);
-      
-      // Load settings on startup
-      await loadSettings();
-      
-      // Load domain rules
-      await loadDomainRules();
-      
-      popupInitialized = true;
-    }
-  } catch (error) {
-    console.error("Error initializing popup:", error);
-  }
+// Set text based on the user's locale
+function setLocalizedText() {
+  elements.settingsTitle.textContent = browser.i18n.getMessage('settings');
+  elements.autoCloseEnabledLabel.textContent = browser.i18n.getMessage('auto_close_enabled');
+  elements.closeAfterHoursLabel.textContent = browser.i18n.getMessage('close_after_hours');
+  elements.excludePinnedTabsLabel.textContent = browser.i18n.getMessage('exclude_pinned_tabs');
+  elements.saveButton.textContent = browser.i18n.getMessage('save_settings');
 }
 
-// Update tab statistics in the popup
-async function updateStats() {
-  try {
-    const stats = await browser.runtime.sendMessage({action: 'getTabStats'});
-    document.getElementById("totalTabs").textContent = stats.totalTabs;
-    document.getElementById("eligibleTabs").textContent = stats.oldTabs || 0;
-    
-    // Format the age of the oldest tab
-    document.getElementById("oldestTab").textContent = formatTimeForDisplay(stats.oldestTabAge || 0);
-  } catch (error) {
-    console.error("Error updating stats:", error);
-  }
-}
-
-// Format time duration for display (milliseconds to human-readable format)
-function formatTimeForDisplay(milliseconds) {
-  if (milliseconds < 60000) {
-    return `${Math.floor(milliseconds / 1000)} ${browser.i18n.getMessage('timeSec') || 'sec'}`;
-  } else if (milliseconds < 3600000) { // Less than 1 hour
-    const minutes = Math.floor(milliseconds / 60000);
-    return `${minutes} ${browser.i18n.getMessage('timeMin') || 'min'}`;
-  } else if (milliseconds < 86400000) { // Less than 24 hours
-    const hours = Math.floor(milliseconds / 3600000);
-    const minutes = Math.floor((milliseconds % 3600000) / 60000);
-    const hoursText = browser.i18n.getMessage('timeHours') || 'hrs';
-    const minsText = browser.i18n.getMessage('timeMin') || 'min';
-    return `${hours} ${hoursText}${minutes > 0 ? ` ${minutes} ${minsText}` : ''}`;
-  } else {
-    const days = Math.floor(milliseconds / 86400000);
-    const hours = Math.floor((milliseconds % 86400000) / 3600000);
-    const daysText = browser.i18n.getMessage('timeDays') || 'days';
-    const hoursText = browser.i18n.getMessage('timeHours') || 'hrs';
-    return `${days} ${daysText}${hours > 0 ? ` ${hours} ${hoursText}` : ''}`;
-  }
-}
-
-// Save user preferences to storage
-async function saveSettings() {
-  try {
-    const timeLimit = document.getElementById("timeLimit").value;
-    await browser.runtime.sendMessage({
-      action: 'updateSettings',
-      settings: {
-        timeLimit: parseInt(timeLimit)
-      }
-    });
-    updateStats();
-  } catch (error) {
-    console.error("Error saving settings:", error);
-  }
-}
-
-// Load current settings from storage
+// Load settings from storage and populate the UI
 async function loadSettings() {
   try {
-    const settings = await browser.runtime.sendMessage({action: 'getSettings'});
-    if (settings && settings.timeLimit) {
-      document.getElementById("timeLimit").value = settings.timeLimit.toString();
-    }
-    updateStats();
+    const result = await browser.storage.local.get('settings');
+    const settings = result.settings || DEFAULT_SETTINGS;
+    
+    elements.enabled.checked = settings.enabled;
+    elements.closeAfterHours.value = settings.closeAfterHours;
+    elements.excludePinnedTabs.checked = settings.excludePinnedTabs;
   } catch (error) {
-    console.error("Error loading settings:", error);
+    console.error('Error loading settings:', error);
+    showStatus('An error occurred while loading settings.', 'error');
   }
 }
 
-// Process tabs according to settings
-async function processTabs(dryRun = false) {
+// Save settings to storage
+async function saveSettings() {
   try {
-    const stats = await browser.runtime.sendMessage({
-      action: 'processTabs',
-      dryRun
-    });
-    updateStats();
-    return stats;
+    const settings = {
+      enabled: elements.enabled.checked,
+      closeAfterHours: parseInt(elements.closeAfterHours.value, 10),
+      excludePinnedTabs: elements.excludePinnedTabs.checked
+    };
+    
+    // Validate settings
+    if (isNaN(settings.closeAfterHours) || settings.closeAfterHours < 1) {
+      showStatus('Please enter a valid number of hours (minimum 1).', 'error');
+      return;
+    }
+    
+    // Save to storage
+    await browser.storage.local.set({ settings });
+    
+    showStatus('Settings saved successfully!', 'success');
+    
+    // Close the popup after a short delay
+    setTimeout(() => window.close(), 1500);
   } catch (error) {
-    console.error("Error processing tabs:", error);
-    return null;
+    console.error('Error saving settings:', error);
+    showStatus('An error occurred while saving settings.', 'error');
   }
 }
 
-// Initialize popup when DOM is loaded
-document.addEventListener('DOMContentLoaded', initializePopup);
+// Show a status message to the user
+function showStatus(message, type) {
+  elements.status.textContent = message;
+  elements.status.className = `status ${type}`;
+  
+  // Hide the message after 3 seconds
+  if (type === 'success') {
+    setTimeout(() => {
+      elements.status.className = 'status';
+    }, 3000);
+  }
+}
 
-// Export functions for other modules
-export {
-  updateStats,
-  saveSettings,
-  loadSettings,
-  processTabs
-};
+// Initialize the popup when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', initPopup);
