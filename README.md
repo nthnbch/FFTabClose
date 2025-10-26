@@ -190,7 +190,8 @@ FFTabClose/
     ├── nl/messages.json    # Dutch
     ├── pl/messages.json    # Polish
     ├── ar/messages.json    # Arabic
-    └── tr/messages.json    # Turkish
+    ├── tr/messages.json    # Turkish
+    └── uk/messages.json    # Ukrainian
 ```
 
 ## 📋 Contributing
