@@ -1,10 +1,10 @@
 {
   "extension_name": {
-    "message": "Fermeture Automatique d'Onglets",
+    "message": "FFTabClose",
     "description": "Le nom de l'extension"
   },
   "extension_description": {
-    "message": "Ferme automatiquement les onglets ouverts depuis plus de 12 heures, peu importe leur espace de travail",
+    "message": "Ferme automatiquement les onglets et met en veille les onglets épinglés après un délai configurable - Fonctionne sur tous les workspaces Firefox/Zen",
     "description": "Description de l'extension"
   },
   "settings": {
@@ -13,18 +13,38 @@
   },
   "auto_close_enabled": {
     "message": "Activer la fermeture automatique",
-    "description": "Activer/désactiver la fonctionnalité de fermeture automatique"
+    "description": "Activer/désactiver la fonction de fermeture automatique"
   },
   "close_after_hours": {
-    "message": "Fermer les onglets après (heures)",
-    "description": "Nombre d'heures avant la fermeture des onglets"
-  },
-  "exclude_pinned_tabs": {
-    "message": "Ne pas fermer les onglets épinglés",
-    "description": "Option pour exclure les onglets épinglés"
+    "message": "Fermer les onglets après",
+    "description": "Période de temps avant la fermeture des onglets"
   },
   "save_settings": {
-    "message": "Enregistrer",
-    "description": "Bouton d'enregistrement des paramètres"
+    "message": "Sauvegarder les paramètres",
+    "description": "Bouton de sauvegarde des paramètres"
+  },
+  "exclude_pinned_tabs": {
+    "message": "Mettre en veille les onglets épinglés",
+    "description": "Option pour mettre en veille les onglets épinglés au lieu de les fermer"
+  },
+  "exclude_audible_tabs": {
+    "message": "Ne pas fermer les onglets avec audio",
+    "description": "Option pour exclure les onglets qui jouent de l'audio"
+  },
+  "force_process": {
+    "message": "Traiter maintenant",
+    "description": "Bouton pour forcer le traitement immédiat des anciens onglets"
+  },
+  "total_tabs": {
+    "message": "Total onglets",
+    "description": "Libellé pour le nombre total d'onglets"
+  },
+  "old_tabs": {
+    "message": "Onglets anciens",
+    "description": "Libellé pour le nombre d'anciens onglets"
+  },
+  "pinned_tabs": {
+    "message": "Onglets épinglés",
+    "description": "Libellé pour le nombre d'onglets épinglés"
   }
 }

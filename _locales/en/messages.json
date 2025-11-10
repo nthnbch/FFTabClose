@@ -1,10 +1,10 @@
 {
   "extension_name": {
-    "message": "Tab Auto Closer",
+    "message": "FFTabClose",
     "description": "The name of the extension"
   },
   "extension_description": {
-    "message": "Automatically closes tabs that have been open for more than 12 hours, regardless of which workspace they're in",
+    "message": "Automatically closes tabs and sleeps pinned tabs after a configurable time - Works on all Firefox/Zen workspaces",
     "description": "Description of the extension"
   },
   "settings": {
@@ -16,15 +16,35 @@
     "description": "Enable/disable auto-closing feature"
   },
   "close_after_hours": {
-    "message": "Close tabs after (hours)",
-    "description": "How many hours before tabs are closed"
-  },
-  "exclude_pinned_tabs": {
-    "message": "Don't close pinned tabs",
-    "description": "Option to exclude pinned tabs"
+    "message": "Close tabs after",
+    "description": "Time period before tabs are closed"
   },
   "save_settings": {
     "message": "Save Settings",
     "description": "Save settings button"
+  },
+  "exclude_pinned_tabs": {
+    "message": "Sleep pinned tabs instead of closing",
+    "description": "Option to discard pinned tabs instead of closing them"
+  },
+  "exclude_audible_tabs": {
+    "message": "Don't close tabs playing audio",
+    "description": "Option to exclude tabs that are playing audio"
+  },
+  "force_process": {
+    "message": "Process Now",
+    "description": "Button to force immediate processing of old tabs"
+  },
+  "total_tabs": {
+    "message": "Total Tabs",
+    "description": "Label for total tab count"
+  },
+  "old_tabs": {
+    "message": "Old Tabs",
+    "description": "Label for old tab count"
+  },
+  "pinned_tabs": {
+    "message": "Pinned Tabs",
+    "description": "Label for pinned tab count"
   }
 }

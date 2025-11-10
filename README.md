@@ -1,14 +1,15 @@
-# Tab Auto Closer
+# FFTabClose
 
-Une extension pour Firefox et Zen Browser qui ferme automatiquement les onglets ouverts depuis plus de 12 heures (ou une durée personnalisable), quel que soit l'espace de travail dans lequel ils se trouvent.
+Une extension pour Firefox et Zen Browser qui ferme automatiquement les onglets ouverts depuis plus de 1 minute (pour le test), quel que soit l'espace de travail dans lequel ils se trouvent.
 
 ## Fonctionnalités
 
-- Fermeture automatique des onglets plus vieux qu'une durée configurable (12 heures par défaut)
+- Fermeture automatique des onglets plus vieux qu'une durée configurable (1 minute par défaut pour les tests)
 - Fonctionne dans tous les espaces de travail/conteneurs de Zen Browser et Firefox
-- Option pour exclure les onglets épinglés de la fermeture automatique
+- Ferme tous les onglets basés sur leur âge, y compris les onglets épinglés
 - Interface simple pour configurer les paramètres
 - Multilingue (Anglais/Français)
+- Conserve les informations de temps entre les redémarrages du navigateur
 
 ## Installation
 
@@ -44,10 +45,9 @@ Une extension pour Firefox et Zen Browser qui ferme automatiquement les onglets 
 2. Configurez vos préférences :
    - Activez ou désactivez la fermeture automatique
    - Définissez le nombre d'heures après lequel les onglets doivent être fermés
-   - Choisissez si les onglets épinglés doivent être exclus
 3. Cliquez sur "Enregistrer" pour appliquer les paramètres
 
-L'extension vérifiera automatiquement toutes les heures s'il y a des onglets à fermer selon vos paramètres.
+L'extension vérifiera automatiquement toutes les 30 secondes s'il y a des onglets à fermer selon vos paramètres. Les informations sur le temps d'ouverture des onglets sont conservées même si vous fermez et rouvrez le navigateur.
 
 ## Création d'une version empaquetée
 

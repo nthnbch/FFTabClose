@@ -1,22 +1,22 @@
-# Guide de test pour Tab Auto Closer
+# Guide de test pour FFTabClose
 
-Ce guide vous aidera à vérifier que l'extension Tab Auto Closer fonctionne correctement pour fermer les onglets plus vieux que la durée configurée.
+Ce guide vous aidera à vérifier que l'extension FFTabClose fonctionne correctement pour fermer les onglets plus vieux que la durée configurée.
 
 ## Préparation au test
 
 1. Installez l'extension en mode développement comme décrit dans le README.md
-2. Assurez-vous que le paramètre `closeAfterHours` est défini sur une valeur très petite (par exemple, 0.05 pour 3 minutes) pour le test
+2. L'extension est déjà configurée pour un temps de test de 1 minute (0.016667 heure)
 
 ## Test manuel
 
 ### Test 1: Vérification de la fonctionnalité de base
 
-1. Modifiez temporairement le fichier `background.js` pour utiliser un délai plus court pour le test :
+1. L'extension est déjà configurée pour vérifier toutes les 30 secondes :
    
    ```javascript
-   // Dans la fonction setupPeriodicCheck, changez:
+   // Dans la fonction setupPeriodicCheck:
    browser.alarms.create('checkOldTabs', {
-     periodInMinutes: 0.1 // Vérifier toutes les 6 secondes pour le test
+     periodInMinutes: 0.5 // Vérifier toutes les 30 secondes pour le test
    });
    ```
 
@@ -27,7 +27,7 @@ Ce guide vous aidera à vérifier que l'extension Tab Auto Closer fonctionne cor
    tabs.forEach(tab => {
      // Pour le test, faisons comme si certains onglets étaient déjà vieux
      if (tab.index % 2 === 0) { // Les onglets avec index pair seront considérés comme anciens
-       const fakeOldTime = now - (settings.closeAfterHours * 3600000 + 60000); // Plus vieux que le seuil
+       const fakeOldTime = now - (0.016667 * 3600000 + 10000); // Plus vieux que le seuil de 1 minute
        tabOpenTimes.set(tab.id, fakeOldTime);
      } else {
        tabOpenTimes.set(tab.id, now);
@@ -68,16 +68,21 @@ Ce guide vous aidera à vérifier que l'extension Tab Auto Closer fonctionne cor
 
 ## Nettoyage après le test
 
-N'oubliez pas de remettre les valeurs originales dans le code après avoir effectué les tests :
+N'oubliez pas de remettre les valeurs originales dans le code si vous souhaitez revenir à un comportement standard (non test) :
 
-1. Restaurez la période de vérification originale dans `setupPeriodicCheck` :
+1. Pour revenir à une vérification horaire, modifiez dans `setupPeriodicCheck` :
    ```javascript
    browser.alarms.create('checkOldTabs', {
      periodInMinutes: 60 // Vérifier une fois par heure
    });
    ```
 
-2. Restaurez la fonction `trackExistingTabs` originale :
+2. Pour revenir à une durée de 12 heures, modifiez dans DEFAULT_SETTINGS :
+   ```javascript
+   closeAfterHours: 12,  // Close tabs after 12 hours by default
+   ```
+
+3. Restaurez la fonction `trackExistingTabs` originale :
    ```javascript
    tabs.forEach(tab => {
      tabOpenTimes.set(tab.id, now);

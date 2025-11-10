@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>FFTabClose Settings</title>
+    <link rel="stylesheet" href="popup-new.css">
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <header class="header">
+            <h1 id="extension-name">FFTabClose</h1>
+            <p id="extension-description">Fermeture automatique des onglets</p>
+        </header>
+
+        <!-- Statistiques -->
+        <section class="stats-section">
+            <div class="stat-item">
+                <span class="stat-value" id="total-tabs">0</span>
+                <span class="stat-label">Onglets</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="old-tabs">0</span>
+                <span class="stat-label">Anciens</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="pinned-tabs">0</span>
+                <span class="stat-label">Épinglés</span>
+            </div>
+        </section>
+
+        <!-- Configuration principale -->
+        <section class="config-section">
+            <!-- Activation/Désactivation -->
+            <div class="setting-item">
+                <div class="setting-header">
+                    <label for="enabled" id="enabled-label">Activer la fermeture automatique</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="enabled" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Délai de fermeture -->
+            <div class="setting-item">
+                <label for="close-after" id="close-after-label">Fermer après</label>
+                <div class="time-selector">
+                    <select id="close-after" class="time-select">
+                        <option value="1">1 minute (test)</option>
+                        <option value="5">5 minutes</option>
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="60">1 heure</option>
+                        <option value="180">3 heures</option>
+                        <option value="360">6 heures</option>
+                        <option value="720">12 heures</option>
+                        <option value="1440">24 heures</option>
+                        <option value="custom">Personnalisé</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Temps personnalisé -->
+            <div class="setting-item custom-time" id="custom-time-container" style="display: none;">
+                <div class="custom-time-inputs">
+                    <div class="time-input-group">
+                        <input type="number" id="custom-hours" min="0" max="168" value="0" class="time-input">
+                        <label for="custom-hours">heures</label>
+                    </div>
+                    <div class="time-input-group">
+                        <input type="number" id="custom-minutes" min="1" max="59" value="30" class="time-input">
+                        <label for="custom-minutes">minutes</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options avancées -->
+            <div class="setting-item">
+                <div class="setting-header">
+                    <label for="discard-pinned" id="discard-pinned-label">Mettre en veille les onglets épinglés</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="discard-pinned" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <p class="setting-description">Les onglets épinglés ne seront pas fermés mais mis en veille</p>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-header">
+                    <label for="exclude-audible" id="exclude-audible-label">Exclure les onglets avec audio</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="exclude-audible" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <p class="setting-description">Ne pas fermer les onglets qui jouent de l'audio</p>
+            </div>
+        </section>
+
+        <!-- Actions -->
+        <section class="actions-section">
+            <button id="save-button" class="btn btn-primary">Sauvegarder</button>
+            <button id="force-process" class="btn btn-secondary">Traiter maintenant</button>
+        </section>
+
+        <!-- Messages de statut -->
+        <div id="status-message" class="status-message"></div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Compatible Firefox & Zen Browser • Tous workspaces</p>
+        </footer>
+    </div>
+
+    <script src="../browser-polyfill.min.js"></script>
+    <script src="popup-new.js"></script>
+</body>
+</html>
