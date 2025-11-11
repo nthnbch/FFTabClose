@@ -1,286 +1,547 @@
 /**
- * FFTabClose - Background Script
+ * FFTabClose - Background Script V4.0
  * 
- * This script runs in the background and periodically checks for tabs
- * that have been open for more than 12 hours (or user-specified time),
- * then closes them automatically.
+ * Extension Firefox/Zen pour fermer automatiquement les onglets après un délai
+ * et mettre en veille les onglets épinglés.
+ * 
+ * Fonctionnalités :
+ * - Fonctionne sur TOUS les workspaces/spaces Firefox/Zen
+ * - Persiste à travers les redémarrages de Firefox
+ * - Ferme les onglets normaux après le délai configuré
+ * - Met en veille (discard) les onglets épinglés
+ * - Compatible Arc Browser auto-closing behavior
  */
 
-// Default settings
-const DEFAULT_SETTINGS = {
-  enabled: true,        // Auto-closing is enabled by default
-  closeAfterHours: 0.016667,  // Close tabs after 1 minute by default (for testing)
-  excludePinnedTabs: false    // Don't close pinned tabs by default, just discard them
+// Configuration par défaut
+const DEFAULT_CONFIG = {
+  enabled: true,
+  closeAfterMinutes: 720, // 12 heures par défaut
+  discardPinnedTabs: true, // Mettre en veille les onglets épinglés
+  excludeActiveTab: true,  // Ne jamais fermer l'onglet actif
+  excludeAudibleTabs: true, // Ne pas fermer les onglets qui jouent de l'audio
+  checkIntervalMinutes: 1   // Vérification toutes les minutes
 };
 
-// Map to track when each tab was created
-const tabOpenTimes = new Map();
-
-// Initialize extension
-async function init() {
-  console.log('FFTabClose: Initializing extension');
-  
-  // Load settings and set up the periodic check
-  const settings = await loadSettings();
-  console.log('FFTabClose: Settings loaded', settings);
-  
-  // Load saved tab timestamps from storage
-  await loadTabTimestamps();
-  
-  if (settings.enabled) {
-    setupPeriodicCheck(settings);
-  } else {
-    console.log('FFTabClose: Auto-closing is disabled');
+// Stockage des données de l'extension
+class TabDataManager {
+  constructor() {
+    this.tabData = new Map(); // Map<tabId, TabInfo>
+    this.initialized = false;
   }
 
-  // Set up listeners for tab events
-  setupTabListeners();
-
-  // Perform an initial scan of existing tabs
-  await trackExistingTabs();
-  
-  // Set up global alarm listener (only once)
-  browser.alarms.onAlarm.addListener(handleAlarm);
-  
-  console.log('FFTabClose: Initialization complete');
-}
-
-// Handle alarm events
-async function handleAlarm(alarm) {
-  console.log(`FFTabClose: Alarm triggered: ${alarm.name}`);
-  
-  if (alarm.name === 'checkOldTabs') {
-    const settings = await loadSettings();
-    if (settings.enabled) {
-      await checkAndCloseOldTabs(settings);
-    } else {
-      console.log('FFTabClose: Auto-closing is disabled, skipping check');
-    }
-  }
-}
-
-// Load user settings from storage
-async function loadSettings() {
-  try {
-    const result = await browser.storage.local.get('settings');
-    return result.settings || DEFAULT_SETTINGS;
-  } catch (error) {
-    console.error('Error loading settings:', error);
-    return DEFAULT_SETTINGS;
-  }
-}
-
-// Set up periodic check for old tabs
-function setupPeriodicCheck(settings) {
-  // Clear any existing alarms
-  browser.alarms.clearAll();
-  
-  // Create an alarm that will fire every minute (for testing)
-  browser.alarms.create('checkOldTabs', {
-    periodInMinutes: 0.5 // Check every 30 seconds (for testing)
-  });
-  
-  console.log(`Periodic check set up to run every 30 seconds with close after ${settings.closeAfterHours} hours (${settings.closeAfterHours * 60} minutes)`);
-}
-
-// Set up listeners for tab events
-function setupTabListeners() {
-  console.log('FFTabClose: Setting up tab event listeners');
-  
-  // Track when new tabs are created
-  browser.tabs.onCreated.addListener(async tab => {
-    console.log(`FFTabClose: New tab created: ${tab.id} (${tab.title})`);
-    tabOpenTimes.set(tab.id, Date.now());
-    await saveTabTimestamps();
-  });
-
-  // Remove tracking data when tabs are closed
-  browser.tabs.onRemoved.addListener(async tabId => {
-    console.log(`FFTabClose: Tab removed: ${tabId}`);
-    tabOpenTimes.delete(tabId);
-    await saveTabTimestamps();
-  });
-
-  // Listen for changes to settings
-  browser.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && changes.settings) {
-      console.log('FFTabClose: Settings changed', changes.settings.newValue);
-      const newSettings = changes.settings.newValue;
-      if (newSettings.enabled) {
-        setupPeriodicCheck(newSettings);
-      } else {
-        browser.alarms.clearAll();
-        console.log('FFTabClose: Alarms cleared due to disabled setting');
-      }
-    }
-  });
-  
-  console.log('FFTabClose: Tab event listeners set up');
-}
-
-// Track all existing tabs on startup
-async function trackExistingTabs() {
-  try {
-    console.log('FFTabClose: Tracking existing tabs');
-    const tabs = await browser.tabs.query({});
-    console.log(`FFTabClose: Found ${tabs.length} existing tabs`);
+  async init() {
+    if (this.initialized) return;
     
+    console.log('FFTabClose: Initializing TabDataManager');
+    await this.loadFromStorage();
+    await this.syncWithExistingTabs();
+    this.initialized = true;
+    console.log(`FFTabClose: TabDataManager initialized with ${this.tabData.size} tabs`);
+  }
+
+  // Structure des données d'un onglet
+  createTabInfo(tab) {
     const now = Date.now();
-    let updated = false;
-    let newTabsCount = 0;
-    
-    tabs.forEach(tab => {
-      // Only set timestamp if we don't already have one
-      if (!tabOpenTimes.has(tab.id)) {
-        tabOpenTimes.set(tab.id, now);
-        updated = true;
-        newTabsCount++;
-        console.log(`FFTabClose: Set timestamp for tab ${tab.id} (${tab.title})`);
-      }
-    });
-    
-    console.log(`FFTabClose: Set timestamps for ${newTabsCount} new tabs`);
-    
-    // Save timestamps to storage if we updated any
-    if (updated) {
-      await saveTabTimestamps();
-    }
-  } catch (error) {
-    console.error('FFTabClose: Error tracking existing tabs:', error);
+    return {
+      id: tab.id,
+      url: tab.url,
+      title: tab.title,
+      windowId: tab.windowId,
+      cookieStoreId: tab.cookieStoreId || 'default', // Pour les workspaces
+      pinned: tab.pinned,
+      createdAt: now,
+      lastActiveAt: now,
+      lastSeenAt: now,
+      discarded: tab.discarded || false,
+      audible: tab.audible || false
+    };
   }
-}
 
-// Save tab timestamps to storage
-async function saveTabTimestamps() {
-  try {
-    console.log(`FFTabClose: Saving ${tabOpenTimes.size} tab timestamps to storage`);
+  // Ajouter ou mettre à jour un onglet
+  async updateTab(tab) {
+    const existing = this.tabData.get(tab.id);
+    const now = Date.now();
     
-    // Convert Map to object for storage
-    const timestampObj = {};
-    tabOpenTimes.forEach((timestamp, tabId) => {
-      timestampObj[tabId] = timestamp;
-    });
-    
-    await browser.storage.local.set({ tabTimestamps: timestampObj });
-    console.log('FFTabClose: Tab timestamps saved to storage');
-  } catch (error) {
-    console.error('FFTabClose: Error saving tab timestamps:', error);
-  }
-}
-
-// Load tab timestamps from storage
-async function loadTabTimestamps() {
-  try {
-    console.log('FFTabClose: Loading tab timestamps from storage');
-    const result = await browser.storage.local.get('tabTimestamps');
-    
-    if (result.tabTimestamps) {
-      // Convert object back to Map
-      Object.entries(result.tabTimestamps).forEach(([tabId, timestamp]) => {
-        tabOpenTimes.set(parseInt(tabId), timestamp);
-      });
-      console.log(`FFTabClose: Loaded ${tabOpenTimes.size} tab timestamps from storage`);
+    if (existing) {
+      // Mettre à jour les informations existantes
+      existing.url = tab.url;
+      existing.title = tab.title;
+      existing.pinned = tab.pinned;
+      existing.discarded = tab.discarded || false;
+      existing.audible = tab.audible || false;
+      existing.lastSeenAt = now;
       
-      // Log some examples for debugging
-      let count = 0;
-      for (const [tabId, timestamp] of tabOpenTimes.entries()) {
-        const date = new Date(timestamp);
-        console.log(`FFTabClose: Tab ${tabId} timestamp: ${date.toISOString()} (${timestamp})`);
-        count++;
-        if (count >= 5) break; // Just show a few examples
+      // Mettre à jour lastActiveAt si l'onglet est actif
+      if (tab.active) {
+        existing.lastActiveAt = now;
       }
     } else {
-      console.log('FFTabClose: No saved timestamps found in storage');
+      // Créer une nouvelle entrée
+      this.tabData.set(tab.id, this.createTabInfo(tab));
     }
-  } catch (error) {
-    console.error('FFTabClose: Error loading tab timestamps:', error);
+    
+    await this.saveToStorage();
   }
-}
 
-// Check for old tabs and close them
-async function checkAndCloseOldTabs(settings) {
-  try {
-    console.log('FFTabClose: Checking for old tabs to close...');
-    
+  // Supprimer un onglet
+  async removeTab(tabId) {
+    if (this.tabData.delete(tabId)) {
+      await this.saveToStorage();
+      console.log(`FFTabClose: Removed tab data for ${tabId}`);
+    }
+  }
+
+  // Marquer un onglet comme actif
+  async markTabActive(tabId) {
+    const tabInfo = this.tabData.get(tabId);
+    if (tabInfo) {
+      tabInfo.lastActiveAt = Date.now();
+      await this.saveToStorage();
+    }
+  }
+
+  // Obtenir les données d'un onglet
+  getTabInfo(tabId) {
+    return this.tabData.get(tabId);
+  }
+
+  // Obtenir tous les onglets
+  getAllTabsData() {
+    return Array.from(this.tabData.values());
+  }
+
+  // Synchroniser avec les onglets existants
+  async syncWithExistingTabs() {
+    try {
+      const tabs = await browser.tabs.query({});
+      const existingTabIds = new Set(tabs.map(tab => tab.id));
+      
+      // Supprimer les données des onglets qui n'existent plus
+      for (const tabId of this.tabData.keys()) {
+        if (!existingTabIds.has(tabId)) {
+          this.tabData.delete(tabId);
+        }
+      }
+      
+      // Ajouter les nouveaux onglets
+      for (const tab of tabs) {
+        await this.updateTab(tab);
+      }
+      
+      console.log(`FFTabClose: Synced with ${tabs.length} existing tabs`);
+    } catch (error) {
+      console.error('FFTabClose: Error syncing with existing tabs:', error);
+    }
+  }
+
+  // Sauvegarder dans le storage
+  async saveToStorage() {
+    try {
+      const data = {};
+      this.tabData.forEach((tabInfo, tabId) => {
+        data[tabId] = tabInfo;
+      });
+      
+      await browser.storage.local.set({ 
+        tabData: data,
+        lastSaved: Date.now()
+      });
+    } catch (error) {
+      console.error('FFTabClose: Error saving tab data:', error);
+    }
+  }
+
+  // Charger depuis le storage
+  async loadFromStorage() {
+    try {
+      const result = await browser.storage.local.get(['tabData', 'lastSaved']);
+      
+      if (result.tabData) {
+        this.tabData.clear();
+        Object.entries(result.tabData).forEach(([tabId, tabInfo]) => {
+          this.tabData.set(parseInt(tabId), tabInfo);
+        });
+        
+        const lastSaved = new Date(result.lastSaved || 0);
+        console.log(`FFTabClose: Loaded ${this.tabData.size} tabs from storage (last saved: ${lastSaved.toISOString()})`);
+      }
+    } catch (error) {
+      console.error('FFTabClose: Error loading tab data:', error);
+    }
+  }
+
+  // Trouver les onglets anciens à traiter
+  async findOldTabs(config) {
     const now = Date.now();
-    const hourInMs = 3600000; // 1 hour in milliseconds
-    const maxAgeMs = settings.closeAfterHours * hourInMs;
+    const maxAge = config.closeAfterMinutes * 60 * 1000; // Convertir en millisecondes
     
-    console.log(`FFTabClose: Max age threshold: ${settings.closeAfterHours} hours (${maxAgeMs}ms)`);
+    // Obtenir les onglets actifs actuels
+    const activeTabs = await browser.tabs.query({ active: true });
+    const activeTabIds = new Set(activeTabs.map(tab => tab.id));
     
-    // Get all tabs across all spaces/containers
-    const tabs = await browser.tabs.query({});
-    console.log(`FFTabClose: Found ${tabs.length} total tabs`);
-    
-    // Log current timestamps
-    console.log(`FFTabClose: Current tab timestamps: ${tabOpenTimes.size} entries`);
-    
-    // Tabs to close (non-pinned)
     const tabsToClose = [];
-    // Tabs to discard (pinned)
     const tabsToDiscard = [];
     
-    for (const tab of tabs) {
-      const openTime = tabOpenTimes.get(tab.id);
+    for (const tabInfo of this.tabData.values()) {
+      // Calculer l'âge basé sur la dernière activité
+      const age = now - tabInfo.lastActiveAt;
       
-      if (!openTime) {
-        console.log(`FFTabClose: Tab ${tab.id} (${tab.title}) has no timestamp, setting to current time`);
-        tabOpenTimes.set(tab.id, now);
-        await saveTabTimestamps();
-        continue;
-      }
-      
-      const ageMs = now - openTime;
-      const ageHours = ageMs / hourInMs;
-      
-      console.log(`FFTabClose: Tab ${tab.id} (${tab.title}) is ${ageHours.toFixed(2)} hours old (${ageMs}ms)`);
-      
-      if (ageMs >= maxAgeMs) {
-        if (tab.pinned) {
-          // Si les onglets épinglés sont exclus, on ne fait rien
-          if (settings.excludePinnedTabs) {
-            console.log(`FFTabClose: Tab ${tab.id} (${tab.title}) is pinned and excluded from processing`);
-            continue;
-          }
-          
-          // Pour les onglets épinglés, on les met en veille au lieu de les fermer
-          console.log(`FFTabClose: Tab ${tab.id} (${tab.title}) is pinned and older than threshold, adding to discard list`);
-          tabsToDiscard.push(tab.id);
-        } else {
-          // Les onglets non épinglés sont fermés normalement
-          console.log(`FFTabClose: Tab ${tab.id} (${tab.title}) is older than threshold, adding to close list`);
-          tabsToClose.push(tab.id);
+      if (age >= maxAge) {
+        // Exclure l'onglet actif si configuré
+        if (config.excludeActiveTab && activeTabIds.has(tabInfo.id)) {
+          console.log(`FFTabClose: Excluding active tab ${tabInfo.id}`);
+          continue;
+        }
+        
+        // Exclure les onglets audibles si configuré
+        if (config.excludeAudibleTabs && tabInfo.audible) {
+          console.log(`FFTabClose: Excluding audible tab ${tabInfo.id}`);
+          continue;
+        }
+        
+        if (tabInfo.pinned && config.discardPinnedTabs) {
+          // Onglets épinglés : mettre en veille
+          tabsToDiscard.push(tabInfo);
+        } else if (!tabInfo.pinned) {
+          // Onglets normaux : fermer
+          tabsToClose.push(tabInfo);
         }
       }
     }
     
-    // Close the non-pinned old tabs
-    if (tabsToClose.length > 0) {
-      console.log(`FFTabClose: Closing ${tabsToClose.length} non-pinned tabs that were older than ${settings.closeAfterHours} hours`);
-      await browser.tabs.remove(tabsToClose);
-    } else {
-      console.log(`FFTabClose: No non-pinned tabs found older than ${settings.closeAfterHours} hours to close`);
-    }
-    
-    // Discard (suspend) the pinned old tabs
-    if (tabsToDiscard.length > 0) {
-      console.log(`FFTabClose: Discarding ${tabsToDiscard.length} pinned tabs that were older than ${settings.closeAfterHours} hours`);
-      
-      for (const tabId of tabsToDiscard) {
-        try {
-          await browser.tabs.discard(tabId);
-          console.log(`FFTabClose: Successfully discarded tab ${tabId}`);
-        } catch (err) {
-          console.error(`FFTabClose: Error discarding tab ${tabId}:`, err);
-        }
-      }
-    } else {
-      console.log(`FFTabClose: No pinned tabs found older than ${settings.closeAfterHours} hours to discard`);
-    }
-  } catch (error) {
-    console.error('FFTabClose: Error checking and processing old tabs:', error);
+    return { tabsToClose, tabsToDiscard };
   }
 }
 
-// Initialize the extension when the browser starts
-init();console.log('Script de debug')
+// Gestionnaire principal
+class FFTabCloseManager {
+  constructor() {
+    this.tabManager = new TabDataManager();
+    this.config = { ...DEFAULT_CONFIG };
+    this.alarmName = 'ffTabCloseCheck';
+    this.isProcessing = false;
+    this.isZenBrowser = false;
+  }
+
+  async init() {
+    console.log('FFTabClose: Starting initialization...');
+    
+    // Detect Zen Browser
+    await this.detectZenBrowser();
+    
+    // Charger la configuration
+    await this.loadConfig();
+    
+    // Initialiser le gestionnaire d'onglets
+    await this.tabManager.init();
+    
+    // Configurer les écouteurs d'événements
+    this.setupEventListeners();
+    
+    // Démarrer le système de vérification périodique
+    if (this.config.enabled) {
+      await this.startPeriodicCheck();
+    }
+    
+    console.log(`FFTabClose: Initialization complete${this.isZenBrowser ? ' (Zen Browser detected)' : ''}`);
+  }
+
+  // Détecter Zen Browser
+  async detectZenBrowser() {
+    try {
+      // Zen Browser has specific user agent or extensions
+      const info = await browser.runtime.getBrowserInfo();
+      this.isZenBrowser = info.name.toLowerCase().includes('zen') || 
+                          info.vendor.toLowerCase().includes('zen');
+      
+      if (this.isZenBrowser) {
+        console.log('FFTabClose: Zen Browser detected - Enhanced workspace compatibility enabled');
+      }
+    } catch (error) {
+      // Fallback detection methods for Zen
+      try {
+        // Check for Zen-specific APIs or features
+        this.isZenBrowser = typeof browser.contextualIdentities !== 'undefined' &&
+                            navigator.userAgent.includes('Zen');
+      } catch (e) {
+        console.log('FFTabClose: Standard Firefox mode');
+      }
+    }
+  }
+
+  // Charger la configuration
+  async loadConfig() {
+    try {
+      const result = await browser.storage.sync.get('config');
+      if (result.config) {
+        this.config = { ...DEFAULT_CONFIG, ...result.config };
+      }
+      console.log('FFTabClose: Config loaded:', this.config);
+    } catch (error) {
+      console.error('FFTabClose: Error loading config:', error);
+      this.config = { ...DEFAULT_CONFIG };
+    }
+  }
+
+  // Sauvegarder la configuration
+  async saveConfig() {
+    try {
+      await browser.storage.sync.set({ config: this.config });
+      console.log('FFTabClose: Config saved');
+    } catch (error) {
+      console.error('FFTabClose: Error saving config:', error);
+    }
+  }
+
+  // Configurer les écouteurs d'événements
+  setupEventListeners() {
+    // Onglets créés
+    browser.tabs.onCreated.addListener(async (tab) => {
+      console.log(`FFTabClose: Tab created: ${tab.id} (${tab.title})`);
+      await this.tabManager.updateTab(tab);
+    });
+
+    // Onglets mis à jour
+    browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+      if (changeInfo.status === 'complete' || changeInfo.title || changeInfo.audible !== undefined) {
+        await this.tabManager.updateTab(tab);
+      }
+    });
+
+    // Onglets supprimés
+    browser.tabs.onRemoved.addListener(async (tabId) => {
+      console.log(`FFTabClose: Tab removed: ${tabId}`);
+      await this.tabManager.removeTab(tabId);
+    });
+
+    // Onglet activé (changement de focus)
+    browser.tabs.onActivated.addListener(async (activeInfo) => {
+      console.log(`FFTabClose: Tab activated: ${activeInfo.tabId}`);
+      await this.tabManager.markTabActive(activeInfo.tabId);
+    });
+
+    // Fenêtre focus changé
+    browser.windows.onFocusChanged.addListener(async (windowId) => {
+      if (windowId !== browser.windows.WINDOW_ID_NONE) {
+        try {
+          const tabs = await browser.tabs.query({ windowId, active: true });
+          if (tabs[0]) {
+            await this.tabManager.markTabActive(tabs[0].id);
+          }
+        } catch (error) {
+          console.error('FFTabClose: Error handling window focus:', error);
+        }
+      }
+    });
+
+    // Alarmes
+    browser.alarms.onAlarm.addListener(async (alarm) => {
+      if (alarm.name === this.alarmName) {
+        await this.processOldTabs();
+      }
+    });
+
+    // Changements de configuration
+    browser.storage.onChanged.addListener(async (changes, area) => {
+      if (area === 'sync' && changes.config) {
+        await this.loadConfig();
+        if (this.config.enabled) {
+          await this.startPeriodicCheck();
+        } else {
+          await this.stopPeriodicCheck();
+        }
+      }
+    });
+
+    // Messages depuis le popup
+    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.action === 'getStats') {
+        const stats = this.getStats();
+        sendResponse({ stats });
+      } else if (message.action === 'forceProcess') {
+        this.forceProcess()
+          .then(() => sendResponse({ success: true }))
+          .catch(error => sendResponse({ success: false, error: error.message }));
+        return true; // Indique une réponse asynchrone
+      }
+    });
+  }
+
+  // Démarrer la vérification périodique
+  async startPeriodicCheck() {
+    await browser.alarms.clear(this.alarmName);
+    await browser.alarms.create(this.alarmName, {
+      periodInMinutes: this.config.checkIntervalMinutes
+    });
+    console.log(`FFTabClose: Periodic check started (every ${this.config.checkIntervalMinutes} minutes)`);
+  }
+
+  // Arrêter la vérification périodique
+  async stopPeriodicCheck() {
+    await browser.alarms.clear(this.alarmName);
+    console.log('FFTabClose: Periodic check stopped');
+  }
+
+  // Traiter les onglets anciens
+  async processOldTabs() {
+    if (this.isProcessing) {
+      console.log('FFTabClose: Already processing, skipping...');
+      return;
+    }
+
+    this.isProcessing = true;
+    
+    try {
+      const logPrefix = this.isZenBrowser ? 'FFTabClose (Zen)' : 'FFTabClose';
+      console.log(`${logPrefix}: Starting old tabs processing...`);
+      
+      // Synchroniser avec les onglets actuels
+      await this.tabManager.syncWithExistingTabs();
+      
+      // Trouver les onglets à traiter
+      const { tabsToClose, tabsToDiscard } = await this.tabManager.findOldTabs(this.config);
+      
+      console.log(`${logPrefix}: Found ${tabsToClose.length} tabs to close and ${tabsToDiscard.length} tabs to discard`);
+      
+      // Log Zen-specific information if available
+      if (this.isZenBrowser && tabsToClose.length > 0) {
+        const workspaceInfo = await this.getZenWorkspaceInfo(tabsToClose.concat(tabsToDiscard));
+        if (workspaceInfo.size > 0) {
+          console.log(`${logPrefix}: Processing tabs across ${workspaceInfo.size} workspace(s):`, 
+                     Array.from(workspaceInfo.entries()).map(([ws, count]) => `${ws || 'default'}(${count})`).join(', '));
+        }
+      }
+      
+      // Fermer les onglets normaux
+      if (tabsToClose.length > 0) {
+        const tabIds = tabsToClose.map(tab => tab.id);
+        
+        try {
+          await browser.tabs.remove(tabIds);
+          console.log(`FFTabClose: Successfully closed ${tabIds.length} tabs`);
+          
+          // Supprimer les données des onglets fermés
+          for (const tabId of tabIds) {
+            await this.tabManager.removeTab(tabId);
+          }
+        } catch (error) {
+          console.error('FFTabClose: Error closing tabs:', error);
+        }
+      }
+      
+      // Mettre en veille les onglets épinglés
+      if (tabsToDiscard.length > 0) {
+        for (const tabInfo of tabsToDiscard) {
+          try {
+            if (!tabInfo.discarded) {
+              // Pour Firefox, on marque l'onglet comme "en veille" dans nos données
+              // et on le recharge avec une URL de placeholder si ce n'est pas déjà fait
+              if (!tabInfo.url.startsWith('data:text/html')) {
+                // Sauvegarder l'URL originale
+                tabInfo.originalUrl = tabInfo.url;
+                tabInfo.originalTitle = tabInfo.title;
+                
+                // Remplacer par une page de veille
+                const sleepPageUrl = `data:text/html,<!DOCTYPE html>
+                <html><head><title>💤 ${encodeURIComponent(tabInfo.title)} (en veille)</title>
+                <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui; 
+                         text-align: center; padding: 50px; background: #f5f5f5; color: #666; }
+                  .icon { font-size: 48px; margin-bottom: 20px; }
+                  h1 { margin: 0; font-size: 18px; font-weight: normal; }
+                  p { margin: 10px 0 0; font-size: 14px; opacity: 0.7; }
+                  .url { font-family: monospace; background: #e0e0e0; padding: 4px 8px; 
+                         border-radius: 4px; display: inline-block; margin-top: 10px; word-break: break-all; }
+                </style></head>
+                <body>
+                  <div class="icon">💤</div>
+                  <h1>Onglet en veille</h1>
+                  <p>Cet onglet épinglé a été mis en veille par FFTabClose</p>
+                  <p>Il se rechargera automatiquement quand vous cliquerez dessus</p>
+                  <div class="url">${encodeURIComponent(tabInfo.originalUrl)}</div>
+                  <script>
+                    const originalUrl = decodeURIComponent('${encodeURIComponent(tabInfo.originalUrl)}');
+                    document.addEventListener('visibilitychange', function() {
+                      if (!document.hidden) {
+                        window.location.href = originalUrl;
+                      }
+                    });
+                  </script>
+                </body></html>`;
+                
+                await browser.tabs.update(tabInfo.id, { url: sleepPageUrl });
+                console.log(`FFTabClose: Successfully put pinned tab ${tabInfo.id} to sleep (${tabInfo.originalUrl})`);
+              }
+              
+              // Mettre à jour les données
+              tabInfo.discarded = true;
+              tabInfo.lastActiveAt = Date.now(); // Reset timer after discard
+            }
+          } catch (error) {
+            console.error(`FFTabClose: Error putting tab ${tabInfo.id} to sleep:`, error);
+          }
+        }
+        
+        await this.tabManager.saveToStorage();
+      }
+      
+    } catch (error) {
+      console.error('FFTabClose: Error in processOldTabs:', error);
+    } finally {
+      this.isProcessing = false;
+    }
+  }
+
+  // Forcer un traitement immédiat
+  async forceProcess() {
+    console.log('FFTabClose: Force processing old tabs...');
+    await this.processOldTabs();
+  }
+
+  // Obtenir les statistiques
+  getStats() {
+    const allTabs = this.tabManager.getAllTabsData();
+    const now = Date.now();
+    const maxAge = this.config.closeAfterMinutes * 60 * 1000;
+    
+    const stats = {
+      totalTabs: allTabs.length,
+      pinnedTabs: allTabs.filter(tab => tab.pinned).length,
+      oldTabs: allTabs.filter(tab => (now - tab.lastActiveAt) >= maxAge).length,
+      enabled: this.config.enabled,
+      closeAfterMinutes: this.config.closeAfterMinutes
+    };
+    
+    return stats;
+  }
+
+  // Get Zen Browser workspace information for logging
+  async getZenWorkspaceInfo(tabs) {
+    const workspaceMap = new Map();
+    
+    try {
+      for (const tab of tabs) {
+        // In Zen Browser, workspace info is available via cookieStoreId
+        const workspace = tab.cookieStoreId || 'default';
+        workspaceMap.set(workspace, (workspaceMap.get(workspace) || 0) + 1);
+      }
+    } catch (error) {
+      console.warn('FFTabClose: Error gathering Zen workspace info:', error);
+    }
+    
+    return workspaceMap;
+  }
+}
+
+// Instance globale
+const ffTabClose = new FFTabCloseManager();
+
+// Initialiser l'extension
+ffTabClose.init().catch(error => {
+  console.error('FFTabClose: Fatal initialization error:', error);
+});
+
+// Exposer pour les tests et le popup
+if (typeof window !== 'undefined') {
+  window.ffTabClose = ffTabClose;
+}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FFTabClose - Mode Sécurisé</title>
+    <style>
+        body {
+            width: 350px;
+            padding: 15px;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            background: #f8f9fa;
+            border: 2px solid #ff6b6b;
+            border-radius: 8px;
+        }
+        
+        .safe-header {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            margin: -15px -15px 15px -15px;
+            border-radius: 6px 6px 0 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            color: #856404;
+        }
+        
+        .stats {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 4px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .button-test {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .button-disabled {
+            background: #6c757d;
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .status-safe {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="safe-header">
+        🔒 MODE SÉCURISÉ ACTIF
+    </div>
+    
+    <div class="warning">
+        <strong>⚠️ Version de Test Sécurisée</strong><br>
+        Cette version ne ferme AUCUN onglet réel.<br>
+        Elle simule uniquement le comportement.
+    </div>
+    
+    <div class="status status-safe">
+        ✅ Vos onglets sont 100% protégés<br>
+        ✅ Aucune action destructive possible
+    </div>
+    
+    <div class="stats">
+        <h3>📊 Statistiques (Lecture Seule)</h3>
+        <div class="stat-item">
+            <span>Total onglets:</span>
+            <span id="totalTabs">-</span>
+        </div>
+        <div class="stat-item">
+            <span>Onglets épinglés:</span>
+            <span id="pinnedTabs">-</span>
+        </div>
+        <div class="stat-item">
+            <span>Onglets protégés:</span>
+            <span id="protectedTabs">-</span>
+        </div>
+        <div class="stat-item">
+            <span>Onglets "anciens":</span>
+            <span id="oldTabs">-</span>
+        </div>
+        <div class="stat-item">
+            <span>Délai fermeture:</span>
+            <span id="closeAfter">30 min</span>
+        </div>
+    </div>
+    
+    <button id="refreshStats" class="button button-test">
+        🔄 Actualiser Statistiques
+    </button>
+    
+    <button id="testProcess" class="button button-test">
+        🧪 Test Simulation (Sans Danger)
+    </button>
+    
+    <button class="button button-disabled" disabled>
+        ❌ Mode Production Désactivé
+    </button>
+    
+    <div class="warning" style="margin-top: 15px; font-size: 12px;">
+        <strong>Pour activer le mode production:</strong><br>
+        Remplacez background-safe.js par background.js dans manifest.json
+    </div>
+
+    <script src="popup-safe.js"></script>
+</body>
+</html>

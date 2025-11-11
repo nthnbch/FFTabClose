@@ -1,37 +1,40 @@
 {
   "manifest_version": 2,
   "name": "FFTabClose",
-  "version": "3.1.0",
-  "description": "Automatically closes all tabs (including pinned tabs) that have been open for more than 12 hours, regardless of which workspace they're in",
+  "version": "4.0.0",
+  "description": "Auto-ferme les onglets après un délai configurable",
   "author": "nthnbch",
-  "default_locale": "en",
+  
   "icons": {
     "16": "icons/icon-16.svg",
     "48": "icons/icon-48.svg",
     "128": "icons/icon-128.svg"
   },
+  
   "permissions": [
     "tabs",
     "storage",
-    "alarms",
-    "contextualIdentities",
-    "<all_urls>"
+    "alarms"
   ],
+  
   "background": {
-    "scripts": ["browser-polyfill.min.js", "background/background.js"],
-    "persistent": false
+    "scripts": ["background/background-safe.js"],
+    "persistent": true
   },
+  
   "browser_action": {
     "default_icon": {
       "16": "icons/icon-16.svg",
       "48": "icons/icon-48.svg"
     },
     "default_title": "FFTabClose",
-    "default_popup": "popup/popup.html"
+    "default_popup": "popup/popup-safe.html"
   },
+  
   "browser_specific_settings": {
     "gecko": {
-      "id": "fftabclose@nthnbch.com"
+      "id": "fftabclose@nthnbch.com",
+      "strict_min_version": "109.0"
     }
   }
 }
