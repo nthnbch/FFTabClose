@@ -18,7 +18,7 @@
   ],
   
   "background": {
-    "scripts": ["background/background-safe.js"],
+    "scripts": ["background/background.js"],
     "persistent": true
   },
   
@@ -28,7 +28,7 @@
       "48": "icons/icon-48.svg"
     },
     "default_title": "FFTabClose",
-    "default_popup": "popup/popup-safe.html"
+    "default_popup": "popup/popup.html"
   },
   
   "browser_specific_settings": {

@@ -318,6 +318,25 @@ class FFTabCloseManager {
     browser.tabs.onActivated.addListener(async (activeInfo) => {
       console.log(`FFTabClose: Tab activated: ${activeInfo.tabId}`);
       await this.tabManager.markTabActive(activeInfo.tabId);
+
+      // Pour Zen Browser : marquer tous les autres onglets du même container comme inactifs
+      if (this.isZenBrowser) {
+        try {
+          const activeTab = await browser.tabs.get(activeInfo.tabId);
+          if (activeTab) {
+            // Marquer tous les onglets du même container (sauf l'actif) comme inactifs
+            const containerTabs = await browser.tabs.query({ cookieStoreId: activeTab.cookieStoreId });
+            for (const tab of containerTabs) {
+              if (tab.id !== activeInfo.tabId && tab.id !== activeTab.id) {
+                // Ne pas marquer comme actif, mais permettre au timer de continuer
+                // Les onglets inactifs garderont leur lastActiveAt existant
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('FFTabClose: Error handling Zen workspace activation:', error);
+        }
+      }
     });
 
     // Fenêtre focus changé
