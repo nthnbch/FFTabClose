@@ -179,6 +179,18 @@ class TabDataManager {
     const activeTabs = await browser.tabs.query({ active: true });
     const activeTabIds = new Set(activeTabs.map(tab => tab.id));
     
+    // Pour Zen Browser : identifier le workspace actuel
+    let currentWorkspaceId = null;
+    if (this.isZenBrowser && activeTabs.length > 0) {
+      // Le workspace actuel est celui de l'onglet actif dans la fenêtre active
+      const currentWindow = await browser.windows.getCurrent();
+      const activeTabInCurrentWindow = activeTabs.find(tab => tab.windowId === currentWindow.id);
+      if (activeTabInCurrentWindow) {
+        currentWorkspaceId = activeTabInCurrentWindow.cookieStoreId || 'default';
+        console.log(`FFTabClose (Zen): Current workspace: ${currentWorkspaceId}`);
+      }
+    }
+    
     const tabsToClose = [];
     const tabsToDiscard = [];
     
@@ -190,6 +202,12 @@ class TabDataManager {
         // Exclure l'onglet actif si configuré
         if (config.excludeActiveTab && activeTabIds.has(tabInfo.id)) {
           console.log(`FFTabClose: Excluding active tab ${tabInfo.id}`);
+          continue;
+        }
+        
+        // Pour Zen Browser : exclure aussi les onglets du workspace actuel (sauf l'actif)
+        if (this.isZenBrowser && currentWorkspaceId && tabInfo.cookieStoreId === currentWorkspaceId && !activeTabIds.has(tabInfo.id)) {
+          console.log(`FFTabClose (Zen): Excluding tab ${tabInfo.id} from current workspace ${currentWorkspaceId}`);
           continue;
         }
         
@@ -319,19 +337,16 @@ class FFTabCloseManager {
       console.log(`FFTabClose: Tab activated: ${activeInfo.tabId}`);
       await this.tabManager.markTabActive(activeInfo.tabId);
 
-      // Pour Zen Browser : marquer tous les autres onglets du même container comme inactifs
+      // Pour Zen Browser : gérer les changements de workspace
       if (this.isZenBrowser) {
         try {
           const activeTab = await browser.tabs.get(activeInfo.tabId);
           if (activeTab) {
-            // Marquer tous les onglets du même container (sauf l'actif) comme inactifs
-            const containerTabs = await browser.tabs.query({ cookieStoreId: activeTab.cookieStoreId });
-            for (const tab of containerTabs) {
-              if (tab.id !== activeInfo.tabId && tab.id !== activeTab.id) {
-                // Ne pas marquer comme actif, mais permettre au timer de continuer
-                // Les onglets inactifs garderont leur lastActiveAt existant
-              }
-            }
+            const currentWorkspaceId = activeTab.cookieStoreId || 'default';
+            console.log(`FFTabClose (Zen): Switched to workspace: ${currentWorkspaceId}`);
+
+            // Optionnel : on pourrait marquer les onglets d'autres workspaces comme plus anciens
+            // Mais pour l'instant, on laisse la logique de findOldTabs gérer cela
           }
         } catch (error) {
           console.warn('FFTabClose: Error handling Zen workspace activation:', error);
