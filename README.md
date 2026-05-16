@@ -1,123 +1,95 @@
-# FFTabClose V4.0
+# FFTabClose V5.2
 
-## 🚀 **Auto-Close Tabs Extension for Firefox & Zen Browser**
+## 🚀 Auto-Close Tabs Extension for Firefox & Zen Browser
 
-Automatically close old tabs after a configurable time and sleep pinned tabs instead of closing them. Works across **ALL workspaces** in Zen Browser and survives Firefox restarts.
+Automatically close old tabs after a configurable time — like **Arc Browser**. Pinned tabs and essentials are safely put to sleep instead of being closed. Works across **all workspaces** in Zen Browser.
 
-### **✨ Features**
+### ✨ Features
 
-- ✅ **Auto-close old tabs** after configurable time (like Arc Browser)
-- ✅ **Sleep pinned tabs** instead of closing them (preserves data)
-- ✅ **Cross-workspace functionality** - works on ALL Zen Browser workspaces
-- ✅ **Persistent timers** - survives Firefox/Zen restarts
-- ✅ **Domain exclusions** - exclude specific domains from auto-closing
-- ✅ **Real-time statistics** - see tab counts and activity
-- ✅ **Zen Browser optimized** - enhanced workspace compatibility
+- 🗑️ **Auto-close normal tabs** after a configurable delay (1 min → 24h)
+- 💤 **Sleep pinned/essential tabs** — unloaded from memory but stay in your tab bar
+- 🛡️ **Never touch active or audio tabs** — your current tab is always safe
+- 🌐 **All workspaces** — works across every Zen Browser workspace
+- ⏱️ **Persistent timers** — survive browser restarts and sleep/wake
+- 🚫 **Domain exclusions** — exclude specific sites from auto-closing
+- 📊 **Live statistics** — see tab counts update in real-time
+- ⚡ **Auto-save settings** — every change applies instantly
 
-### **🎯 Arc Browser Experience**
+### 🎯 Arc Browser Behavior
 
-Just like Arc Browser's auto-closing tabs, but for Firefox and Zen Browser:
-- Tabs automatically close after 30 minutes (configurable)
-- Pinned tabs are safely "slept" without losing data
-- Works seamlessly across all browser windows and workspaces
-- Timers persist through browser restarts
+| Tab type | What happens |
+|---|---|
+| Normal tabs | **Closed** after the configured delay |
+| Pinned / Essentials | **Put to sleep** (discarded from memory, stay visible) |
+| Active tab | **Never touched** |
+| Tabs playing audio | **Never touched** |
 
-### **📦 Installation**
+### 📦 Installation
 
-#### **Firefox / Standard Installation**
-1. Download the extension files
-2. Go to `about:debugging` → "This Firefox"
-3. Click "Load Temporary Add-on..."
-4. Select `manifest.json`
+**From Firefox Add-ons:**
+1. Install from [addons.mozilla.org](https://addons.mozilla.org)
+2. Click the FFTabClose icon in the toolbar to configure
 
-#### **Zen Browser Installation**
-1. Download the extension files  
-2. Go to `about:debugging` → "This Zen"
-3. Click "Load Temporary Add-on..."
-4. Select `manifest.json`
-5. Extension automatically detects and optimizes for Zen Browser
+**From source (development):**
+1. Clone this repo
+2. Go to `about:debugging` → "This Firefox" / "This Zen"
+3. Click "Load Temporary Add-on..." → select `manifest.json`
 
-### **⚙️ Configuration**
+### ⚙️ Configuration
 
-Click the extension icon in the toolbar to configure:
+Click the extension icon to configure:
 
-- **Close after**: Time before old tabs are closed (default: 30 minutes)
-- **Sleep pinned tabs**: Sleep pinned tabs instead of closing them
-- **Domain exclusions**: Domains to never auto-close
-- **Enable/disable**: Toggle the entire extension
+- **Timer**: 1 min (test) to 24 hours, or custom
+- **Sleep pinned tabs**: Discard pinned/essential tabs instead of closing
+- **Protect audio tabs**: Never touch tabs playing sound
+- **Domain exclusions**: Sites to never close (one per line)
+- **Force process**: Immediately run a cleanup cycle
 
-### **🧠 How It Works**
+### 🧠 How It Works
 
-1. **Timer Tracking**: Each tab gets a "last active" timestamp
-2. **Background Processing**: Extension runs every 5 minutes to check old tabs
-3. **Smart Closing**: Normal tabs are closed, pinned tabs are "slept"
-4. **Workspace Aware**: In Zen Browser, works across ALL workspaces simultaneously
-5. **Persistent Storage**: All data survives browser restarts
+1. Every tab gets a `lastActiveAt` timestamp when you visit it
+2. A background alarm runs every minute to check for old tabs
+3. Tabs older than the configured delay are processed:
+   - **Normal tabs** → closed
+   - **Pinned tabs** → discarded (unloaded from memory)
+4. Active tabs, audio tabs, and excluded domains are always protected
+5. Safety: max 3 tabs closed per cycle if >50% would be affected
 
-### **🎨 Zen Browser Enhanced Features**
+### 🟣 Zen Browser Compatibility
 
-- **Cross-Workspace Processing**: Unlike other extensions, works on ALL Zen workspaces
-- **Essential Tabs Protection**: Zen essential tabs are safely slept, never closed
-- **Container Awareness**: Respects Zen's container-based workspace system
-- **Performance Optimized**: Only +1.5% memory usage, +3% workspace switching delay
+FFTabClose is specifically optimized for Zen Browser:
 
-### **🔧 Technical Details**
+- **Cross-workspace**: Tracks tabs across ALL workspaces via events, since `browser.tabs.query()` only returns the active workspace
+- **Essentials = Pinned**: Zen's essential tabs are pinned tabs under the hood — they're automatically protected
+- **Hidden tabs**: Tabs in inactive workspaces are verified with `browser.tabs.get()` instead of being deleted
+- **Auto-detection**: Extension detects Zen Browser automatically
 
-- **Manifest V2**: Compatible with Firefox and Zen Browser
-- **Persistent Background**: Ensures timers work across browser restarts
-- **WebExtensions API**: Uses standard Firefox APIs for maximum compatibility
-- **Memory Efficient**: Minimal impact on browser performance
+### 🔧 Technical Details
 
-### **📊 Statistics**
+- **Manifest V2** — compatible with Firefox 109+ and Zen Browser
+- **Persistent background script** — timers survive restarts
+- **`browser.tabs.discard()`** — native Firefox API for clean memory unloading
+- **`browser.alarms`** — reliable timer that works through sleep/wake
+- **URL-based timer recovery** — timestamps survive browser restarts even when tab IDs change
+- **No data collection** — everything stays local, no network requests
 
-The extension provides real-time statistics:
-- Total tabs managed
-- Pinned tabs count  
-- Old tabs ready for closing
-- Cross-workspace tab distribution (Zen Browser)
+### 🛡️ Privacy
 
-### **🛡️ Privacy**
+- **No data collected** — zero telemetry, zero analytics
+- **No network requests** — works entirely offline
+- **No tab content access** — only uses metadata (title, URL)
+- **Open source** — all code available for review
 
-- **No data collection**: Everything stays local
-- **No network requests**: Extension works entirely offline
-- **No tab content access**: Only metadata (title, URL) for processing
-- **Open source**: All code is available for review
+### 📈 Version History
 
-### **🐛 Troubleshooting**
+- **V5.2**: Zen Browser compatibility fix, toggle fix, auto-save, live stats, safety cap
+- **V5.0**: Complete rewrite — `browser.tabs.discard()`, global processing, domain exclusions
+- **V4.x**: Legacy (broken sleep mechanism, single workspace)
 
-#### **Extension not working across workspaces (Zen Browser)**
-✅ This is expected behavior - V4.0 works across ALL workspaces automatically
+### 📄 License
 
-#### **Pinned tabs being closed**
-✅ V4.0 sleeps pinned tabs by default - check "Sleep pinned tabs" is enabled
-
-#### **Timers reset after restart**
-✅ V4.0 persists all timers - if this happens, check browser console for errors
-
-### **📈 Version History**
-
-- **V4.0**: Complete rewrite with cross-workspace support, Zen Browser optimization
-- **V3.x**: Legacy version (single workspace only)
-
-### **🤝 Contributing**
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with both Firefox and Zen Browser
-5. Submit a pull request
-
-### **📄 License**
-
-MIT License - Feel free to use and modify
-
-### **🆘 Support**
-
-For issues or questions:
-- Check `zen-browser-compatibility.md` for Zen-specific details
-- Review browser console logs for error details
-- Create an issue on GitHub
+MIT License
 
 ---
 
-**Ready to use with Firefox and Zen Browser! 🎉**
+**Compatible with Firefox & Zen Browser 🎉**
