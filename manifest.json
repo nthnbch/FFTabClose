@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "FFTabClose",
-  "version": "4.0.0",
-  "description": "Auto-ferme les onglets après un délai configurable",
+  "version": "5.0.0",
+  "description": "Auto-close tabs like Arc Browser — close normal tabs, sleep pinned/essential tabs",
   "author": "nthnbch",
   
   "icons": {

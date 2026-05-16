@@ -1,21 +1,21 @@
 /**
- * FFTabClose - Popup Script V4.0
+ * FFTabClose - Popup Script V5.0
  * 
- * Interface utilisateur moderne pour configurer l'extension
+ * Interface utilisateur pour configurer l'extension
  */
 
-// Configuration par défaut (doit correspondre au background script)
 const DEFAULT_CONFIG = {
   enabled: true,
-  closeAfterMinutes: 720, // 12 heures
+  closeAfterMinutes: 720,
   discardPinnedTabs: true,
   excludeActiveTab: true,
   excludeAudibleTabs: true,
+  excludedDomains: [],
   checkIntervalMinutes: 1
 };
 
-// Éléments DOM
-const elements = {
+// DOM elements
+const el = {
   enabled: document.getElementById('enabled'),
   closeAfter: document.getElementById('close-after'),
   customTimeContainer: document.getElementById('custom-time-container'),
@@ -23,271 +23,198 @@ const elements = {
   customMinutes: document.getElementById('custom-minutes'),
   discardPinned: document.getElementById('discard-pinned'),
   excludeAudible: document.getElementById('exclude-audible'),
+  excludedDomains: document.getElementById('excluded-domains'),
   saveButton: document.getElementById('save-button'),
   forceProcess: document.getElementById('force-process'),
   statusMessage: document.getElementById('status-message'),
-  
-  // Statistiques
   totalTabs: document.getElementById('total-tabs'),
-  oldTabs: document.getElementById('old-tabs'),
+  oldClose: document.getElementById('old-close'),
+  oldDiscard: document.getElementById('old-discard'),
   pinnedTabs: document.getElementById('pinned-tabs')
 };
 
-// État de l'application
 let currentConfig = { ...DEFAULT_CONFIG };
 
-// Initialisation
+// ─── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('FFTabClose Popup: Initializing...');
-  
   try {
-    await loadConfiguration();
-    await updateStatistics();
-    setupEventListeners();
+    await loadConfig();
+    await updateStats();
+    setupListeners();
     updateUI();
-    
-    console.log('FFTabClose Popup: Initialization complete');
   } catch (error) {
-    console.error('FFTabClose Popup: Initialization error:', error);
+    console.error('[FFTabClose Popup] Init error:', error);
     showStatus('Erreur d\'initialisation', 'error');
   }
 });
 
-// Charger la configuration
-async function loadConfiguration() {
+// ─── Load config ───────────────────────────────────────────────────────────
+async function loadConfig() {
   try {
     const result = await browser.storage.sync.get('config');
     if (result.config) {
       currentConfig = { ...DEFAULT_CONFIG, ...result.config };
     }
-    console.log('FFTabClose Popup: Configuration loaded:', currentConfig);
   } catch (error) {
-    console.error('FFTabClose Popup: Error loading configuration:', error);
-    currentConfig = { ...DEFAULT_CONFIG };
+    console.error('[FFTabClose Popup] Config load error:', error);
   }
 }
 
-// Sauvegarder la configuration
-async function saveConfiguration() {
+// ─── Save config ───────────────────────────────────────────────────────────
+async function saveConfig() {
   try {
+    // Build config from UI
+    currentConfig.enabled = el.enabled.checked;
+    currentConfig.discardPinnedTabs = el.discardPinned.checked;
+    currentConfig.excludeAudibleTabs = el.excludeAudible.checked;
+    
+    // Parse time
+    if (el.closeAfter.value === 'custom') {
+      const hours = parseInt(el.customHours.value) || 0;
+      const minutes = parseInt(el.customMinutes.value) || 0;
+      currentConfig.closeAfterMinutes = Math.max(1, hours * 60 + minutes);
+    } else {
+      currentConfig.closeAfterMinutes = parseInt(el.closeAfter.value);
+    }
+    
+    // Parse domains
+    const domainsText = el.excludedDomains.value.trim();
+    currentConfig.excludedDomains = domainsText
+      ? domainsText.split('\n').map(d => d.trim()).filter(d => d.length > 0)
+      : [];
+    
     await browser.storage.sync.set({ config: currentConfig });
-    console.log('FFTabClose Popup: Configuration saved:', currentConfig);
-    showStatus('Configuration sauvegardée avec succès!', 'success');
-    
-    // Fermer le popup après un délai
-    setTimeout(() => {
-      if (window.close) {
-        window.close();
-      }
-    }, 1500);
+    showStatus('✅ Configuration sauvegardée!', 'success');
     
   } catch (error) {
-    console.error('FFTabClose Popup: Error saving configuration:', error);
-    showStatus('Erreur lors de la sauvegarde', 'error');
+    console.error('[FFTabClose Popup] Save error:', error);
+    showStatus('Erreur de sauvegarde', 'error');
   }
 }
 
-// Mettre à jour les statistiques
-async function updateStatistics() {
+// ─── Update stats ──────────────────────────────────────────────────────────
+async function updateStats() {
   try {
-    // Dans Firefox, on communique via messages avec le background script
+    const response = await browser.runtime.sendMessage({ action: 'getStats' });
+    
+    if (response && response.stats) {
+      const s = response.stats;
+      el.totalTabs.textContent = s.totalTabs;
+      el.oldClose.textContent = s.oldTabsToClose;
+      el.oldDiscard.textContent = s.oldTabsToDiscard;
+      el.pinnedTabs.textContent = s.pinnedTabs;
+    }
+  } catch (error) {
+    // Fallback: direct tab query
     try {
-      const response = await browser.runtime.sendMessage({ action: 'getStats' });
-      if (response && response.stats) {
-        const stats = response.stats;
-        elements.totalTabs.textContent = stats.totalTabs;
-        elements.oldTabs.textContent = stats.oldTabs;
-        elements.pinnedTabs.textContent = stats.pinnedTabs;
-        
-        console.log('FFTabClose Popup: Stats updated:', stats);
+      const tabs = await browser.tabs.query({});
+      el.totalTabs.textContent = tabs.length;
+      el.pinnedTabs.textContent = tabs.filter(t => t.pinned).length;
+      el.oldClose.textContent = '?';
+      el.oldDiscard.textContent = '?';
+    } catch (e) {
+      el.totalTabs.textContent = '?';
+      el.oldClose.textContent = '?';
+      el.oldDiscard.textContent = '?';
+      el.pinnedTabs.textContent = '?';
+    }
+  }
+}
+
+// ─── Setup listeners ───────────────────────────────────────────────────────
+function setupListeners() {
+  el.saveButton.addEventListener('click', async () => {
+    el.saveButton.disabled = true;
+    el.saveButton.textContent = 'Sauvegarde...';
+    
+    try {
+      await saveConfig();
+    } finally {
+      el.saveButton.disabled = false;
+      el.saveButton.textContent = 'Sauvegarder';
+    }
+  });
+  
+  el.forceProcess.addEventListener('click', async () => {
+    el.forceProcess.disabled = true;
+    el.forceProcess.textContent = 'Traitement...';
+    
+    try {
+      const response = await browser.runtime.sendMessage({ action: 'forceProcess' });
+      
+      if (response && response.success) {
+        showStatus('✅ Traitement effectué!', 'success');
+        setTimeout(() => updateStats(), 1000);
       } else {
-        throw new Error('No stats response from background script');
+        showStatus('Erreur: ' + (response?.error || 'inconnue'), 'error');
       }
     } catch (error) {
-      // Fallback: compter les onglets directement
-      console.log('FFTabClose Popup: Using fallback tab counting');
-      const tabs = await browser.tabs.query({});
-      elements.totalTabs.textContent = tabs.length;
-      elements.pinnedTabs.textContent = tabs.filter(tab => tab.pinned).length;
-      elements.oldTabs.textContent = '?';
+      showStatus('Erreur de traitement', 'error');
+    } finally {
+      el.forceProcess.disabled = false;
+      el.forceProcess.textContent = 'Traiter maintenant';
     }
-  } catch (error) {
-    console.error('FFTabClose Popup: Error updating statistics:', error);
-    elements.totalTabs.textContent = '?';
-    elements.oldTabs.textContent = '?';
-    elements.pinnedTabs.textContent = '?';
-  }
+  });
+  
+  el.closeAfter.addEventListener('change', () => {
+    el.customTimeContainer.style.display = 
+      el.closeAfter.value === 'custom' ? 'block' : 'none';
+  });
+  
+  el.enabled.addEventListener('change', updateControlsState);
 }
 
-// Configurer les écouteurs d'événements
-function setupEventListeners() {
-  // Sauvegarde
-  elements.saveButton.addEventListener('click', handleSave);
-  
-  // Traitement forcé
-  elements.forceProcess.addEventListener('click', handleForceProcess);
-  
-  // Sélecteur de temps
-  elements.closeAfter.addEventListener('change', handleTimeSelectChange);
-  
-  // Activation/désactivation
-  elements.enabled.addEventListener('change', handleEnabledChange);
-  
-  // Autres options
-  elements.discardPinned.addEventListener('change', handleDiscardPinnedChange);
-  elements.excludeAudible.addEventListener('change', handleExcludeAudibleChange);
-  
-  // Temps personnalisé
-  elements.customHours.addEventListener('input', handleCustomTimeChange);
-  elements.customMinutes.addEventListener('input', handleCustomTimeChange);
-}
-
-// Mettre à jour l'interface utilisateur
+// ─── Update UI from config ────────────────────────────────────────────────
 function updateUI() {
-  // État principal
-  elements.enabled.checked = currentConfig.enabled;
+  el.enabled.checked = currentConfig.enabled;
+  el.discardPinned.checked = currentConfig.discardPinnedTabs;
+  el.excludeAudible.checked = currentConfig.excludeAudibleTabs;
   
-  // Options
-  elements.discardPinned.checked = currentConfig.discardPinnedTabs;
-  elements.excludeAudible.checked = currentConfig.excludeAudibleTabs;
-  
-  // Sélecteur de temps
+  // Time selector
   const minutes = currentConfig.closeAfterMinutes;
-  const option = elements.closeAfter.querySelector(`option[value="${minutes}"]`);
+  const option = el.closeAfter.querySelector(`option[value="${minutes}"]`);
   
   if (option) {
-    elements.closeAfter.value = minutes;
-    elements.customTimeContainer.style.display = 'none';
+    el.closeAfter.value = minutes;
+    el.customTimeContainer.style.display = 'none';
   } else {
-    // Temps personnalisé
-    elements.closeAfter.value = 'custom';
-    elements.customTimeContainer.style.display = 'block';
-    
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    
-    elements.customHours.value = hours;
-    elements.customMinutes.value = mins;
+    el.closeAfter.value = 'custom';
+    el.customTimeContainer.style.display = 'block';
+    el.customHours.value = Math.floor(minutes / 60);
+    el.customMinutes.value = minutes % 60;
   }
   
-  // État des contrôles
+  // Domain exclusions
+  if (currentConfig.excludedDomains && currentConfig.excludedDomains.length > 0) {
+    el.excludedDomains.value = currentConfig.excludedDomains.join('\n');
+  }
+  
   updateControlsState();
 }
 
-// Mettre à jour l'état des contrôles
+// ─── Toggle controls based on enabled state ───────────────────────────────
 function updateControlsState() {
-  const isEnabled = currentConfig.enabled;
+  const isEnabled = el.enabled.checked;
   
-  // Désactiver tous les contrôles si l'extension est désactivée
-  elements.closeAfter.disabled = !isEnabled;
-  elements.customHours.disabled = !isEnabled;
-  elements.customMinutes.disabled = !isEnabled;
-  elements.discardPinned.disabled = !isEnabled;
-  elements.excludeAudible.disabled = !isEnabled;
-  elements.forceProcess.disabled = !isEnabled;
+  el.closeAfter.disabled = !isEnabled;
+  el.customHours.disabled = !isEnabled;
+  el.customMinutes.disabled = !isEnabled;
+  el.discardPinned.disabled = !isEnabled;
+  el.excludeAudible.disabled = !isEnabled;
+  el.excludedDomains.disabled = !isEnabled;
+  el.forceProcess.disabled = !isEnabled;
+  
+  document.querySelector('.config-section').style.opacity = isEnabled ? '1' : '0.5';
+  document.querySelector('.behavior-section').style.opacity = isEnabled ? '1' : '0.5';
 }
 
-// Gestionnaires d'événements
-async function handleSave() {
-  console.log('FFTabClose Popup: Saving configuration...');
-  
-  // Validation
-  if (currentConfig.closeAfterMinutes < 1) {
-    showStatus('La durée doit être d\'au moins 1 minute', 'error');
-    return;
-  }
-  
-  elements.saveButton.disabled = true;
-  elements.saveButton.textContent = 'Sauvegarde...';
-  
-  try {
-    await saveConfiguration();
-  } finally {
-    elements.saveButton.disabled = false;
-    elements.saveButton.textContent = 'Sauvegarder';
-  }
-}
-
-async function handleForceProcess() {
-  console.log('FFTabClose Popup: Force processing...');
-  
-  elements.forceProcess.disabled = true;
-  elements.forceProcess.textContent = 'Traitement...';
-  
-  try {
-    // Envoyer un message au background script pour forcer le traitement
-    const response = await browser.runtime.sendMessage({ action: 'forceProcess' });
-    
-    if (response && response.success) {
-      showStatus('Traitement effectué avec succès', 'success');
-      
-      // Mettre à jour les statistiques
-      setTimeout(async () => {
-        await updateStatistics();
-      }, 1000);
-    } else {
-      showStatus('Erreur lors du traitement: ' + (response?.error || 'Réponse invalide'), 'error');
-    }
-  } catch (error) {
-    console.error('FFTabClose Popup: Error force processing:', error);
-    showStatus('Erreur lors du traitement', 'error');
-  } finally {
-    elements.forceProcess.disabled = false;
-    elements.forceProcess.textContent = 'Traiter maintenant';
-  }
-}
-
-function handleTimeSelectChange() {
-  const value = elements.closeAfter.value;
-  
-  if (value === 'custom') {
-    elements.customTimeContainer.style.display = 'block';
-    handleCustomTimeChange(); // Calculer la valeur personnalisée
-  } else {
-    elements.customTimeContainer.style.display = 'none';
-    currentConfig.closeAfterMinutes = parseInt(value);
-    console.log('FFTabClose Popup: Time changed to', currentConfig.closeAfterMinutes, 'minutes');
-  }
-}
-
-function handleCustomTimeChange() {
-  const hours = parseInt(elements.customHours.value) || 0;
-  const minutes = parseInt(elements.customMinutes.value) || 0;
-  
-  currentConfig.closeAfterMinutes = hours * 60 + minutes;
-  
-  console.log(`FFTabClose Popup: Custom time: ${hours}h ${minutes}m = ${currentConfig.closeAfterMinutes} minutes`);
-}
-
-function handleEnabledChange() {
-  currentConfig.enabled = elements.enabled.checked;
-  updateControlsState();
-  console.log('FFTabClose Popup: Enabled changed to', currentConfig.enabled);
-}
-
-function handleDiscardPinnedChange() {
-  currentConfig.discardPinnedTabs = elements.discardPinned.checked;
-  console.log('FFTabClose Popup: Discard pinned changed to', currentConfig.discardPinnedTabs);
-}
-
-function handleExcludeAudibleChange() {
-  currentConfig.excludeAudibleTabs = elements.excludeAudible.checked;
-  console.log('FFTabClose Popup: Exclude audible changed to', currentConfig.excludeAudibleTabs);
-}
-
-// Afficher un message de statut
+// ─── Status message ───────────────────────────────────────────────────────
 function showStatus(message, type = 'info') {
-  elements.statusMessage.textContent = message;
-  elements.statusMessage.className = `status-message ${type}`;
+  el.statusMessage.textContent = message;
+  el.statusMessage.className = `status-message ${type}`;
   
-  // Masquer automatiquement après un délai
-  if (type === 'success') {
-    setTimeout(() => {
-      elements.statusMessage.className = 'status-message';
-    }, 3000);
-  } else if (type === 'error') {
-    setTimeout(() => {
-      elements.statusMessage.className = 'status-message';
-    }, 5000);
-  }
+  const timeout = type === 'error' ? 5000 : 3000;
+  setTimeout(() => {
+    el.statusMessage.className = 'status-message';
+  }, timeout);
 }

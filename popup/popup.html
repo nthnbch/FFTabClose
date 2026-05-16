@@ -2,49 +2,48 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>FFTabClose Settings</title>
+    <title>FFTabClose</title>
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
     <div class="container">
-        <!-- En-tête -->
+        <!-- Header -->
         <header class="header">
-            <h1 id="extension-name">FFTabClose</h1>
-            <p id="extension-description">Fermeture automatique des onglets</p>
+            <div class="header-top">
+                <h1 id="extension-name">FFTabClose</h1>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="enabled" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </div>
+            <p id="extension-description">Auto-close tabs like Arc Browser</p>
         </header>
 
-        <!-- Statistiques -->
+        <!-- Stats -->
         <section class="stats-section">
             <div class="stat-item">
-                <span class="stat-value" id="total-tabs">0</span>
+                <span class="stat-value" id="total-tabs">—</span>
                 <span class="stat-label">Onglets</span>
             </div>
-            <div class="stat-item">
-                <span class="stat-value" id="old-tabs">0</span>
-                <span class="stat-label">Anciens</span>
+            <div class="stat-item stat-close">
+                <span class="stat-value" id="old-close">—</span>
+                <span class="stat-label">À fermer</span>
+            </div>
+            <div class="stat-item stat-sleep">
+                <span class="stat-value" id="old-discard">—</span>
+                <span class="stat-label">À mettre en veille</span>
             </div>
             <div class="stat-item">
-                <span class="stat-value" id="pinned-tabs">0</span>
+                <span class="stat-value" id="pinned-tabs">—</span>
                 <span class="stat-label">Épinglés</span>
             </div>
         </section>
 
-        <!-- Configuration principale -->
+        <!-- Config -->
         <section class="config-section">
-            <!-- Activation/Désactivation -->
+            <!-- Timer -->
             <div class="setting-item">
-                <div class="setting-header">
-                    <label for="enabled" id="enabled-label">Activer la fermeture automatique</label>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="enabled" class="toggle-input">
-                        <span class="toggle-slider"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Délai de fermeture -->
-            <div class="setting-item">
-                <label for="close-after" id="close-after-label">Fermer après</label>
+                <label for="close-after" id="close-after-label">Fermer / mettre en veille après</label>
                 <div class="time-selector">
                     <select id="close-after" class="time-select">
                         <option value="1">1 minute (test)</option>
@@ -61,7 +60,7 @@
                 </div>
             </div>
 
-            <!-- Temps personnalisé -->
+            <!-- Custom time -->
             <div class="setting-item custom-time" id="custom-time-container" style="display: none;">
                 <div class="custom-time-inputs">
                     <div class="time-input-group">
@@ -75,27 +74,61 @@
                 </div>
             </div>
 
-            <!-- Options avancées -->
+            <!-- Sleep pinned -->
             <div class="setting-item">
                 <div class="setting-header">
-                    <label for="discard-pinned" id="discard-pinned-label">Mettre en veille les onglets épinglés</label>
+                    <label for="discard-pinned" id="discard-pinned-label">Mettre en veille les onglets protégés</label>
                     <div class="toggle-switch">
                         <input type="checkbox" id="discard-pinned" class="toggle-input" checked>
                         <span class="toggle-slider"></span>
                     </div>
                 </div>
-                <p class="setting-description">Les onglets épinglés ne seront pas fermés mais mis en veille</p>
+                <p class="setting-description">Les onglets épinglés / essentials / dans des dossiers seront mis en veille (déchargés de la mémoire) au lieu d'être fermés</p>
             </div>
 
+            <!-- Exclude audible -->
             <div class="setting-item">
                 <div class="setting-header">
-                    <label for="exclude-audible" id="exclude-audible-label">Exclure les onglets avec audio</label>
+                    <label for="exclude-audible" id="exclude-audible-label">Protéger les onglets avec audio</label>
                     <div class="toggle-switch">
                         <input type="checkbox" id="exclude-audible" class="toggle-input" checked>
                         <span class="toggle-slider"></span>
                     </div>
                 </div>
-                <p class="setting-description">Ne pas fermer les onglets qui jouent de l'audio</p>
+                <p class="setting-description">Ne jamais toucher un onglet qui joue de l'audio</p>
+            </div>
+
+            <!-- Domain exclusions -->
+            <div class="setting-item">
+                <label for="excluded-domains">Domaines exclus</label>
+                <textarea id="excluded-domains" class="domain-input" placeholder="Un domaine par ligne&#10;exemple.com&#10;github.com" rows="3"></textarea>
+                <p class="setting-description">Ces domaines ne seront jamais fermés ni mis en veille</p>
+            </div>
+        </section>
+
+        <!-- Behavior explainer -->
+        <section class="behavior-section">
+            <h3>Comportement Arc Browser</h3>
+            <div class="behavior-row">
+                <span class="behavior-icon">🗑️</span>
+                <div>
+                    <strong>Onglets normaux</strong>
+                    <p>Fermés définitivement après le délai</p>
+                </div>
+            </div>
+            <div class="behavior-row">
+                <span class="behavior-icon">💤</span>
+                <div>
+                    <strong>Épinglés / Essentials / Dossiers</strong>
+                    <p>Mis en veille (déchargés mais visibles)</p>
+                </div>
+            </div>
+            <div class="behavior-row">
+                <span class="behavior-icon">🛡️</span>
+                <div>
+                    <strong>Onglet actif / Audio</strong>
+                    <p>Jamais touchés</p>
+                </div>
             </div>
         </section>
 
@@ -105,7 +138,7 @@
             <button id="force-process" class="btn btn-secondary">Traiter maintenant</button>
         </section>
 
-        <!-- Messages de statut -->
+        <!-- Status -->
         <div id="status-message" class="status-message"></div>
 
         <!-- Footer -->
