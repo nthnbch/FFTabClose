@@ -1,25 +1,28 @@
 /**
- * FFTabClose - Background Script V5.0
+ * FFTabClose - Background Script V5.2
  * 
- * Extension Firefox/Zen pour fermer automatiquement les onglets après un délai
- * configurable. Comportement identique à Arc Browser :
+ * Extension Firefox/Zen pour fermer automatiquement les onglets.
+ * Comportement identique à Arc Browser.
  * 
- * - Onglets normaux (non-pinned, non-essentials, hors dossiers) → FERMÉS
- * - Onglets pinned / essentials / dans des dossiers → DISCARDÉS (mis en pause)
- * - Fonctionne sur TOUS les workspaces/spaces/fenêtres
- * - L'onglet actif n'est jamais touché
- * - Les onglets jouant de l'audio ne sont jamais touchés
+ * ZEN BROWSER SPECIFICS:
+ * - browser.tabs.query({}) only returns tabs from the ACTIVE workspace
+ * - Tabs in other workspaces are "hidden" and invisible to WebExtensions
+ * - We track tabs via onCreated/onActivated events so we see ALL tabs
+ * - We must NOT delete tracked tabs just because query() doesn't return them
+ * - "Essentials" in Zen = pinned tabs (tab.pinned = true)
+ * - tab.groupId does NOT exist in Firefox/Zen (Chrome-only API)
+ * - Zen tab folders are not exposed via WebExtensions API
  */
 
 // ─── Configuration par défaut ───────────────────────────────────────────────
 const DEFAULT_CONFIG = {
   enabled: true,
-  closeAfterMinutes: 720,        // 12h par défaut
-  discardPinnedTabs: true,       // Mettre en veille (discard) les pinned/essentials
-  excludeActiveTab: true,        // Ne jamais toucher l'onglet actif
-  excludeAudibleTabs: true,      // Ne pas toucher les onglets avec audio
-  excludedDomains: [],           // Domaines exclus
-  checkIntervalMinutes: 1        // Vérification toutes les minutes
+  closeAfterMinutes: 720,
+  discardPinnedTabs: true,
+  excludeActiveTab: true,
+  excludeAudibleTabs: true,
+  excludedDomains: [],
+  checkIntervalMinutes: 1
 };
 
 // ─── Tab Data Manager ───────────────────────────────────────────────────────
@@ -32,7 +35,6 @@ class TabDataManager {
 
   async init() {
     if (this.initialized) return;
-    
     console.log('[FFTabClose] Initializing TabDataManager...');
     await this.loadFromStorage();
     await this.syncWithBrowserTabs();
@@ -40,7 +42,6 @@ class TabDataManager {
     console.log(`[FFTabClose] TabDataManager ready — tracking ${this.tabData.size} tabs`);
   }
 
-  // ─── Tab info structure ──────────────────────────────────────────────────
   createTabInfo(tab) {
     const now = Date.now();
     return {
@@ -53,17 +54,14 @@ class TabDataManager {
       active: tab.active || false,
       audible: tab.audible || false,
       discarded: tab.discarded || false,
-      // Zen Browser specific: check if tab is in a group
-      groupId: tab.groupId || null,
+      hidden: tab.hidden || false,
       createdAt: now,
       lastActiveAt: now
     };
   }
 
-  // ─── Update or insert tab data ───────────────────────────────────────────
   updateTab(tab) {
     const existing = this.tabData.get(tab.id);
-    
     if (existing) {
       existing.url = tab.url || existing.url;
       existing.title = tab.title || existing.title;
@@ -72,20 +70,14 @@ class TabDataManager {
       existing.active = tab.active || false;
       existing.audible = tab.audible || false;
       existing.discarded = tab.discarded || false;
-      existing.groupId = tab.groupId || null;
-      
-      // Reset timer when tab becomes active
-      if (tab.active) {
-        existing.lastActiveAt = Date.now();
-      }
+      if (tab.hidden !== undefined) existing.hidden = tab.hidden;
+      if (tab.active) existing.lastActiveAt = Date.now();
     } else {
       this.tabData.set(tab.id, this.createTabInfo(tab));
     }
-    
     this.debouncedSave();
   }
 
-  // ─── Mark tab as active (timer reset) ────────────────────────────────────
   markActive(tabId) {
     const info = this.tabData.get(tabId);
     if (info) {
@@ -95,62 +87,80 @@ class TabDataManager {
     }
   }
 
-  // ─── Remove tab data ────────────────────────────────────────────────────
   removeTab(tabId) {
     this.tabData.delete(tabId);
     this.debouncedSave();
   }
 
-  // ─── Get all tab data ───────────────────────────────────────────────────
   getAll() {
     return Array.from(this.tabData.values());
   }
 
-  // ─── Sync with actual browser tabs ──────────────────────────────────────
-  // After a browser restart, tab IDs change but URLs stay the same.
-  // We use a URL→timestamp index to restore timers for reopened tabs.
+  // ─── Sync with browser ──────────────────────────────────────────────────
+  // IMPORTANT: On Zen Browser, browser.tabs.query({}) only returns tabs
+  // from the ACTIVE workspace. Tabs in other workspaces are hidden.
+  // We must NOT delete our tracked data for tabs that are simply in
+  // another workspace. We only delete if the tab truly no longer exists
+  // (i.e., browser.tabs.get() fails for that ID).
   async syncWithBrowserTabs() {
     try {
-      const browserTabs = await browser.tabs.query({});
-      const browserTabIds = new Set(browserTabs.map(t => t.id));
-      
-      // Build URL→lastActiveAt index from OLD data (before cleanup)
-      // This allows us to restore timers after a browser restart
+      // Get visible tabs (current workspace on Zen, all on Firefox)
+      const visibleTabs = await browser.tabs.query({});
+      const visibleTabIds = new Set(visibleTabs.map(t => t.id));
+
+      // Build URL→timestamp index for restart recovery
       const urlTimestamps = new Map();
       for (const info of this.tabData.values()) {
         if (info.url && info.url !== '' && !info.url.startsWith('about:')) {
-          // If multiple tabs had the same URL, keep the most recent timestamp
           const existing = urlTimestamps.get(info.url);
           if (!existing || info.lastActiveAt > existing) {
             urlTimestamps.set(info.url, info.lastActiveAt);
           }
         }
       }
-      
-      // Remove stale entries (tabs that no longer exist)
+
+      // Verify tracked tabs that are NOT in the visible query
+      // They might be in another Zen workspace (still alive) or truly closed
+      const staleIds = [];
       for (const tabId of this.tabData.keys()) {
-        if (!browserTabIds.has(tabId)) {
-          this.tabData.delete(tabId);
+        if (!visibleTabIds.has(tabId)) {
+          try {
+            // Try to get the tab — if it exists, it's just hidden (other workspace)
+            const tab = await browser.tabs.get(tabId);
+            // Tab exists! Update its metadata
+            const existing = this.tabData.get(tabId);
+            if (existing) {
+              existing.hidden = true; // Mark as hidden (other workspace)
+              existing.pinned = tab.pinned || false;
+              if (tab.url) existing.url = tab.url;
+              if (tab.title) existing.title = tab.title;
+            }
+          } catch (e) {
+            // Tab truly doesn't exist anymore — mark for removal
+            staleIds.push(tabId);
+          }
         }
       }
-      
-      // Add or update all current tabs
+
+      // Remove truly dead tabs
+      for (const id of staleIds) {
+        this.tabData.delete(id);
+      }
+
+      // Update visible tabs
       let restoredCount = 0;
-      for (const tab of browserTabs) {
+      for (const tab of visibleTabs) {
         if (!this.tabData.has(tab.id)) {
-          // New tab ID — but might be a known URL from before restart
           const newInfo = this.createTabInfo(tab);
-          
-          // Try to restore the old timestamp via URL matching
+          newInfo.hidden = false;
+          // Restore timestamp from URL match (browser restart)
           const oldTimestamp = urlTimestamps.get(tab.url);
           if (oldTimestamp && !tab.active) {
             newInfo.lastActiveAt = oldTimestamp;
             restoredCount++;
           }
-          
           this.tabData.set(tab.id, newInfo);
         } else {
-          // Existing tab ID — update metadata but KEEP lastActiveAt
           const existing = this.tabData.get(tab.id);
           existing.url = tab.url || existing.url;
           existing.title = tab.title || existing.title;
@@ -159,27 +169,28 @@ class TabDataManager {
           existing.active = tab.active || false;
           existing.audible = tab.audible || false;
           existing.discarded = tab.discarded || false;
-          existing.groupId = tab.groupId || null;
+          existing.hidden = false; // It's visible now
         }
       }
-      
+
       if (restoredCount > 0) {
-        console.log(`[FFTabClose] Restored timestamps for ${restoredCount} tabs (browser restart detected)`);
+        console.log(`[FFTabClose] Restored timestamps for ${restoredCount} tabs`);
       }
-      
+      if (staleIds.length > 0) {
+        console.log(`[FFTabClose] Cleaned ${staleIds.length} dead tabs`);
+      }
+
       await this.saveToStorage();
     } catch (error) {
       console.error('[FFTabClose] Error syncing tabs:', error);
     }
   }
 
-  // ─── Debounced save (avoid hammering storage) ───────────────────────────
   debouncedSave() {
     if (this._saveDebounce) clearTimeout(this._saveDebounce);
     this._saveDebounce = setTimeout(() => this.saveToStorage(), 2000);
   }
 
-  // ─── Persist to storage ─────────────────────────────────────────────────
   async saveToStorage() {
     try {
       const data = {};
@@ -192,7 +203,6 @@ class TabDataManager {
     }
   }
 
-  // ─── Load from storage ──────────────────────────────────────────────────
   async loadFromStorage() {
     try {
       const result = await browser.storage.local.get(['tabData', 'lastSaved']);
@@ -219,27 +229,25 @@ class FFTabCloseManager {
     this.isZenBrowser = false;
   }
 
-  // ─── Initialize ─────────────────────────────────────────────────────────
   async init() {
     console.log('[FFTabClose] ═══════════════════════════════════════');
-    console.log('[FFTabClose] Starting FFTabClose V5.0...');
-    
+    console.log('[FFTabClose] Starting FFTabClose V5.2...');
+
     await this.detectZenBrowser();
     await this.loadConfig();
     await this.tabs.init();
     this.setupListeners();
-    
+
     if (this.config.enabled) {
       await this.startAlarm();
-      // Run once immediately on startup
       setTimeout(() => this.processOldTabs(), 5000);
     }
-    
+
     console.log(`[FFTabClose] Ready! ${this.isZenBrowser ? '(Zen Browser)' : '(Firefox)'}`);
+    console.log(`[FFTabClose] Tracking ${this.tabs.tabData.size} tabs, timer=${this.config.closeAfterMinutes}min`);
     console.log('[FFTabClose] ═══════════════════════════════════════');
   }
 
-  // ─── Detect Zen Browser ─────────────────────────────────────────────────
   async detectZenBrowser() {
     try {
       const info = await browser.runtime.getBrowserInfo();
@@ -252,49 +260,39 @@ class FFTabCloseManager {
         this.isZenBrowser = false;
       }
     }
-    
     if (this.isZenBrowser) {
-      console.log('[FFTabClose] 🟣 Zen Browser detected — workspace mode enabled');
+      console.log('[FFTabClose] 🟣 Zen Browser detected');
     }
   }
 
-  // ─── Config management ──────────────────────────────────────────────────
   async loadConfig() {
     try {
       const result = await browser.storage.sync.get('config');
       if (result.config) {
         this.config = { ...DEFAULT_CONFIG, ...result.config };
       }
-      console.log('[FFTabClose] Config:', JSON.stringify(this.config, null, 2));
     } catch (error) {
       console.error('[FFTabClose] Error loading config:', error);
     }
   }
 
-  async saveConfig() {
-    try {
-      await browser.storage.sync.set({ config: this.config });
-    } catch (error) {
-      console.error('[FFTabClose] Error saving config:', error);
-    }
-  }
-
   // ─── Event listeners ───────────────────────────────────────────────────
   setupListeners() {
-    // Tab created
+    // Tab created — captures tabs from ALL workspaces as they're created
     browser.tabs.onCreated.addListener((tab) => {
+      console.log(`[FFTabClose] Tab created: ${tab.id} "${tab.title || '(loading)'}" pinned=${tab.pinned}`);
       this.tabs.updateTab(tab);
     });
 
-    // Tab updated (URL change, title change, etc.)
+    // Tab updated
     browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-      // Update on meaningful changes
-      if (changeInfo.status === 'complete' || 
+      if (changeInfo.status === 'complete' ||
           changeInfo.title !== undefined ||
           changeInfo.url !== undefined ||
           changeInfo.pinned !== undefined ||
           changeInfo.audible !== undefined ||
-          changeInfo.discarded !== undefined) {
+          changeInfo.discarded !== undefined ||
+          changeInfo.hidden !== undefined) {
         this.tabs.updateTab(tab);
       }
     });
@@ -304,12 +302,10 @@ class FFTabCloseManager {
       this.tabs.removeTab(tabId);
     });
 
-    // Tab activated (user switches to a tab) — this resets the timer
+    // Tab activated — resets the timer for this tab
     browser.tabs.onActivated.addListener(async (activeInfo) => {
-      // Mark the newly active tab
       this.tabs.markActive(activeInfo.tabId);
-      
-      // Mark all other tabs in same window as inactive
+      // Mark other tabs in same window as inactive
       try {
         const tabs = await browser.tabs.query({ windowId: activeInfo.windowId });
         for (const tab of tabs) {
@@ -318,33 +314,27 @@ class FFTabCloseManager {
             if (info) info.active = false;
           }
         }
-      } catch (e) {
-        // Ignore errors during deactivation tracking
-      }
+      } catch (e) { /* ignore */ }
     });
 
-    // Window focus changed
+    // Window focus
     browser.windows.onFocusChanged.addListener(async (windowId) => {
       if (windowId !== browser.windows.WINDOW_ID_NONE) {
         try {
           const activeTabs = await browser.tabs.query({ windowId, active: true });
-          if (activeTabs[0]) {
-            this.tabs.markActive(activeTabs[0].id);
-          }
-        } catch (e) {
-          // Ignore
-        }
+          if (activeTabs[0]) this.tabs.markActive(activeTabs[0].id);
+        } catch (e) { /* ignore */ }
       }
     });
 
-    // Alarm (periodic check)
+    // Alarm
     browser.alarms.onAlarm.addListener(async (alarm) => {
       if (alarm.name === this.alarmName) {
         await this.processOldTabs();
       }
     });
 
-    // Config changes (from popup or sync)
+    // Config changes
     browser.storage.onChanged.addListener(async (changes, area) => {
       if (area === 'sync' && changes.config) {
         console.log('[FFTabClose] Config changed, reloading...');
@@ -363,17 +353,14 @@ class FFTabCloseManager {
         case 'getStats':
           this.getStats().then(stats => sendResponse({ stats }));
           return true;
-          
         case 'getConfig':
           sendResponse({ config: this.config });
           return false;
-
         case 'forceProcess':
           this.processOldTabs()
             .then(() => sendResponse({ success: true }))
             .catch(err => sendResponse({ success: false, error: err.message }));
           return true;
-
         case 'getTabList':
           this.getDetailedTabList().then(list => sendResponse({ tabs: list }));
           return true;
@@ -381,13 +368,13 @@ class FFTabCloseManager {
     });
   }
 
-  // ─── Alarm management ──────────────────────────────────────────────────
   async startAlarm() {
     await browser.alarms.clear(this.alarmName);
     await browser.alarms.create(this.alarmName, {
+      delayInMinutes: this.config.checkIntervalMinutes,
       periodInMinutes: this.config.checkIntervalMinutes
     });
-    console.log(`[FFTabClose] ⏰ Alarm set — checking every ${this.config.checkIntervalMinutes} min`);
+    console.log(`[FFTabClose] ⏰ Alarm set — every ${this.config.checkIntervalMinutes} min`);
   }
 
   async stopAlarm() {
@@ -395,176 +382,140 @@ class FFTabCloseManager {
     console.log('[FFTabClose] ⏰ Alarm stopped');
   }
 
-  // ─── CORE: Process old tabs (Arc Browser behavior) ─────────────────────
+  // ─── CORE: Process old tabs ─────────────────────────────────────────────
   async processOldTabs() {
     if (this.isProcessing) return;
     if (!this.config.enabled) return;
-    
+
     this.isProcessing = true;
-    
+
     try {
       console.log('[FFTabClose] ─── Processing cycle start ───');
-      
-      // Sync with real browser state first
+
+      // Sync with real browser state
       await this.tabs.syncWithBrowserTabs();
-      
+
       const now = Date.now();
       const maxAge = this.config.closeAfterMinutes * 60 * 1000;
-      
-      // Get ALL active tabs (to exclude them) — fresh query
+
+      // Fresh query for active tabs
       const activeTabs = await browser.tabs.query({ active: true });
       const activeTabIds = new Set(activeTabs.map(t => t.id));
-      
-      // Count tabs per window to avoid closing the last tab
+
+      // Count visible tabs per window (for "don't empty a window" safety)
+      const visibleTabs = await browser.tabs.query({});
+      const totalVisibleCount = visibleTabs.length;
       const tabsPerWindow = new Map();
-      const allBrowserTabs = await browser.tabs.query({});
-      const totalTabCount = allBrowserTabs.length;
-      
-      for (const tab of allBrowserTabs) {
+      for (const tab of visibleTabs) {
         tabsPerWindow.set(tab.windowId, (tabsPerWindow.get(tab.windowId) || 0) + 1);
       }
-      
-      const tabsToClose = [];      // Normal tabs → close
-      const tabsToDiscard = [];    // Pinned/essential/grouped → discard
-      
+      // Set of IDs that browser.tabs.query can see right now
+      const visibleTabIds = new Set(visibleTabs.map(t => t.id));
+
+      const tabsToClose = [];
+      const tabsToDiscard = [];
+
       for (const tabInfo of this.tabs.getAll()) {
         const age = now - tabInfo.lastActiveAt;
-        
-        // Not old enough yet
+
+        // Not old enough
         if (age < maxAge) continue;
-        
+
         // Never touch the active tab
         if (this.config.excludeActiveTab && activeTabIds.has(tabInfo.id)) continue;
-        
+
         // Never touch tabs playing audio
         if (this.config.excludeAudibleTabs && tabInfo.audible) continue;
-        
-        // Never touch internal browser pages
+
+        // Never touch internal pages
         if (this.isInternalUrl(tabInfo.url)) continue;
-        
-        // Check domain exclusions
+
+        // Domain exclusions
         if (this.isDomainExcluded(tabInfo.url)) continue;
-        
-        // ─── Arc Browser behavior decision ───────────────────────────
-        // Pinned tabs, essential tabs, tabs in groups/folders → DISCARD
-        // Everything else → CLOSE
-        
-        const isProtected = tabInfo.pinned || tabInfo.groupId;
-        
-        if (isProtected) {
-          // Protected tabs → discard (put to sleep), don't close
+
+        // Arc Browser behavior:
+        // Pinned (includes Zen essentials) → DISCARD
+        // Normal → CLOSE
+        if (tabInfo.pinned) {
           if (this.config.discardPinnedTabs && !tabInfo.discarded) {
             tabsToDiscard.push(tabInfo);
           }
         } else {
-          // Normal unprotected tabs → close them
           tabsToClose.push(tabInfo);
         }
       }
-      
-      console.log(`[FFTabClose] Found: ${tabsToClose.length} to close, ${tabsToDiscard.length} to discard (total: ${totalTabCount})`);
-      
-      // ─── SAFETY: refuse to close more than half of all tabs in one cycle ──
-      // This prevents catastrophic mass-closing on first install or after
-      // a storage reset where all tabs get stale timestamps.
-      if (tabsToClose.length > 0 && totalTabCount > 0) {
-        const closeRatio = tabsToClose.length / totalTabCount;
-        if (closeRatio > 0.5 && tabsToClose.length > 3) {
-          console.warn(`[FFTabClose] ⚠️ SAFETY: Would close ${tabsToClose.length}/${totalTabCount} tabs (${Math.round(closeRatio * 100)}%) — too many! Skipping this cycle to protect your tabs. They will be closed gradually over the next cycles.`);
-          
-          // Close at most 3 tabs this cycle to be safe, prioritizing the oldest
+
+      console.log(`[FFTabClose] Found: ${tabsToClose.length} to close, ${tabsToDiscard.length} to discard`);
+
+      // SAFETY: cap at 3 per cycle if closing >50% of visible tabs
+      if (tabsToClose.length > 0 && totalVisibleCount > 0) {
+        // Only count tabs we can actually see for the ratio
+        const visibleToClose = tabsToClose.filter(t => visibleTabIds.has(t.id));
+        const closeRatio = visibleToClose.length / totalVisibleCount;
+        if (closeRatio > 0.5 && visibleToClose.length > 3) {
+          console.warn(`[FFTabClose] ⚠️ SAFETY: Would close ${visibleToClose.length}/${totalVisibleCount} visible tabs — limiting to 3`);
           tabsToClose.sort((a, b) => a.lastActiveAt - b.lastActiveAt);
           tabsToClose.splice(3);
-          
-          console.log(`[FFTabClose] Reduced to ${tabsToClose.length} oldest tabs for this cycle`);
         }
       }
-      
-      // ─── Close normal tabs ──────────────────────────────────────────
+
+      // ─── Close normal tabs ────────────────────────────────────────
       if (tabsToClose.length > 0) {
-        // Re-verify active tabs RIGHT BEFORE closing (race condition protection)
-        const freshActiveTabs = await browser.tabs.query({ active: true });
-        const freshActiveIds = new Set(freshActiveTabs.map(t => t.id));
-        
-        // Group by window to handle "last tab" protection
+        // Fresh active check right before closing
+        const freshActive = await browser.tabs.query({ active: true });
+        const freshActiveIds = new Set(freshActive.map(t => t.id));
+
         const closeByWindow = new Map();
         for (const tab of tabsToClose) {
-          // Double-check: skip if tab became active since we started
           if (freshActiveIds.has(tab.id)) continue;
-          
-          if (!closeByWindow.has(tab.windowId)) {
-            closeByWindow.set(tab.windowId, []);
-          }
-          closeByWindow.get(tab.windowId).push(tab);
+
+          // We need the windowId — for hidden tabs, verify it exists first
+          const wId = tab.windowId;
+          if (!closeByWindow.has(wId)) closeByWindow.set(wId, []);
+          closeByWindow.get(wId).push(tab);
         }
-        
+
         const idsToClose = [];
-        
         for (const [windowId, tabs] of closeByWindow) {
           const totalInWindow = tabsPerWindow.get(windowId) || 1;
-          
           if (tabs.length >= totalInWindow) {
-            // Would close ALL tabs in this window — keep one (most recent)
             tabs.sort((a, b) => b.lastActiveAt - a.lastActiveAt);
-            // Skip the first one (most recently active), close the rest
-            for (let i = 1; i < tabs.length; i++) {
-              idsToClose.push(tabs[i].id);
-            }
-            console.log(`[FFTabClose] Window ${windowId}: keeping 1 tab to avoid empty window`);
+            for (let i = 1; i < tabs.length; i++) idsToClose.push(tabs[i].id);
+            console.log(`[FFTabClose] Window ${windowId}: keeping 1 tab`);
           } else {
-            for (const tab of tabs) {
-              idsToClose.push(tab.id);
-            }
+            for (const tab of tabs) idsToClose.push(tab.id);
           }
         }
-        
-        if (idsToClose.length > 0) {
+
+        for (const id of idsToClose) {
           try {
-            await browser.tabs.remove(idsToClose);
-            console.log(`[FFTabClose] ✅ Closed ${idsToClose.length} tabs`);
-            
-            for (const id of idsToClose) {
-              this.tabs.removeTab(id);
-            }
-          } catch (error) {
-            console.error('[FFTabClose] Error closing tabs:', error);
-            // Try one by one as fallback
-            for (const id of idsToClose) {
-              try {
-                await browser.tabs.remove(id);
-                this.tabs.removeTab(id);
-              } catch (e) {
-                console.warn(`[FFTabClose] Could not close tab ${id}:`, e.message);
-              }
-            }
+            await browser.tabs.remove(id);
+            this.tabs.removeTab(id);
+            console.log(`[FFTabClose] ✅ Closed tab ${id}`);
+          } catch (e) {
+            console.warn(`[FFTabClose] Could not close tab ${id}:`, e.message);
+            // Tab might not exist anymore — clean up
+            this.tabs.removeTab(id);
           }
         }
       }
-      
-      // ─── Discard (sleep) protected tabs ─────────────────────────────
+
+      // ─── Discard (sleep) pinned tabs ──────────────────────────────
       if (tabsToDiscard.length > 0) {
         for (const tabInfo of tabsToDiscard) {
           try {
-            // Use the native Firefox API to discard (unload from memory)
-            // The tab stays in the tab bar but is unloaded
             await browser.tabs.discard(tabInfo.id);
-            
-            // Update our tracking data
             tabInfo.discarded = true;
-            tabInfo.lastActiveAt = Date.now(); // Reset timer after discard
-            
+            tabInfo.lastActiveAt = Date.now();
             console.log(`[FFTabClose] 💤 Discarded tab ${tabInfo.id}: ${tabInfo.title}`);
           } catch (error) {
-            // tabs.discard can fail if tab is active or recently created
             console.warn(`[FFTabClose] Could not discard tab ${tabInfo.id}:`, error.message);
           }
         }
-        
         await this.tabs.saveToStorage();
       }
-      
+
       console.log('[FFTabClose] ─── Processing cycle end ───');
-      
     } catch (error) {
       console.error('[FFTabClose] Error in processOldTabs:', error);
     } finally {
@@ -578,21 +529,13 @@ class FFTabCloseManager {
     return url.startsWith('about:') ||
            url.startsWith('chrome:') ||
            url.startsWith('moz-extension:') ||
-           url.startsWith('data:') ||
-           url === 'about:blank' ||
-           url === 'about:newtab' ||
-           url === 'about:home';
+           url.startsWith('data:');
   }
 
   isDomainExcluded(url) {
-    if (!url || !this.config.excludedDomains || this.config.excludedDomains.length === 0) {
-      return false;
-    }
-    
+    if (!url || !this.config.excludedDomains || this.config.excludedDomains.length === 0) return false;
     try {
-      const urlObj = new URL(url);
-      const hostname = urlObj.hostname.toLowerCase();
-      
+      const hostname = new URL(url).hostname.toLowerCase();
       return this.config.excludedDomains.some(domain => {
         const d = domain.toLowerCase().trim();
         return hostname === d || hostname.endsWith('.' + d);
@@ -602,34 +545,34 @@ class FFTabCloseManager {
     }
   }
 
-  // ─── Stats for popup ───────────────────────────────────────────────────
+  // ─── Stats ──────────────────────────────────────────────────────────────
   async getStats() {
     const allTabs = this.tabs.getAll();
     const now = Date.now();
     const maxAge = this.config.closeAfterMinutes * 60 * 1000;
-    
+
     const activeTabs = await browser.tabs.query({ active: true });
     const activeTabIds = new Set(activeTabs.map(t => t.id));
-    
+
     let oldNormal = 0;
     let oldProtected = 0;
-    
+
     for (const tab of allTabs) {
       const age = now - tab.lastActiveAt;
       if (age >= maxAge && !activeTabIds.has(tab.id) && !this.isInternalUrl(tab.url)) {
-        if (tab.pinned || tab.groupId) {
+        if (tab.pinned) {
           oldProtected++;
         } else {
           oldNormal++;
         }
       }
     }
-    
+
     return {
       totalTabs: allTabs.length,
       pinnedTabs: allTabs.filter(t => t.pinned).length,
-      groupedTabs: allTabs.filter(t => t.groupId).length,
       discardedTabs: allTabs.filter(t => t.discarded).length,
+      hiddenTabs: allTabs.filter(t => t.hidden).length,
       oldTabsToClose: oldNormal,
       oldTabsToDiscard: oldProtected,
       enabled: this.config.enabled,
@@ -638,35 +581,32 @@ class FFTabCloseManager {
     };
   }
 
-  // ─── Detailed tab list for popup ────────────────────────────────────────
   async getDetailedTabList() {
     const allTabs = this.tabs.getAll();
     const now = Date.now();
     const maxAge = this.config.closeAfterMinutes * 60 * 1000;
-    
+
     return allTabs.map(tab => ({
       id: tab.id,
       title: tab.title,
       url: tab.url,
       pinned: tab.pinned,
-      groupId: tab.groupId,
+      hidden: tab.hidden,
       discarded: tab.discarded,
       audible: tab.audible,
       age: now - tab.lastActiveAt,
       isOld: (now - tab.lastActiveAt) >= maxAge,
-      action: tab.pinned || tab.groupId ? 'discard' : 'close'
+      action: tab.pinned ? 'discard' : 'close'
     })).sort((a, b) => b.age - a.age);
   }
 }
 
 // ─── Bootstrap ──────────────────────────────────────────────────────────────
 const ffTabClose = new FFTabCloseManager();
-
 ffTabClose.init().catch(error => {
   console.error('[FFTabClose] FATAL:', error);
 });
 
-// Expose for debugging
 if (typeof globalThis !== 'undefined') {
   globalThis.ffTabClose = ffTabClose;
 }
