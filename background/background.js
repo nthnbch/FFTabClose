@@ -107,11 +107,25 @@ class TabDataManager {
   }
 
   // ─── Sync with actual browser tabs ──────────────────────────────────────
+  // After a browser restart, tab IDs change but URLs stay the same.
+  // We use a URL→timestamp index to restore timers for reopened tabs.
   async syncWithBrowserTabs() {
     try {
-      // Query ALL tabs across ALL windows
       const browserTabs = await browser.tabs.query({});
       const browserTabIds = new Set(browserTabs.map(t => t.id));
+      
+      // Build URL→lastActiveAt index from OLD data (before cleanup)
+      // This allows us to restore timers after a browser restart
+      const urlTimestamps = new Map();
+      for (const info of this.tabData.values()) {
+        if (info.url && info.url !== '' && !info.url.startsWith('about:')) {
+          // If multiple tabs had the same URL, keep the most recent timestamp
+          const existing = urlTimestamps.get(info.url);
+          if (!existing || info.lastActiveAt > existing) {
+            urlTimestamps.set(info.url, info.lastActiveAt);
+          }
+        }
+      }
       
       // Remove stale entries (tabs that no longer exist)
       for (const tabId of this.tabData.keys()) {
@@ -121,12 +135,22 @@ class TabDataManager {
       }
       
       // Add or update all current tabs
+      let restoredCount = 0;
       for (const tab of browserTabs) {
         if (!this.tabData.has(tab.id)) {
-          // New tab — add it
-          this.tabData.set(tab.id, this.createTabInfo(tab));
+          // New tab ID — but might be a known URL from before restart
+          const newInfo = this.createTabInfo(tab);
+          
+          // Try to restore the old timestamp via URL matching
+          const oldTimestamp = urlTimestamps.get(tab.url);
+          if (oldTimestamp && !tab.active) {
+            newInfo.lastActiveAt = oldTimestamp;
+            restoredCount++;
+          }
+          
+          this.tabData.set(tab.id, newInfo);
         } else {
-          // Existing — update metadata but KEEP lastActiveAt
+          // Existing tab ID — update metadata but KEEP lastActiveAt
           const existing = this.tabData.get(tab.id);
           existing.url = tab.url || existing.url;
           existing.title = tab.title || existing.title;
@@ -137,6 +161,10 @@ class TabDataManager {
           existing.discarded = tab.discarded || false;
           existing.groupId = tab.groupId || null;
         }
+      }
+      
+      if (restoredCount > 0) {
+        console.log(`[FFTabClose] Restored timestamps for ${restoredCount} tabs (browser restart detected)`);
       }
       
       await this.saveToStorage();
