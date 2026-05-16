@@ -33,7 +33,7 @@
   
   "browser_specific_settings": {
     "gecko": {
-      "id": "fftabclose@nthnbch.com",
+      "id": "fftabclose@nathan.swiss",
       "strict_min_version": "109.0",
       "data_collection_permissions": {
         "required": ["none"]
