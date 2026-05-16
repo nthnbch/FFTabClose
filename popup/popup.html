@@ -11,10 +11,10 @@
         <header class="header">
             <div class="header-top">
                 <h1 id="extension-name">FFTabClose</h1>
-                <div class="toggle-switch">
+                <label class="toggle-switch" for="enabled">
                     <input type="checkbox" id="enabled" class="toggle-input">
                     <span class="toggle-slider"></span>
-                </div>
+                </label>
             </div>
             <p id="extension-description">Auto-close tabs like Arc Browser</p>
         </header>
@@ -77,11 +77,11 @@
             <!-- Sleep pinned -->
             <div class="setting-item">
                 <div class="setting-header">
-                    <label for="discard-pinned" id="discard-pinned-label">Mettre en veille les onglets protégés</label>
-                    <div class="toggle-switch">
+                    <span class="setting-label">Mettre en veille les onglets protégés</span>
+                    <label class="toggle-switch" for="discard-pinned">
                         <input type="checkbox" id="discard-pinned" class="toggle-input" checked>
                         <span class="toggle-slider"></span>
-                    </div>
+                    </label>
                 </div>
                 <p class="setting-description">Les onglets épinglés / essentials / dans des dossiers seront mis en veille (déchargés de la mémoire) au lieu d'être fermés</p>
             </div>
@@ -89,11 +89,11 @@
             <!-- Exclude audible -->
             <div class="setting-item">
                 <div class="setting-header">
-                    <label for="exclude-audible" id="exclude-audible-label">Protéger les onglets avec audio</label>
-                    <div class="toggle-switch">
+                    <span class="setting-label">Protéger les onglets avec audio</span>
+                    <label class="toggle-switch" for="exclude-audible">
                         <input type="checkbox" id="exclude-audible" class="toggle-input" checked>
                         <span class="toggle-slider"></span>
-                    </div>
+                    </label>
                 </div>
                 <p class="setting-description">Ne jamais toucher un onglet qui joue de l'audio</p>
             </div>

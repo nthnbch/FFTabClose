@@ -1,7 +1,7 @@
 /**
- * FFTabClose - Popup Script V5.0
+ * FFTabClose - Popup Script V5.1
  * 
- * Interface utilisateur pour configurer l'extension
+ * Auto-save on every change, auto-refresh stats every 5s
  */
 
 const DEFAULT_CONFIG = {
@@ -14,39 +14,53 @@ const DEFAULT_CONFIG = {
   checkIntervalMinutes: 1
 };
 
-// DOM elements
-const el = {
-  enabled: document.getElementById('enabled'),
-  closeAfter: document.getElementById('close-after'),
-  customTimeContainer: document.getElementById('custom-time-container'),
-  customHours: document.getElementById('custom-hours'),
-  customMinutes: document.getElementById('custom-minutes'),
-  discardPinned: document.getElementById('discard-pinned'),
-  excludeAudible: document.getElementById('exclude-audible'),
-  excludedDomains: document.getElementById('excluded-domains'),
-  saveButton: document.getElementById('save-button'),
-  forceProcess: document.getElementById('force-process'),
-  statusMessage: document.getElementById('status-message'),
-  totalTabs: document.getElementById('total-tabs'),
-  oldClose: document.getElementById('old-close'),
-  oldDiscard: document.getElementById('old-discard'),
-  pinnedTabs: document.getElementById('pinned-tabs')
-};
-
 let currentConfig = { ...DEFAULT_CONFIG };
+let statsInterval = null;
 
 // ─── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  const el = getElements();
+  
   try {
     await loadConfig();
-    await updateStats();
-    setupListeners();
-    updateUI();
+    updateUI(el);
+    setupListeners(el);
+    await updateStats(el);
+    
+    // Auto-refresh stats every 5 seconds
+    statsInterval = setInterval(() => updateStats(el), 5000);
+    
   } catch (error) {
     console.error('[FFTabClose Popup] Init error:', error);
-    showStatus('Erreur d\'initialisation', 'error');
+    showStatus(el, 'Erreur d\'initialisation: ' + error.message, 'error');
   }
 });
+
+// Clean up interval when popup closes
+window.addEventListener('unload', () => {
+  if (statsInterval) clearInterval(statsInterval);
+});
+
+// ─── Get DOM elements ──────────────────────────────────────────────────────
+function getElements() {
+  return {
+    enabled: document.getElementById('enabled'),
+    closeAfter: document.getElementById('close-after'),
+    customTimeContainer: document.getElementById('custom-time-container'),
+    customHours: document.getElementById('custom-hours'),
+    customMinutes: document.getElementById('custom-minutes'),
+    discardPinned: document.getElementById('discard-pinned'),
+    excludeAudible: document.getElementById('exclude-audible'),
+    excludedDomains: document.getElementById('excluded-domains'),
+    saveButton: document.getElementById('save-button'),
+    forceProcess: document.getElementById('force-process'),
+    statusMessage: document.getElementById('status-message'),
+    totalTabs: document.getElementById('total-tabs'),
+    oldClose: document.getElementById('old-close'),
+    oldDiscard: document.getElementById('old-discard'),
+    pinnedTabs: document.getElementById('pinned-tabs')
+  };
+}
 
 // ─── Load config ───────────────────────────────────────────────────────────
 async function loadConfig() {
@@ -55,15 +69,16 @@ async function loadConfig() {
     if (result.config) {
       currentConfig = { ...DEFAULT_CONFIG, ...result.config };
     }
+    console.log('[FFTabClose Popup] Config loaded:', currentConfig);
   } catch (error) {
     console.error('[FFTabClose Popup] Config load error:', error);
   }
 }
 
-// ─── Save config ───────────────────────────────────────────────────────────
-async function saveConfig() {
+// ─── Save config (reads from UI) ───────────────────────────────────────────
+async function saveConfig(el) {
   try {
-    // Build config from UI
+    // Build config from current UI state
     currentConfig.enabled = el.enabled.checked;
     currentConfig.discardPinnedTabs = el.discardPinned.checked;
     currentConfig.excludeAudibleTabs = el.excludeAudible.checked;
@@ -84,16 +99,17 @@ async function saveConfig() {
       : [];
     
     await browser.storage.sync.set({ config: currentConfig });
-    showStatus('✅ Configuration sauvegardée!', 'success');
+    console.log('[FFTabClose Popup] Config saved:', currentConfig);
+    return true;
     
   } catch (error) {
     console.error('[FFTabClose Popup] Save error:', error);
-    showStatus('Erreur de sauvegarde', 'error');
+    return false;
   }
 }
 
 // ─── Update stats ──────────────────────────────────────────────────────────
-async function updateStats() {
+async function updateStats(el) {
   try {
     const response = await browser.runtime.sendMessage({ action: 'getStats' });
     
@@ -113,59 +129,96 @@ async function updateStats() {
       el.oldClose.textContent = '?';
       el.oldDiscard.textContent = '?';
     } catch (e) {
-      el.totalTabs.textContent = '?';
-      el.oldClose.textContent = '?';
-      el.oldDiscard.textContent = '?';
-      el.pinnedTabs.textContent = '?';
+      // Silent fail — popup might be closing
     }
   }
 }
 
 // ─── Setup listeners ───────────────────────────────────────────────────────
-function setupListeners() {
+function setupListeners(el) {
+  // Save button — saves + shows confirmation
   el.saveButton.addEventListener('click', async () => {
     el.saveButton.disabled = true;
     el.saveButton.textContent = 'Sauvegarde...';
     
     try {
-      await saveConfig();
+      const ok = await saveConfig(el);
+      showStatus(el, ok ? '✅ Configuration sauvegardée!' : 'Erreur de sauvegarde', ok ? 'success' : 'error');
+      // Refresh stats immediately after save
+      setTimeout(() => updateStats(el), 500);
     } finally {
       el.saveButton.disabled = false;
       el.saveButton.textContent = 'Sauvegarder';
     }
   });
   
+  // Force process button
   el.forceProcess.addEventListener('click', async () => {
     el.forceProcess.disabled = true;
     el.forceProcess.textContent = 'Traitement...';
     
     try {
+      // Save current config first to make sure background has latest settings
+      await saveConfig(el);
+      
       const response = await browser.runtime.sendMessage({ action: 'forceProcess' });
       
       if (response && response.success) {
-        showStatus('✅ Traitement effectué!', 'success');
-        setTimeout(() => updateStats(), 1000);
+        showStatus(el, '✅ Traitement effectué!', 'success');
+        setTimeout(() => updateStats(el), 1000);
       } else {
-        showStatus('Erreur: ' + (response?.error || 'inconnue'), 'error');
+        showStatus(el, 'Erreur: ' + (response?.error || 'inconnue'), 'error');
       }
     } catch (error) {
-      showStatus('Erreur de traitement', 'error');
+      showStatus(el, 'Erreur: ' + error.message, 'error');
     } finally {
       el.forceProcess.disabled = false;
       el.forceProcess.textContent = 'Traiter maintenant';
     }
   });
   
-  el.closeAfter.addEventListener('change', () => {
+  // Time selector — auto-save
+  el.closeAfter.addEventListener('change', async () => {
     el.customTimeContainer.style.display = 
       el.closeAfter.value === 'custom' ? 'block' : 'none';
+    
+    if (el.closeAfter.value !== 'custom') {
+      await saveConfig(el);
+      showStatus(el, '✅ Délai mis à jour', 'success');
+    }
   });
   
-  el.enabled.addEventListener('change', updateControlsState);
+  // Custom time inputs — auto-save on blur
+  el.customHours.addEventListener('change', async () => {
+    await saveConfig(el);
+    showStatus(el, '✅ Délai mis à jour', 'success');
+  });
+  el.customMinutes.addEventListener('change', async () => {
+    await saveConfig(el);
+    showStatus(el, '✅ Délai mis à jour', 'success');
+  });
+  
+  // Toggle switches — auto-save immediately
+  el.enabled.addEventListener('change', async () => {
+    updateControlsState(el);
+    await saveConfig(el);
+    showStatus(el, el.enabled.checked ? '✅ Extension activée' : '⏸️ Extension désactivée', 'success');
+    setTimeout(() => updateStats(el), 500);
+  });
+  
+  el.discardPinned.addEventListener('change', async () => {
+    await saveConfig(el);
+    showStatus(el, '✅ Option mise à jour', 'success');
+  });
+  
+  el.excludeAudible.addEventListener('change', async () => {
+    await saveConfig(el);
+    showStatus(el, '✅ Option mise à jour', 'success');
+  });
 }
 
 // ─── Update UI from config ────────────────────────────────────────────────
-function updateUI() {
+function updateUI(el) {
   el.enabled.checked = currentConfig.enabled;
   el.discardPinned.checked = currentConfig.discardPinnedTabs;
   el.excludeAudible.checked = currentConfig.excludeAudibleTabs;
@@ -175,7 +228,7 @@ function updateUI() {
   const option = el.closeAfter.querySelector(`option[value="${minutes}"]`);
   
   if (option) {
-    el.closeAfter.value = minutes;
+    el.closeAfter.value = String(minutes);
     el.customTimeContainer.style.display = 'none';
   } else {
     el.closeAfter.value = 'custom';
@@ -189,11 +242,11 @@ function updateUI() {
     el.excludedDomains.value = currentConfig.excludedDomains.join('\n');
   }
   
-  updateControlsState();
+  updateControlsState(el);
 }
 
 // ─── Toggle controls based on enabled state ───────────────────────────────
-function updateControlsState() {
+function updateControlsState(el) {
   const isEnabled = el.enabled.checked;
   
   el.closeAfter.disabled = !isEnabled;
@@ -209,11 +262,11 @@ function updateControlsState() {
 }
 
 // ─── Status message ───────────────────────────────────────────────────────
-function showStatus(message, type = 'info') {
+function showStatus(el, message, type = 'info') {
   el.statusMessage.textContent = message;
   el.statusMessage.className = `status-message ${type}`;
   
-  const timeout = type === 'error' ? 5000 : 3000;
+  const timeout = type === 'error' ? 5000 : 2000;
   setTimeout(() => {
     el.statusMessage.className = 'status-message';
   }, timeout);

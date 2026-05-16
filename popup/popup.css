@@ -133,7 +133,8 @@ body {
 }
 
 .setting-item > label,
-.setting-header label {
+.setting-header label,
+.setting-header .setting-label {
     font-weight: 500;
     color: #e4e4e7;
     font-size: 13px;
