@@ -383,13 +383,15 @@ class FFTabCloseManager {
       const now = Date.now();
       const maxAge = this.config.closeAfterMinutes * 60 * 1000;
       
-      // Get ALL active tabs (to exclude them)
+      // Get ALL active tabs (to exclude them) — fresh query
       const activeTabs = await browser.tabs.query({ active: true });
       const activeTabIds = new Set(activeTabs.map(t => t.id));
       
       // Count tabs per window to avoid closing the last tab
       const tabsPerWindow = new Map();
       const allBrowserTabs = await browser.tabs.query({});
+      const totalTabCount = allBrowserTabs.length;
+      
       for (const tab of allBrowserTabs) {
         tabsPerWindow.set(tab.windowId, (tabsPerWindow.get(tab.windowId) || 0) + 1);
       }
@@ -432,13 +434,36 @@ class FFTabCloseManager {
         }
       }
       
-      console.log(`[FFTabClose] Found: ${tabsToClose.length} to close, ${tabsToDiscard.length} to discard`);
+      console.log(`[FFTabClose] Found: ${tabsToClose.length} to close, ${tabsToDiscard.length} to discard (total: ${totalTabCount})`);
+      
+      // ─── SAFETY: refuse to close more than half of all tabs in one cycle ──
+      // This prevents catastrophic mass-closing on first install or after
+      // a storage reset where all tabs get stale timestamps.
+      if (tabsToClose.length > 0 && totalTabCount > 0) {
+        const closeRatio = tabsToClose.length / totalTabCount;
+        if (closeRatio > 0.5 && tabsToClose.length > 3) {
+          console.warn(`[FFTabClose] ⚠️ SAFETY: Would close ${tabsToClose.length}/${totalTabCount} tabs (${Math.round(closeRatio * 100)}%) — too many! Skipping this cycle to protect your tabs. They will be closed gradually over the next cycles.`);
+          
+          // Close at most 3 tabs this cycle to be safe, prioritizing the oldest
+          tabsToClose.sort((a, b) => a.lastActiveAt - b.lastActiveAt);
+          tabsToClose.splice(3);
+          
+          console.log(`[FFTabClose] Reduced to ${tabsToClose.length} oldest tabs for this cycle`);
+        }
+      }
       
       // ─── Close normal tabs ──────────────────────────────────────────
       if (tabsToClose.length > 0) {
+        // Re-verify active tabs RIGHT BEFORE closing (race condition protection)
+        const freshActiveTabs = await browser.tabs.query({ active: true });
+        const freshActiveIds = new Set(freshActiveTabs.map(t => t.id));
+        
         // Group by window to handle "last tab" protection
         const closeByWindow = new Map();
         for (const tab of tabsToClose) {
+          // Double-check: skip if tab became active since we started
+          if (freshActiveIds.has(tab.id)) continue;
+          
           if (!closeByWindow.has(tab.windowId)) {
             closeByWindow.set(tab.windowId, []);
           }
