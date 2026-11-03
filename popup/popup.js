@@ -1,5 +1,5 @@
 /**
- * FFTabClose - Popup Script V5.1
+ * FFTabClose - Popup Script V5.3
  * 
  * Auto-save on every change, auto-refresh stats every 5s
  */
@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateUI(el);
     setupListeners(el);
     await updateStats(el);
+    await loadArchive();
     
     // Auto-refresh stats every 5 seconds
     statsInterval = setInterval(() => updateStats(el), 5000);
@@ -270,4 +271,30 @@ function showStatus(el, message, type = 'info') {
   setTimeout(() => {
     el.statusMessage.className = 'status-message';
   }, timeout);
+}
+
+// ─── Archive (closed tabs, restorable) ────────────────────────────────────
+async function loadArchive() {
+  const list = document.getElementById('archive-list');
+  const empty = document.getElementById('archive-empty');
+  try {
+    const { archive = [] } = await browser.runtime.sendMessage({ action: 'getArchive' });
+    list.textContent = '';
+    empty.style.display = archive.length ? 'none' : 'block';
+    archive.slice(0, 10).forEach((entry, index) => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.className = 'archive-item';
+      btn.textContent = entry.title || entry.url;
+      btn.title = entry.url;
+      btn.addEventListener('click', async () => {
+        await browser.runtime.sendMessage({ action: 'restoreArchived', index });
+        loadArchive();
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+  } catch (e) {
+    // popup closing or background not ready
+  }
 }
