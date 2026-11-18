@@ -11,6 +11,9 @@ const DEFAULT_CONFIG = {
   excludeActiveTab: true,
   excludeAudibleTabs: true,
   excludedDomains: [],
+  reviewBeforeClose: true,
+  reviewGraceSeconds: 60,
+  delayMinutes: 60,
   checkIntervalMinutes: 1
 };
 
@@ -53,6 +56,7 @@ function getElements() {
     discardPinned: document.getElementById('discard-pinned'),
     excludeAudible: document.getElementById('exclude-audible'),
     excludedDomains: document.getElementById('excluded-domains'),
+    reviewBeforeClose: document.getElementById('review-before-close'),
     saveButton: document.getElementById('save-button'),
     forceProcess: document.getElementById('force-process'),
     statusMessage: document.getElementById('status-message'),
@@ -83,6 +87,7 @@ async function saveConfig(el) {
     currentConfig.enabled = el.enabled.checked;
     currentConfig.discardPinnedTabs = el.discardPinned.checked;
     currentConfig.excludeAudibleTabs = el.excludeAudible.checked;
+    currentConfig.reviewBeforeClose = el.reviewBeforeClose.checked;
     
     // Parse time
     if (el.closeAfter.value === 'custom') {
@@ -212,6 +217,34 @@ function setupListeners(el) {
     showStatus(el, '✅ Option mise à jour', 'success');
   });
   
+  el.reviewBeforeClose.addEventListener('change', async () => {
+    await saveConfig(el);
+    showStatus(el, '✅ Option mise à jour', 'success');
+  });
+
+  // Whitelist the active tab (domain or exact URL)
+  const addCurrent = async (asUrl) => {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    if (!tab || !/^https?:/.test(tab.url || '')) return showStatus(el, 'Onglet non valide', 'error');
+    const entry = asUrl ? tab.url.replace(/^https?:\/\//, '').replace(/#.*$/, '').replace(/\/+$/, '')
+                        : new URL(tab.url).hostname;
+    const lines = el.excludedDomains.value.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.includes(entry)) lines.push(entry);
+    el.excludedDomains.value = lines.join('\n');
+    await saveConfig(el);
+    showStatus(el, `✅ ${entry} ajouté à la whitelist`, 'success');
+  };
+  document.getElementById('add-domain').addEventListener('click', () => addCurrent(false));
+  document.getElementById('add-url').addEventListener('click', () => addCurrent(true));
+  el.excludedDomains.addEventListener('change', async () => {
+    await saveConfig(el);
+    showStatus(el, '✅ Whitelist mise à jour', 'success');
+  });
+  document.getElementById('open-archive').addEventListener('click', () => {
+    browser.tabs.create({ url: browser.runtime.getURL('popup/archive.html') });
+    window.close();
+  });
+
   el.excludeAudible.addEventListener('change', async () => {
     await saveConfig(el);
     showStatus(el, '✅ Option mise à jour', 'success');
@@ -223,6 +256,7 @@ function updateUI(el) {
   el.enabled.checked = currentConfig.enabled;
   el.discardPinned.checked = currentConfig.discardPinnedTabs;
   el.excludeAudible.checked = currentConfig.excludeAudibleTabs;
+  el.reviewBeforeClose.checked = currentConfig.reviewBeforeClose;
   
   // Time selector
   const minutes = currentConfig.closeAfterMinutes;
@@ -256,6 +290,7 @@ function updateControlsState(el) {
   el.discardPinned.disabled = !isEnabled;
   el.excludeAudible.disabled = !isEnabled;
   el.excludedDomains.disabled = !isEnabled;
+  el.reviewBeforeClose.disabled = !isEnabled;
   el.forceProcess.disabled = !isEnabled;
   
   document.querySelector('.config-section').style.opacity = isEnabled ? '1' : '0.5';
@@ -281,14 +316,14 @@ async function loadArchive() {
     const { archive = [] } = await browser.runtime.sendMessage({ action: 'getArchive' });
     list.textContent = '';
     empty.style.display = archive.length ? 'none' : 'block';
-    archive.slice(0, 10).forEach((entry, index) => {
+    archive.slice(0, 10).forEach((entry) => {
       const li = document.createElement('li');
       const btn = document.createElement('button');
       btn.className = 'archive-item';
       btn.textContent = entry.title || entry.url;
       btn.title = entry.url;
       btn.addEventListener('click', async () => {
-        await browser.runtime.sendMessage({ action: 'restoreArchived', index });
+        await browser.runtime.sendMessage({ action: 'restoreArchived', id: entry.id });
         loadArchive();
       });
       li.appendChild(btn);

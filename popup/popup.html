@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>FFTabClose</title>
+    <link rel="icon" href="../icons/icon-48.png">
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -10,7 +11,7 @@
         <!-- Header -->
         <header class="header">
             <div class="header-top">
-                <h1 id="extension-name">FFTabClose</h1>
+                <img src="../icons/icon-48.png" alt="" class="logo"><h1 id="extension-name">FFTabClose</h1>
                 <label class="toggle-switch" for="enabled">
                     <input type="checkbox" id="enabled" class="toggle-input">
                     <span class="toggle-slider"></span>
@@ -98,11 +99,27 @@
                 <p class="setting-description">Ne jamais toucher un onglet qui joue de l'audio</p>
             </div>
 
+            <!-- Review before close -->
+            <div class="setting-item">
+                <div class="setting-header">
+                    <span class="setting-label">Fenêtre de revue avant fermeture</span>
+                    <label class="toggle-switch" for="review-before-close">
+                        <input type="checkbox" id="review-before-close" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <p class="setting-description">Affiche les onglets à fermer (60 s) pour ignorer, reporter ou exclure</p>
+            </div>
+
             <!-- Domain exclusions -->
             <div class="setting-item">
                 <label for="excluded-domains">Domaines exclus</label>
                 <textarea id="excluded-domains" class="domain-input" placeholder="Un domaine par ligne&#10;exemple.com&#10;github.com" rows="3"></textarea>
-                <p class="setting-description">Ces domaines ne seront jamais fermés ni mis en veille</p>
+                <p class="setting-description">Whitelist : un domaine (<code>github.com</code>, sous-domaines inclus) ou une URL (<code>site.com/docs</code> = préfixe, <code>https://x.com/a*</code>) par ligne. Jamais fermés ni mis en veille.</p>
+                <div class="actions-section" style="padding:6px 0 0">
+                    <button id="add-domain" class="btn btn-secondary">+ Domaine de l'onglet actif</button>
+                    <button id="add-url" class="btn btn-secondary">+ URL de l'onglet actif</button>
+                </div>
             </div>
         </section>
 
@@ -135,6 +152,7 @@
         <!-- Archive -->
         <section class="archive-section">
             <h3>Archive (récemment fermés)</h3>
+            <button id="open-archive" class="btn btn-secondary">Ouvrir l'archive complète (recherche)</button>
             <ul id="archive-list" class="archive-list"></ul>
             <p id="archive-empty" class="setting-description">Aucun onglet archivé</p>
         </section>

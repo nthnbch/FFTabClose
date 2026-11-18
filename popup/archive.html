@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>FFTabClose – Archive</title>
+    <link rel="icon" href="../icons/icon-48.png">
+    <link rel="stylesheet" href="pages.css">
+</head>
+<body>
+    <header>
+        <h1>Archive des onglets fermés</h1>
+        <p id="count">—</p>
+    </header>
+    <main>
+        <div class="toolbar">
+            <input type="search" id="q" placeholder="Rechercher (titre, URL, domaine, date…)" autofocus>
+            <select id="range">
+                <option value="0">Toutes les dates</option>
+                <option value="1">Aujourd'hui</option>
+                <option value="7">7 derniers jours</option>
+                <option value="30">30 derniers jours</option>
+            </select>
+            <select id="sort">
+                <option value="new">Plus récents</option>
+                <option value="old">Plus anciens</option>
+                <option value="title">Titre A→Z</option>
+                <option value="domain">Domaine A→Z</option>
+            </select>
+            <button id="clear" class="danger">Vider</button>
+        </div>
+        <ul id="list"></ul>
+        <p id="empty" class="empty" style="display:none">Aucun résultat</p>
+    </main>
+    <script src="archive.js"></script>
+</body>
+</html>
