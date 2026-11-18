@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>FFTabClose – Onglets à fermer</title>
+    <link rel="icon" href="../icons/icon-48.png">
+    <link rel="stylesheet" href="pages.css">
+</head>
+<body>
+    <header>
+        <h1>Onglets sur le point d'être fermés</h1>
+        <p>Fermeture dans <span id="countdown" class="countdown">—</span> s · ils sont archivés et restaurables</p>
+    </header>
+    <main>
+        <div class="toolbar">
+            <button id="close-all" class="primary">Tout fermer maintenant</button>
+            <button id="ignore-all">Tout ignorer</button>
+        </div>
+        <ul id="list"></ul>
+        <p id="empty" class="empty" style="display:none">Plus rien à fermer ✅</p>
+    </main>
+    <script src="review.js"></script>
+</body>
+</html>

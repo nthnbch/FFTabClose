@@ -29,14 +29,17 @@ const DEFAULT_CONFIG = {
   discardPinnedTabs: true,
   excludeActiveTab: true,
   excludeAudibleTabs: true,
-  excludedDomains: [],
+  excludedDomains: [],        // whitelist: domains ("github.com") or URLs ("site.com/docs", "https://x.com/a*")
+  reviewBeforeClose: true,    // show a review window before closing tabs
+  reviewGraceSeconds: 60,     // time left to react before tabs are really closed
+  delayMinutes: 60,           // "Delay" button snooze
   checkIntervalMinutes: 1
 };
 
 const MAX_CLOSE_PER_CYCLE = 5;      // gradual cleanup, never a mass close
 const STARTUP_GRACE_MS = 30 * 1000; // let session restore finish before acting
 const GAP_THRESHOLD_MS = 3 * 60 * 1000; // heartbeat gap = browser closed / asleep
-const ARCHIVE_LIMIT = 100;
+const ARCHIVE_LIMIT = 1000;
 
 // ─── Tab Data Manager ───────────────────────────────────────────────────────
 class TabDataManager {
@@ -259,6 +262,10 @@ class FFTabCloseManager {
     this.isZenBrowser = false;
     this.startedAt = Date.now();
     this.lastBeat = 0;
+    this.pending = new Map();   // tabId → tabInfo awaiting user review
+    this.reviewDeadline = 0;
+    this.reviewTimer = null;
+    this.reviewWindowId = null;
   }
 
   async init() {
@@ -417,8 +424,22 @@ class FFTabCloseManager {
           this.getArchive().then(archive => sendResponse({ archive }));
           return true;
         case 'restoreArchived':
-          this.restoreFromArchive(message.index)
+          this.restoreFromArchive(message.id)
             .then(ok => sendResponse({ success: ok }))
+            .catch(err => sendResponse({ success: false, error: err.message }));
+          return true;
+        case 'deleteArchived':
+          this.deleteFromArchive(message.ids).then(() => sendResponse({ success: true }));
+          return true;
+        case 'clearArchive':
+          browser.storage.local.set({ archive: [] }).then(() => sendResponse({ success: true }));
+          return true;
+        case 'getReview':
+          sendResponse(this.getReviewState());
+          return false;
+        case 'reviewAction':
+          this.handleReviewAction(message.type, message.id)
+            .then(() => sendResponse({ success: true }))
             .catch(err => sendResponse({ success: false, error: err.message }));
           return true;
         case 'getTabList':
@@ -473,6 +494,7 @@ class FFTabCloseManager {
 
       for (const tabInfo of this.tabs.getAll()) {
         if (now - tabInfo.lastActiveAt < maxAge) continue;
+        if (this.pending.has(tabInfo.id)) continue;
         if (activeTabIds.has(tabInfo.id)) continue;
         if (this.config.excludeAudibleTabs && tabInfo.audible) continue;
         if (this.isInternalUrl(tabInfo.url)) continue;
@@ -509,19 +531,11 @@ class FFTabCloseManager {
 
       console.log(`[FFTabClose] Cycle: ${idsToClose.length} close, ${tabsToDiscard.length} discard`);
 
-      // ─── Close normal tabs (archived first, so they can be restored) ───
-      for (const tab of idsToClose) {
-        try {
-          // Last-second check: the user may have just switched to it
-          const fresh = await browser.tabs.get(tab.id);
-          if (fresh.active || (this.config.excludeAudibleTabs && fresh.audible)) continue;
-          await this.archiveTab(tab, fresh);
-          await browser.tabs.remove(tab.id);
-          this.tabs.removeTab(tab.id);
-        } catch (e) {
-          console.warn(`[FFTabClose] Could not close tab ${tab.id}:`, e.message);
-          this.tabs.removeTab(tab.id); // already gone
-        }
+      // ─── Close normal tabs ─────────────────────────────────────────────
+      if (this.config.reviewBeforeClose) {
+        this.queueForReview(idsToClose);
+      } else {
+        await this.closeTabs(idsToClose);
       }
 
       // ─── Sleep pinned / folder tabs ────────────────────────────────────
@@ -542,11 +556,125 @@ class FFTabCloseManager {
     }
   }
 
+  // ─── Closing (archived first, so tabs can be restored) ─────────────────
+  async closeTabs(list) {
+    for (const tab of list) {
+      try {
+        // Last-second check: the user may have just switched to it
+        const fresh = await browser.tabs.get(tab.id);
+        if (fresh.active || (this.config.excludeAudibleTabs && fresh.audible)) continue;
+        if (this.isExcluded(fresh.url)) continue;
+        await this.archiveTab(tab, fresh);
+        await browser.tabs.remove(tab.id);
+        this.tabs.removeTab(tab.id);
+      } catch (e) {
+        console.warn(`[FFTabClose] Could not close tab ${tab.id}:`, e.message);
+        this.tabs.removeTab(tab.id); // already gone
+      }
+    }
+  }
+
+  // ─── Review window (ignore / delay / exclude before closing) ───────────
+  queueForReview(list) {
+    if (list.length === 0) return;
+    for (const t of list) this.pending.set(t.id, t);
+    this.reviewDeadline = Date.now() + this.config.reviewGraceSeconds * 1000;
+    clearTimeout(this.reviewTimer);
+    this.reviewTimer = setTimeout(() => this.finalizeReview(), this.config.reviewGraceSeconds * 1000);
+    this.openReviewWindow();
+  }
+
+  async openReviewWindow() {
+    try {
+      if (this.reviewWindowId !== null) {
+        try {
+          await browser.windows.update(this.reviewWindowId, { focused: true });
+          return;
+        } catch (e) { this.reviewWindowId = null; }
+      }
+      const win = await browser.windows.create({
+        url: browser.runtime.getURL('popup/review.html'),
+        type: 'popup', width: 480, height: 600
+      });
+      this.reviewWindowId = win.id;
+      browser.windows.onRemoved.addListener(function onGone(id) {
+        if (id === ffTabClose.reviewWindowId) {
+          ffTabClose.reviewWindowId = null;
+          browser.windows.onRemoved.removeListener(onGone);
+        }
+      });
+    } catch (e) {
+      console.warn('[FFTabClose] Review window failed, closing directly:', e.message);
+      await this.finalizeReview();
+    }
+  }
+
+  getReviewState() {
+    return {
+      deadline: this.reviewDeadline,
+      tabs: [...this.pending.values()].map(t => ({ id: t.id, title: t.title, url: t.url }))
+    };
+  }
+
+  async finalizeReview() {
+    clearTimeout(this.reviewTimer);
+    const list = [...this.pending.values()];
+    this.pending.clear();
+    await this.closeTabs(list);
+    await this.tabs.saveToStorage();
+  }
+
+  async handleReviewAction(type, id) {
+    if (type === 'closeAll') return this.finalizeReview();
+    if (type === 'ignoreAll') {
+      for (const tid of [...this.pending.keys()]) await this.handleReviewAction('ignore', tid);
+      return;
+    }
+    const info = this.pending.get(id);
+    if (!info) return;
+    const live = this.tabs.tabData.get(id);
+    const maxAge = this.config.closeAfterMinutes * 60 * 1000;
+    switch (type) {
+      case 'ignore': // restart the full countdown
+        if (live) live.lastActiveAt = Date.now();
+        break;
+      case 'delay': // eligible again after delayMinutes
+        if (live) live.lastActiveAt = Math.min(Date.now(), Date.now() - maxAge + this.config.delayMinutes * 60 * 1000);
+        break;
+      case 'excludeDomain':
+      case 'excludeUrl': {
+        const entry = type === 'excludeDomain' ? this.hostOf(info.url) : this.stripScheme(info.url);
+        if (entry) await this.addExclusion(entry);
+        break;
+      }
+      case 'closeNow':
+        this.pending.delete(id);
+        await this.closeTabs([info]);
+        this.afterReviewChange();
+        return;
+    }
+    this.pending.delete(id);
+    this.tabs.debouncedSave();
+    this.afterReviewChange();
+  }
+
+  afterReviewChange() {
+    if (this.pending.size === 0) clearTimeout(this.reviewTimer);
+  }
+
+  async addExclusion(entry) {
+    const list = this.config.excludedDomains || [];
+    if (!list.some(e => e.toLowerCase() === entry.toLowerCase())) list.push(entry);
+    this.config.excludedDomains = list;
+    await browser.storage.sync.set({ config: this.config });
+  }
+
   // ─── Archive (Arc-style "Archived tabs") ────────────────────────────────
   async archiveTab(info, fresh) {
     try {
       const { archive = [] } = await browser.storage.local.get('archive');
       archive.unshift({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         title: fresh.title || info.title || fresh.url,
         url: fresh.url || info.url,
         cookieStoreId: info.cookieStoreId,
@@ -560,11 +688,17 @@ class FFTabCloseManager {
 
   async getArchive() {
     const { archive = [] } = await browser.storage.local.get('archive');
+    let changed = false;
+    for (const e of archive) {
+      if (!e.id) { e.id = `${e.closedAt}-${Math.random().toString(36).slice(2, 8)}`; changed = true; }
+    }
+    if (changed) await browser.storage.local.set({ archive });
     return archive;
   }
 
-  async restoreFromArchive(index) {
+  async restoreFromArchive(id) {
     const archive = await this.getArchive();
+    const index = archive.findIndex(e => e.id === id);
     const entry = archive[index];
     if (!entry) return false;
     const props = { url: entry.url, active: false };
@@ -582,6 +716,12 @@ class FFTabCloseManager {
     return true;
   }
 
+  async deleteFromArchive(ids) {
+    const drop = new Set(ids);
+    const archive = (await this.getArchive()).filter(e => !drop.has(e.id));
+    await browser.storage.local.set({ archive });
+  }
+
   // ─── URL helpers ────────────────────────────────────────────────────────
   isInternalUrl(url) {
     if (!url) return true;
@@ -591,18 +731,33 @@ class FFTabCloseManager {
            url.startsWith('data:');
   }
 
-  isDomainExcluded(url) {
-    if (!url || !this.config.excludedDomains || this.config.excludedDomains.length === 0) return false;
-    try {
-      const hostname = new URL(url).hostname.toLowerCase();
-      return this.config.excludedDomains.some(domain => {
-        const d = domain.toLowerCase().trim();
-        return hostname === d || hostname.endsWith('.' + d);
-      });
-    } catch (e) {
-      return false;
-    }
+  stripScheme(url) {
+    return (url || '').replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').replace(/#.*$/, '').replace(/\/+$/, '');
   }
+
+  hostOf(url) {
+    try { return new URL(url).hostname.toLowerCase(); } catch (e) { return ''; }
+  }
+
+  // Whitelist entries: "github.com" (domain + subdomains), "github.com/me/repo"
+  // (URL prefix), "https://site.com/page", or a trailing "*" for a raw prefix.
+  isExcluded(url) {
+    const rules = this.config.excludedDomains;
+    if (!url || !rules || rules.length === 0) return false;
+    const host = this.hostOf(url);
+    const plain = this.stripScheme(url).toLowerCase();
+    return rules.some(raw => {
+      const rule = this.stripScheme((raw || '').trim()).toLowerCase().replace(/^\*\./, '');
+      if (!rule) return false;
+      if (rule.endsWith('*')) return plain.startsWith(rule.slice(0, -1));
+      if (!rule.includes('/')) return host === rule || host.endsWith('.' + rule);
+      if (!plain.startsWith(rule)) return false;
+      const next = plain.charAt(rule.length);
+      return next === '' || next === '/' || next === '?';
+    });
+  }
+
+  isDomainExcluded(url) { return this.isExcluded(url); }
 
   // ─── Stats ──────────────────────────────────────────────────────────────
   async getStats() {
